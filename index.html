@@ -6,32 +6,66 @@
     <title>Manage</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-    <div class="hero">
-        <div class="hero__glow"></div>
-    </div>
+    <div class="page">
 
-    <div class="profile">
-        <div class="avatar" id="avatar"></div>
-
-        <div class="tag-row">
-            <p class="tag-row__tag" id="userTag">@юзертег</p>
-            <svg id="premiumStar" class="premium-star" viewBox="0 0 24 24" style="display:none;">
-                <defs>
-                    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#FFD469" />
-                        <stop offset="100%" stop-color="#FF9A45" />
-                    </linearGradient>
-                </defs>
-                <path fill="url(#starGradient)" d="M12 2.5l2.6 5.66 6.15.68-4.6 4.24 1.28 6.1L12 16.9l-5.43 2.28 1.28-6.1-4.6-4.24 6.15-.68z"/>
+        <button class="icon-btn icon-btn--settings" type="button" aria-label="Налаштування">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M19.4 13.5a1.7 1.7 0 00.34 1.87l.06.06a2.06 2.06 0 11-2.92 2.92l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.03 1.56V20a2.06 2.06 0 01-4.12 0v-.09a1.7 1.7 0 00-1.11-1.56 1.7 1.7 0 00-1.87.34l-.06.06a2.06 2.06 0 11-2.92-2.92l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.56-1.03H4a2.06 2.06 0 010-4.12h.09a1.7 1.7 0 001.56-1.11 1.7 1.7 0 00-.34-1.87l-.06-.06a2.06 2.06 0 112.92-2.92l.06.06a1.7 1.7 0 001.87.34H10a1.7 1.7 0 001.03-1.56V4a2.06 2.06 0 014.12 0v.09a1.7 1.7 0 001.03 1.56 1.7 1.7 0 001.87-.34l.06-.06a2.06 2.06 0 112.92 2.92l-.06.06a1.7 1.7 0 00-.34 1.87V10a1.7 1.7 0 001.56 1.03H20a2.06 2.06 0 010 4.12h-.09a1.7 1.7 0 00-1.56 1.03z" stroke="currentColor" stroke-width="1.6"/>
             </svg>
-        </div>
+        </button>
 
-        <p class="profile__name" id="userName">Ім'я</p>
+        <main class="profile">
+            <div class="avatar" id="avatar"></div>
+
+            <div class="tag-row">
+                <p class="tag-row__tag" id="userTag">@юзертег</p>
+                <svg id="premiumStar" class="premium-star" viewBox="0 0 24 24" style="display:none;">
+                    <defs>
+                        <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFD469" />
+                            <stop offset="100%" stop-color="#FF9A45" />
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#starGradient)" d="M12 2.5l2.6 5.66 6.15.68-4.6 4.24 1.28 6.1L12 16.9l-5.43 2.28 1.28-6.1-4.6-4.24 6.15-.68z"/>
+                </svg>
+            </div>
+
+            <p class="profile__name" id="userName">Ім'я</p>
+        </main>
+
+        <nav class="tabbar">
+            <button class="tabbar__item tabbar__item--active" type="button">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9z" stroke="currentColor" stroke-width="1.7"/>
+                    <path d="M4 20.5c1.4-3.6 4.4-5.5 8-5.5s6.6 1.9 8 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+                <span>Профіль</span>
+            </button>
+
+            <button class="tabbar__item" type="button">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5.5A2.5 2.5 0 016.5 3h11A2.5 2.5 0 0120 5.5v8A2.5 2.5 0 0117.5 16H10l-4.5 4v-4H6.5A2.5 2.5 0 014 13.5v-8z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                </svg>
+                <span>Чати</span>
+            </button>
+
+            <button class="tabbar__item" type="button">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3.5" y="4" width="17" height="6.5" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                    <rect x="3.5" y="13.5" width="17" height="6.5" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                    <circle cx="7" cy="7.25" r="0.9" fill="currentColor"/>
+                    <circle cx="7" cy="16.75" r="0.9" fill="currentColor"/>
+                </svg>
+                <span>Сервери</span>
+            </button>
+        </nav>
+
     </div>
 
     <script src="js/script.js"></script>
