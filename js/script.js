@@ -1,6 +1,6 @@
 const FALLBACK_EMOJI = "🙂";
 
-function initProfileScreen() {
+function initUserData() {
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
@@ -8,19 +8,23 @@ function initProfileScreen() {
     const user = tg.initDataUnsafe?.user;
 
     const tagEl = document.getElementById("userTag");
-    const nameTopEl = document.getElementById("userNameTop");
     const avatarEl = document.getElementById("avatar");
     const starEl = document.getElementById("premiumStar");
+    const greetingNameEl = document.getElementById("homeGreetingName");
+    const miniAvatarEl = document.getElementById("miniAvatar");
 
     if (!user) {
         return;
     }
 
+    const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+
     tagEl.textContent = user.username ? "@" + user.username : "без юзертегу";
-    nameTopEl.textContent = [user.first_name, user.last_name].filter(Boolean).join(" ");
+    greetingNameEl.textContent = fullName + "!";
 
     if (user.photo_url) {
         avatarEl.style.backgroundImage = `url(${user.photo_url})`;
+        miniAvatarEl.style.backgroundImage = `url(${user.photo_url})`;
     } else {
         const fallback = document.createElement("div");
         fallback.className = "avatar__fallback";
@@ -37,6 +41,7 @@ function initTabs() {
     const screens = document.getElementById("screens");
     const tabbar = document.getElementById("tabbar");
     const items = Array.from(tabbar.querySelectorAll(".tabbar__item"));
+    const totalScreens = items.length;
 
     items.forEach((item) => {
         item.addEventListener("click", () => {
@@ -45,10 +50,10 @@ function initTabs() {
             items.forEach((i) => i.classList.remove("tabbar__item--active"));
             item.classList.add("tabbar__item--active");
 
-            screens.style.transform = `translateX(-${index * (100 / 3)}%)`;
+            screens.style.transform = `translateX(-${index * (100 / totalScreens)}%)`;
         });
     });
 }
 
-initProfileScreen();
+initUserData();
 initTabs();
