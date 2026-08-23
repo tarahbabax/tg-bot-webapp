@@ -165,6 +165,8 @@ const TRANSLATIONS = {
         other: "Інше", support: "Підтримка", supportDesc: "Написати адміністрації",
         about: "Про застосунок", version: "Версія 1.0.0",
         wheelTitle: "Колесо фортуни", wheelDesc: "Крути колесо і вигравай коіни", soon: "Незабаром",
+        betNumber: "Число", betAmount: "Ставка", red: "Червоне", black: "Чорне",
+        placeBet: "Зробити ставку", ok: "Добре!",
         otherUsers: "Інші користувачі", usersTitle: "Користувачі", usersLoading: "Завантаження…",
         aboutMe: "Про мене", editBio: "Редагувати", bioEmpty: "Опис поки порожній",
         save: "Зберегти", cancel: "Скасувати",
@@ -212,6 +214,8 @@ const TRANSLATIONS = {
         other: "Other", support: "Support", supportDesc: "Contact the admins",
         about: "About the app", version: "Version 1.0.0",
         wheelTitle: "Wheel of Fortune", wheelDesc: "Spin the wheel and win coins", soon: "Coming soon",
+        betNumber: "Number", betAmount: "Bet", red: "Red", black: "Black",
+        placeBet: "Place bet", ok: "Nice!",
         otherUsers: "Other users", usersTitle: "Users", usersLoading: "Loading…",
         aboutMe: "About me", editBio: "Edit", bioEmpty: "No description yet",
         save: "Save", cancel: "Cancel",
@@ -451,3 +455,206 @@ initLanguage();
 initSwitchesAndToggles();
 
 loadFromServer();
+
+/* ---------- Roulette ---------- */
+
+const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+
+function numberColor(n) {
+    if (n === 0) return "green";
+    return RED_NUMBERS.has(n) ? "red" : "black";
+}
+
+function buildWheelGradient() {
+    const segment = 360 / WHEEL_ORDER.length;
+    const colours = { red: "#D6281A", black: "#17171B", green: "#1E8F52" };
+
+    const stops = WHEEL_ORDER.map((num, i) => {
+        const from = (i * segment).toFixed(3);
+        const to = ((i + 1) * segment).toFixed(3);
+        return `${colours[numberColor(num)]} ${from}deg ${to}deg`;
+    });
+
+    return `conic-gradient(${stops.join(", ")})`;
+}
+
+function angleForNumber(n) {
+    const segment = 360 / WHEEL_ORDER.length;
+    const index = WHEEL_ORDER.indexOf(n);
+    return index * segment + segment / 2;
+}
+
+function initRoulette() {
+    const openBtn = document.getElementById("openRoulette");
+    const backBtn = document.getElementById("rouletteBack");
+    const screen = document.getElementById("rouletteScreen");
+    const wheel = document.getElementById("wheel");
+    const ballPivot = document.getElementById("ballPivot");
+
+    const coinsEl = document.getElementById("rouletteCoins");
+    const donateEl = document.getElementById("rouletteDonate");
+
+    const curCoinsBtn = document.getElementById("curCoins");
+    const curDonateBtn = document.getElementById("curDonate");
+
+    const numberInput = document.getElementById("betNumber");
+    const amountInput = document.getElementById("betAmount");
+
+    const colorRedBtn = document.getElementById("colorRed");
+    const colorBlackBtn = document.getElementById("colorBlack");
+
+    const spinBtn = document.getElementById("spinBtn");
+    const errorEl = document.getElementById("rouletteError");
+
+    const winBackdrop = document.getElementById("winBackdrop");
+    const winModal = document.getElementById("winModal");
+    const winAmount = document.getElementById("winAmount");
+    const winBetInfo = document.getElementById("winBetInfo");
+    const winOk = document.getElementById("winOk");
+
+    if (!openBtn || !wheel) return;
+
+    wheel.style.background = buildWheelGradient();
+
+    let selectedCurrency = "coins";
+    let selectedColor = null;
+    let currentBallAngle = 0;
+    let spinning = false;
+
+    function syncBalances() {
+        coinsEl.textContent = document.getElementById("statCoins").textContent;
+        donateEl.textContent = document.getElementById("statDonate").textContent;
+    }
+
+    openBtn.addEventListener("click", () => {
+        syncBalances();
+        screen.classList.add("fullscreen--open");
+    });
+
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+    });
+
+    curCoinsBtn.addEventListener("click", () => {
+        selectedCurrency = "coins";
+        curCoinsBtn.classList.add("currency-pill--active");
+        curDonateBtn.classList.remove("currency-pill--active");
+    });
+
+    curDonateBtn.addEventListener("click", () => {
+        selectedCurrency = "donate";
+        curDonateBtn.classList.add("currency-pill--active");
+        curCoinsBtn.classList.remove("currency-pill--active");
+    });
+
+    function selectColor(color, btn) {
+        selectedColor = selectedColor === color ? null : color;
+        colorRedBtn.classList.toggle("color-btn--selected", selectedColor === "red");
+        colorBlackBtn.classList.toggle("color-btn--selected", selectedColor === "black");
+        if (selectedColor) numberInput.value = "";
+    }
+
+    colorRedBtn.addEventListener("click", () => selectColor("red", colorRedBtn));
+    colorBlackBtn.addEventListener("click", () => selectColor("black", colorBlackBtn));
+
+    numberInput.addEventListener("input", () => {
+        if (numberInput.value !== "") {
+            selectedColor = null;
+            colorRedBtn.classList.remove("color-btn--selected");
+            colorBlackBtn.classList.remove("color-btn--selected");
+        }
+    });
+
+    function showError(text) {
+        errorEl.textContent = text;
+    }
+
+    function openWinModal(won, payout, betLabel) {
+        winAmount.textContent = won ? `+${payout}` : "0";
+        winAmount.classList.toggle("win-modal__amount--lose", !won);
+        winBetInfo.textContent = betLabel;
+
+        winBackdrop.classList.add("modal-backdrop--open");
+        winModal.classList.add("win-modal--open");
+    }
+
+    function closeWinModal() {
+        winBackdrop.classList.remove("modal-backdrop--open");
+        winModal.classList.remove("win-modal--open");
+    }
+
+    winOk.addEventListener("click", closeWinModal);
+    winBackdrop.addEventListener("click", closeWinModal);
+
+    function spinBallTo(resultNumber) {
+        return new Promise((resolve) => {
+            const target = angleForNumber(resultNumber);
+            const extraSpins = 5 + Math.floor(Math.random() * 3);
+            const finalAngle = currentBallAngle + extraSpins * 360 + ((target - (currentBallAngle % 360) + 360) % 360);
+
+            ballPivot.style.transition = "transform 4.2s cubic-bezier(0.11,0.71,0.16,1)";
+            ballPivot.style.transform = `rotate(${finalAngle}deg)`;
+
+            currentBallAngle = finalAngle;
+
+            setTimeout(resolve, 4300);
+        });
+    }
+
+    spinBtn.addEventListener("click", async () => {
+        if (spinning) return;
+        showError("");
+
+        const amount = parseInt(amountInput.value, 10);
+        const number = numberInput.value === "" ? null : parseInt(numberInput.value, 10);
+
+        if (!amount || amount <= 0) {
+            showError("Вкажи суму ставки");
+            return;
+        }
+        if (number === null && !selectedColor) {
+            showError("Обери число або колір");
+            return;
+        }
+
+        const payload = {
+            currency: selectedCurrency,
+            bet_type: number !== null ? "number" : "color",
+            amount,
+        };
+        if (number !== null) payload.number = number;
+        if (selectedColor) payload.color = selectedColor;
+
+        spinning = true;
+        spinBtn.disabled = true;
+
+        try {
+            const data = await API.spinRoulette(payload);
+
+            await spinBallTo(data.result_number);
+
+            coinsEl.textContent = data.balance.coins;
+            donateEl.textContent = data.balance.donate;
+
+            // синхронізуємо і головний екран/профіль
+            document.getElementById("statCoins").textContent = data.balance.coins;
+            document.getElementById("statDonate").textContent = data.balance.donate;
+            document.getElementById("profileCoins").textContent = data.balance.coins;
+            document.getElementById("profileDonate").textContent = data.balance.donate;
+
+            const betLabel = number !== null
+                ? `Ставка: ${amount} на число ${number}`
+                : `Ставка: ${amount} на ${selectedColor === "red" ? "червоне" : "чорне"}`;
+
+            openWinModal(data.won, data.payout, betLabel);
+        } catch (error) {
+            showError(error.message.includes("400") ? "Недостатньо коштів" : "Помилка з'єднання");
+        } finally {
+            spinning = false;
+            spinBtn.disabled = false;
+        }
+    });
+}
+
+initRoulette();
