@@ -516,6 +516,24 @@ function initRoulette() {
     if (!openBtn || !wheel) return;
 
     wheel.style.background = buildWheelGradient();
+    renderWheelLabels();
+
+    function renderWheelLabels() {
+        const labelsLayer = document.getElementById("wheelLabels");
+        if (!labelsLayer || labelsLayer.childElementCount) return;
+
+        const segment = 360 / WHEEL_ORDER.length;
+        const radius = labelsLayer.offsetWidth / 2 - 14;
+
+        WHEEL_ORDER.forEach((num, i) => {
+            const angle = i * segment + segment / 2;
+            const label = document.createElement("span");
+            label.className = "wheel__label";
+            label.textContent = num;
+            label.style.transform = `rotate(${angle}deg) translateY(${radius}px)`;
+            labelsLayer.appendChild(label);
+        });
+    }
 
     let selectedCurrency = "coins";
     let selectedColor = null;
