@@ -1,15 +1,43 @@
-:root {
+/* ---------- Themes ---------- */
+
+body[data-theme="dark"] {
     --bg: #08080D;
     --surface: rgba(255, 255, 255, 0.028);
     --surface-2: rgba(255, 255, 255, 0.05);
+    --surface-3: rgba(255, 255, 255, 0.022);
     --stroke: rgba(255, 255, 255, 0.07);
     --stroke-strong: rgba(255, 255, 255, 0.12);
-    --accent: #6E8BFF;
-    --accent-dim: rgba(110, 139, 255, 0.13);
-    --teal: #3FD9C7;
-    --violet: #A78BFA;
+    --tabbar-bg: rgba(255, 255, 255, 0.045);
+    --sheet-bg: rgba(20, 20, 26, 0.86);
     --ink: #F2F2F5;
     --muted: #85838F;
+    --orb-opacity: 0.26;
+}
+
+body[data-theme="light"] {
+    --bg: #F4F5F8;
+    --surface: rgba(255, 255, 255, 0.72);
+    --surface-2: rgba(255, 255, 255, 0.8);
+    --surface-3: rgba(255, 255, 255, 0.6);
+    --stroke: rgba(15, 17, 26, 0.09);
+    --stroke-strong: rgba(15, 17, 26, 0.16);
+    --tabbar-bg: rgba(255, 255, 255, 0.7);
+    --sheet-bg: rgba(255, 255, 255, 0.9);
+    --ink: #14151C;
+    --muted: #6B6C77;
+    --orb-opacity: 0.34;
+}
+
+:root {
+    --accent: #6E8BFF;
+    --accent-dim: rgba(110, 139, 255, 0.13);
+    --teal: #2FB3A4;
+    --violet: #8B6DF0;
+}
+
+body[data-theme="dark"] {
+    --teal: #3FD9C7;
+    --violet: #A78BFA;
 }
 
 * {
@@ -29,6 +57,7 @@ html, body {
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
     touch-action: manipulation;
+    transition: background-color 0.45s ease, color 0.45s ease;
 }
 
 button {
@@ -46,6 +75,7 @@ button {
     flex-direction: column;
     background: var(--bg);
     overflow: hidden;
+    transition: background-color 0.45s ease;
 }
 
 /* ---------- Distant glowing orbs ---------- */
@@ -62,7 +92,8 @@ button {
     position: absolute;
     border-radius: 50%;
     filter: blur(90px);
-    opacity: 0.26;
+    opacity: var(--orb-opacity);
+    transition: opacity 0.45s ease;
 }
 
 .orb--1 {
@@ -76,7 +107,6 @@ button {
     width: 260px; height: 260px;
     top: 18%; right: -110px;
     background: #2E9E92;
-    opacity: 0.2;
     animation: drift 26s ease-in-out infinite reverse;
 }
 
@@ -84,7 +114,6 @@ button {
     width: 280px; height: 280px;
     bottom: 8%; left: -100px;
     background: #7C5CD6;
-    opacity: 0.18;
     animation: drift 30s ease-in-out infinite;
 }
 
@@ -92,7 +121,6 @@ button {
     width: 220px; height: 220px;
     bottom: -80px; right: -60px;
     background: #3B5BCC;
-    opacity: 0.2;
     animation: drift 24s ease-in-out infinite reverse;
 }
 
@@ -108,6 +136,7 @@ button {
     align-items: flex-start;
     justify-content: space-between;
     padding: 20px 20px 4px;
+    gap: 10px;
 }
 
 .greeting__hello {
@@ -128,13 +157,13 @@ button {
 .home-header__actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
 }
 
 .icon-btn {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     border: 1px solid var(--stroke);
     background: var(--surface-2);
@@ -145,16 +174,47 @@ button {
     justify-content: center;
     padding: 0;
     color: var(--ink);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .icon-btn svg {
-    width: 19px;
-    height: 19px;
+    width: 18px;
+    height: 18px;
+}
+
+/* theme toggle with cross-fade + rotate */
+.theme-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-btn__icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.5, 1), opacity 0.35s ease;
+}
+
+body[data-theme="dark"] .theme-btn__icon--sun {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    opacity: 1;
+}
+body[data-theme="dark"] .theme-btn__icon--moon {
+    transform: translate(-50%, -50%) rotate(-90deg) scale(0.4);
+    opacity: 0;
+}
+body[data-theme="light"] .theme-btn__icon--sun {
+    transform: translate(-50%, -50%) rotate(90deg) scale(0.4);
+    opacity: 0;
+}
+body[data-theme="light"] .theme-btn__icon--moon {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    opacity: 1;
 }
 
 .mini-avatar {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background-color: var(--surface-2);
     background-size: cover;
@@ -204,6 +264,7 @@ button {
     background: var(--surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    transition: background-color 0.45s ease, border-color 0.45s ease;
 }
 
 .stats-panel {
@@ -223,7 +284,8 @@ button {
     justify-content: center;
     gap: 2px;
     border-radius: 13px;
-    background: rgba(255, 255, 255, 0.022);
+    background: var(--surface-3);
+    transition: background-color 0.45s ease;
 }
 
 .stat-row__value {
@@ -276,14 +338,12 @@ button {
     gap: 8px;
     padding: 10px 11px;
     border-radius: 13px;
-    background: rgba(255, 255, 255, 0.022);
+    background: var(--surface-3);
     border: 1px solid var(--stroke);
+    transition: background-color 0.45s ease, border-color 0.45s ease;
 }
 
-.quest__body {
-    flex: 1;
-    min-width: 0;
-}
+.quest__body { flex: 1; min-width: 0; }
 
 .quest__title {
     margin: 0;
@@ -337,6 +397,7 @@ button {
     height: 1px;
     margin: 22px 20px 14px;
     background: var(--stroke);
+    transition: background-color 0.45s ease;
 }
 
 .section-label {
@@ -363,6 +424,7 @@ button {
     -webkit-backdrop-filter: blur(20px);
     color: var(--ink);
     text-align: left;
+    transition: background-color 0.45s ease, border-color 0.45s ease;
 }
 
 .docs-card__icon {
@@ -507,10 +569,11 @@ button {
     margin: 0 16px 20px;
     padding: 8px 6px;
     border-radius: 24px;
-    background: rgba(255, 255, 255, 0.045);
+    background: var(--tabbar-bg);
     border: 1px solid var(--stroke);
     backdrop-filter: blur(26px) saturate(150%);
     -webkit-backdrop-filter: blur(26px) saturate(150%);
+    transition: background-color 0.45s ease, border-color 0.45s ease;
 }
 
 .tabbar__item {
@@ -529,12 +592,115 @@ button {
     transition: color 0.28s ease, background-color 0.28s ease;
 }
 
-.tabbar__item svg {
-    width: 21px;
-    height: 21px;
-}
+.tabbar__item svg { width: 21px; height: 21px; }
 
 .tabbar__item--active {
     color: var(--accent);
     background-color: var(--accent-dim);
+}
+
+/* ---------- Settings sheet ---------- */
+
+.sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s ease;
+}
+
+.sheet-backdrop--open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    padding: 10px 20px 30px;
+    border-radius: 26px 26px 0 0;
+    background: var(--sheet-bg);
+    border-top: 1px solid var(--stroke);
+    backdrop-filter: blur(30px) saturate(160%);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    transform: translateY(100%);
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.45s ease;
+}
+
+.sheet--open { transform: translateY(0); }
+
+.sheet__handle {
+    width: 38px;
+    height: 4px;
+    margin: 0 auto 14px;
+    border-radius: 4px;
+    background: var(--stroke-strong);
+}
+
+.sheet__title {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid var(--stroke);
+}
+
+.setting-row__body { flex: 1; min-width: 0; }
+
+.setting-row__title {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.setting-row__desc {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+.switch {
+    width: 46px;
+    height: 27px;
+    flex-shrink: 0;
+    padding: 3px;
+    border: 1px solid var(--stroke);
+    border-radius: 999px;
+    background: var(--surface-3);
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.switch__knob {
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.5, 1), background-color 0.3s ease;
+}
+
+.switch--on {
+    background: var(--accent-dim);
+    border-color: rgba(110, 139, 255, 0.4);
+}
+
+.switch--on .switch__knob {
+    transform: translateX(19px);
+    background: var(--accent);
 }
