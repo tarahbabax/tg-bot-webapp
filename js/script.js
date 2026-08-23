@@ -165,7 +165,8 @@ const TRANSLATIONS = {
         other: "Інше", support: "Підтримка", supportDesc: "Написати адміністрації",
         about: "Про застосунок", version: "Версія 1.0.0",
         wheelTitle: "Колесо фортуни", wheelDesc: "Крути колесо і вигравай коіни", soon: "Незабаром",
-        betNumber: "Число", betAmount: "Ставка", red: "Червоне", black: "Чорне",
+        betAmount: "Ставка", red: "Червоне", black: "Чорне",
+        payoutsTitle: "Виплати", colorGreen: "Зелене", colorWhite: "Біле",
         placeBet: "Зробити ставку", ok: "Добре!",
         otherUsers: "Інші користувачі", usersTitle: "Користувачі", usersLoading: "Завантаження…",
         aboutMe: "Про мене", editBio: "Редагувати", bioEmpty: "Опис поки порожній",
@@ -214,7 +215,8 @@ const TRANSLATIONS = {
         other: "Other", support: "Support", supportDesc: "Contact the admins",
         about: "About the app", version: "Version 1.0.0",
         wheelTitle: "Wheel of Fortune", wheelDesc: "Spin the wheel and win coins", soon: "Coming soon",
-        betNumber: "Number", betAmount: "Bet", red: "Red", black: "Black",
+        betAmount: "Bet", red: "Red", black: "Black",
+        payoutsTitle: "Payouts", colorGreen: "Green", colorWhite: "White",
         placeBet: "Place bet", ok: "Nice!",
         otherUsers: "Other users", usersTitle: "Users", usersLoading: "Loading…",
         aboutMe: "About me", editBio: "Edit", bioEmpty: "No description yet",
@@ -460,15 +462,21 @@ loadFromServer();
 
 const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
 const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+// Два числа перефарбовані у біле — рідкісний сектор із підвищеною виплатою.
+// Мають збігатися з WHITE_NUMBERS на сервері (api.py), інакше кольори розійдуться.
+const WHITE_NUMBERS = new Set([5, 24]);
+
+const PAYOUTS = { green: 100, white: 10, red: 2, black: 2 };
 
 function numberColor(n) {
     if (n === 0) return "green";
+    if (WHITE_NUMBERS.has(n)) return "white";
     return RED_NUMBERS.has(n) ? "red" : "black";
 }
 
 function buildWheelGradient() {
     const segment = 360 / WHEEL_ORDER.length;
-    const colours = { red: "#D6281A", black: "#17171B", green: "#1E8F52" };
+    const colours = { red: "#D6281A", black: "#17171B", green: "#1E8F52", white: "#E8E8ED" };
 
     const stops = WHEEL_ORDER.map((num, i) => {
         const from = (i * segment).toFixed(3);
@@ -488,6 +496,7 @@ function angleForNumber(n) {
 function initRoulette() {
     const openBtn = document.getElementById("openRoulette");
     const backBtn = document.getElementById("rouletteBack");
+    const helpBtn = document.getElementById("rouletteHelp");
     const screen = document.getElementById("rouletteScreen");
     const wheel = document.getElementById("wheel");
     const ballPivot = document.getElementById("ballPivot");
@@ -498,11 +507,14 @@ function initRoulette() {
     const curCoinsBtn = document.getElementById("curCoins");
     const curDonateBtn = document.getElementById("curDonate");
 
-    const numberInput = document.getElementById("betNumber");
     const amountInput = document.getElementById("betAmount");
 
-    const colorRedBtn = document.getElementById("colorRed");
-    const colorBlackBtn = document.getElementById("colorBlack");
+    const diceButtons = {
+        green: document.getElementById("colorGreen"),
+        white: document.getElementById("colorWhite"),
+        red: document.getElementById("colorRed"),
+        black: document.getElementById("colorBlack"),
+    };
 
     const spinBtn = document.getElementById("spinBtn");
     const errorEl = document.getElementById("rouletteError");
@@ -512,6 +524,10 @@ function initRoulette() {
     const winAmount = document.getElementById("winAmount");
     const winBetInfo = document.getElementById("winBetInfo");
     const winOk = document.getElementById("winOk");
+
+    const helpBackdrop = document.getElementById("helpBackdrop");
+    const helpModal = document.getElementById("helpModal");
+    const helpOk = document.getElementById("helpOk");
 
     if (!openBtn || !wheel) return;
 
@@ -523,7 +539,7 @@ function initRoulette() {
         if (!labelsLayer || labelsLayer.childElementCount) return;
 
         const segment = 360 / WHEEL_ORDER.length;
-        const radius = labelsLayer.offsetWidth / 2 - 14;
+        const radius = labelsLayer.offsetWidth / 2 - 16;
 
         WHEEL_ORDER.forEach((num, i) => {
             const angle = i * segment + segment / 2;
@@ -531,6 +547,10 @@ function initRoulette() {
             label.className = "wheel__label";
             label.textContent = num;
             label.style.transform = `rotate(${angle}deg) translateY(${radius}px)`;
+            if (numberColor(num) === "white") {
+                label.style.color = "#1A1A1F";
+                label.style.textShadow = "none";
+            }
             labelsLayer.appendChild(label);
         });
     }
@@ -538,6 +558,7 @@ function initRoulette() {
     let selectedCurrency = "coins";
     let selectedColor = null;
     let currentBallAngle = 0;
+    let currentWheelAngle = 0;
     let spinning = false;
 
     function syncBalances() {
@@ -547,12 +568,26 @@ function initRoulette() {
 
     openBtn.addEventListener("click", () => {
         syncBalances();
+        renderWheelLabels();
         screen.classList.add("fullscreen--open");
     });
 
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
     });
+
+    helpBtn.addEventListener("click", () => {
+        helpBackdrop.classList.add("modal-backdrop--open");
+        helpModal.classList.add("win-modal--open");
+    });
+
+    function closeHelp() {
+        helpBackdrop.classList.remove("modal-backdrop--open");
+        helpModal.classList.remove("win-modal--open");
+    }
+
+    helpOk.addEventListener("click", closeHelp);
+    helpBackdrop.addEventListener("click", closeHelp);
 
     curCoinsBtn.addEventListener("click", () => {
         selectedCurrency = "coins";
@@ -566,22 +601,13 @@ function initRoulette() {
         curCoinsBtn.classList.remove("currency-pill--active");
     });
 
-    function selectColor(color, btn) {
-        selectedColor = selectedColor === color ? null : color;
-        colorRedBtn.classList.toggle("color-btn--selected", selectedColor === "red");
-        colorBlackBtn.classList.toggle("color-btn--selected", selectedColor === "black");
-        if (selectedColor) numberInput.value = "";
-    }
-
-    colorRedBtn.addEventListener("click", () => selectColor("red", colorRedBtn));
-    colorBlackBtn.addEventListener("click", () => selectColor("black", colorBlackBtn));
-
-    numberInput.addEventListener("input", () => {
-        if (numberInput.value !== "") {
-            selectedColor = null;
-            colorRedBtn.classList.remove("color-btn--selected");
-            colorBlackBtn.classList.remove("color-btn--selected");
-        }
+    Object.entries(diceButtons).forEach(([color, btn]) => {
+        btn.addEventListener("click", () => {
+            selectedColor = selectedColor === color ? null : color;
+            Object.entries(diceButtons).forEach(([c, b]) => {
+                b.classList.toggle("dice-btn--selected", c === selectedColor);
+            });
+        });
     });
 
     function showError(text) {
@@ -605,44 +631,50 @@ function initRoulette() {
     winOk.addEventListener("click", closeWinModal);
     winBackdrop.addEventListener("click", closeWinModal);
 
-    function spinBallTo(resultNumber) {
+    function spinWheelAndBall(resultNumber) {
         return new Promise((resolve) => {
             const target = angleForNumber(resultNumber);
-            const extraSpins = 5 + Math.floor(Math.random() * 3);
-            const finalAngle = currentBallAngle + extraSpins * 360 + ((target - (currentBallAngle % 360) + 360) % 360);
 
+            // Колесо завжди прокручується на ЦІЛУ кількість повних обертів,
+            // тому воно візуально крутиться, але повертається в ту саму
+            // орієнтацію — розрахунок позиції кульки лишається простим і точним.
+            const wheelSpins = 3 + Math.floor(Math.random() * 2);
+            currentWheelAngle += wheelSpins * 360;
+            wheel.style.transition = "transform 4.6s cubic-bezier(0.13,0.62,0.15,1)";
+            wheel.style.transform = `rotate(${currentWheelAngle}deg)`;
+
+            const ballSpins = 5 + Math.floor(Math.random() * 3);
+            const finalBallAngle = currentBallAngle + ballSpins * 360 + ((target - (currentBallAngle % 360) + 360) % 360);
             ballPivot.style.transition = "transform 4.2s cubic-bezier(0.11,0.71,0.16,1)";
-            ballPivot.style.transform = `rotate(${finalAngle}deg)`;
+            ballPivot.style.transform = `rotate(${finalBallAngle}deg)`;
+            currentBallAngle = finalBallAngle;
 
-            currentBallAngle = finalAngle;
-
-            setTimeout(resolve, 4300);
+            setTimeout(resolve, 4700);
         });
     }
+
+    const COLOR_LABELS = { green: "зелене", white: "біле", red: "червоне", black: "чорне" };
 
     spinBtn.addEventListener("click", async () => {
         if (spinning) return;
         showError("");
 
         const amount = parseInt(amountInput.value, 10);
-        const number = numberInput.value === "" ? null : parseInt(numberInput.value, 10);
 
         if (!amount || amount <= 0) {
             showError("Вкажи суму ставки");
             return;
         }
-        if (number === null && !selectedColor) {
-            showError("Обери число або колір");
+        if (!selectedColor) {
+            showError("Обери колір");
             return;
         }
 
         const payload = {
             currency: selectedCurrency,
-            bet_type: number !== null ? "number" : "color",
+            color: selectedColor,
             amount,
         };
-        if (number !== null) payload.number = number;
-        if (selectedColor) payload.color = selectedColor;
 
         spinning = true;
         spinBtn.disabled = true;
@@ -650,21 +682,17 @@ function initRoulette() {
         try {
             const data = await API.spinRoulette(payload);
 
-            await spinBallTo(data.result_number);
+            await spinWheelAndBall(data.result_number);
 
             coinsEl.textContent = data.balance.coins;
             donateEl.textContent = data.balance.donate;
 
-            // синхронізуємо і головний екран/профіль
             document.getElementById("statCoins").textContent = data.balance.coins;
             document.getElementById("statDonate").textContent = data.balance.donate;
             document.getElementById("profileCoins").textContent = data.balance.coins;
             document.getElementById("profileDonate").textContent = data.balance.donate;
 
-            const betLabel = number !== null
-                ? `Ставка: ${amount} на число ${number}`
-                : `Ставка: ${amount} на ${selectedColor === "red" ? "червоне" : "чорне"}`;
-
+            const betLabel = `Ставка: ${amount} на ${COLOR_LABELS[selectedColor]}`;
             openWinModal(data.won, data.payout, betLabel);
         } catch (error) {
             showError(error.message.includes("400") ? "Недостатньо коштів" : "Помилка з'єднання");
