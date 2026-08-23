@@ -215,34 +215,11 @@
                     </div>
                 
                     <div class="settings-group profile-last-group">
-                        <button class="setting-link expander" type="button" data-expands="usersPanel">
+                        <button class="setting-link" id="usersOpen" type="button">
                             <span class="fn-icon fn-icon--accent"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8.4" r="3.3" stroke="currentColor" stroke-width="1.6"/><path d="M2.8 19.4c1-2.8 3.3-4.3 6.2-4.3s5.2 1.5 6.2 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16.2 5.6a3.1 3.1 0 010 5.9M18 14.9c2 .5 3.3 1.9 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="otherUsers">Інші користувачі</span></span>
-                            <svg class="setting-link__chevron setting-link__chevron--rotatable" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                        <div class="panel-drop" id="usersPanel">
-                            <div class="panel-drop__inner">
-                                <p class="users-count"><span id="usersCount">8</span> <span data-i18n="usersTotal">користувачів</span></p>
-                                <div class="users-list">
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#6E8BFF">A</span><span class="user-row__body"><span class="user-row__name">Andrii</span><span class="user-row__tag">@andrii_k</span></span><span class="user-row__lvl">12</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#3FD9C7">M</span><span class="user-row__body"><span class="user-row__name">Maria</span><span class="user-row__tag">@mariaaa</span></span><span class="user-row__lvl">9</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#A78BFA">O</span><span class="user-row__body"><span class="user-row__name">Oleh</span><span class="user-row__tag">@oleh_dev</span></span><span class="user-row__lvl">7</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#F0B95A">K</span><span class="user-row__body"><span class="user-row__name">Kateryna</span><span class="user-row__tag">@kate_ua</span></span><span class="user-row__lvl">6</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#F06478">D</span><span class="user-row__body"><span class="user-row__name">Dmytro</span><span class="user-row__tag">@dmytro99</span></span><span class="user-row__lvl">4</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#6E8BFF">S</span><span class="user-row__body"><span class="user-row__name">Sofia</span><span class="user-row__tag">@sofia_m</span></span><span class="user-row__lvl">3</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#3FD9C7">I</span><span class="user-row__body"><span class="user-row__name">Ivan</span><span class="user-row__tag">@ivan_t</span></span><span class="user-row__lvl">2</span></div>
-                                    <div class="user-row"><span class="user-row__avatar" style="--c:#A78BFA">N</span><span class="user-row__body"><span class="user-row__name">Nazar</span><span class="user-row__tag">@nazar_z</span></span><span class="user-row__lvl">1</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-</section>
-
-                <!-- МАГАЗИН -->
-                <section class="screen" id="screen-shop">
-                    <div class="empty-state">
-                        <p class="empty-state__title" data-i18n="noShop">Магазин порожній</p>
-                        <p class="empty-state__text" data-i18n="noShopDesc">Тут з'являться товари</p>
                     </div>
                 </section>
 
@@ -280,18 +257,37 @@
             </button>
         </nav>
 
-        <!-- НАЛАШТУВАННЯ -->
-        <div class="settings" id="settingsScreen">
-            <header class="settings__header">
-                <button class="settings__back" id="settingsBack" type="button" aria-label="Назад">
+        <!-- КОРИСТУВАЧІ -->
+        <div class="fullscreen" id="usersScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="usersBack" type="button" aria-label="Назад">
                     <svg viewBox="0 0 24 24" fill="none">
                         <path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
-                <p class="settings__title" data-i18n="settings">Налаштування</p>
+                <p class="fullscreen__title" data-i18n="usersTitle">Користувачі</p>
+                <span class="fullscreen__count" id="usersCount">0</span>
             </header>
 
-            <div class="settings__body">
+            <div class="fullscreen__body">
+                <div class="users-list" id="usersList">
+                    <p class="users-empty" id="usersEmpty" data-i18n="usersLoading">Завантаження…</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- НАЛАШТУВАННЯ -->
+        <div class="fullscreen settings" id="settingsScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="settingsBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="settings">Налаштування</p>
+            </header>
+
+            <div class="fullscreen__body settings__body">
 
                 <div class="settings-account">
                     <div class="settings-account__avatar" id="settingsAvatar"></div>
@@ -476,6 +472,7 @@
 
     </div>
 
+    <script src="js/api.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
