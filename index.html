@@ -27,21 +27,28 @@
                 <section class="screen" id="screen-home">
                     <header class="home-header">
                         <div class="greeting">
-                            <p class="greeting__hello">Привіт,</p>
+                            <p class="greeting__hello" data-i18n="hello">Привіт,</p>
                             <p class="greeting__name" id="homeGreetingName">Користувач!</p>
                         </div>
                         <div class="home-header__actions">
                             <button class="theme-btn" id="themeToggle" type="button" aria-label="Змінити тему">
-                                <span class="theme-btn__core">
-                                    <span class="theme-btn__disc"></span>
-                                    <span class="theme-btn__shade"></span>
-                                </span>
-                                <span class="theme-btn__rays">
-                                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-                                </span>
-                                <span class="theme-btn__stars">
-                                    <i></i><i></i><i></i>
-                                </span>
+                                <svg class="theme-btn__svg" viewBox="0 0 24 24" fill="none">
+                                    <mask id="moonMask">
+                                        <rect x="0" y="0" width="24" height="24" fill="white"/>
+                                        <circle class="theme-btn__cut" cx="24" cy="8" r="6.5" fill="black"/>
+                                    </mask>
+                                    <circle class="theme-btn__disc" cx="12" cy="12" r="5.2" fill="currentColor" mask="url(#moonMask)"/>
+                                    <g class="theme-btn__rays" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                                        <path d="M12 1.8v2.4"/>
+                                        <path d="M12 19.8v2.4"/>
+                                        <path d="M22.2 12h-2.4"/>
+                                        <path d="M4.2 12H1.8"/>
+                                        <path d="M19.2 4.8l-1.7 1.7"/>
+                                        <path d="M6.5 17.5l-1.7 1.7"/>
+                                        <path d="M19.2 19.2l-1.7-1.7"/>
+                                        <path d="M6.5 6.5L4.8 4.8"/>
+                                    </g>
+                                </svg>
                             </button>
                             <button class="icon-btn" id="settingsBtn" type="button" aria-label="Налаштування">
                                 <svg viewBox="0 0 24 24" fill="none">
@@ -57,32 +64,32 @@
                         <div class="panel stats-panel">
                             <div class="stat-row stat-row--level">
                                 <p class="stat-row__value" id="statLevel">1</p>
-                                <p class="stat-row__label">Рівень</p>
+                                <p class="stat-row__label" data-i18n="level">Рівень</p>
                             </div>
                             <div class="stat-row stat-row--coins">
                                 <p class="stat-row__value" id="statCoins">0</p>
-                                <p class="stat-row__label">Коіни</p>
+                                <p class="stat-row__label" data-i18n="coins">Коіни</p>
                             </div>
                             <div class="stat-row stat-row--donate">
                                 <p class="stat-row__value" id="statDonate">0</p>
-                                <p class="stat-row__label">Донат-коіни</p>
+                                <p class="stat-row__label" data-i18n="donate">Донат-коіни</p>
                             </div>
                         </div>
 
                         <div class="panel quests-panel">
                             <div class="quests-scroll">
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Щоденний вхід</p><p class="quest__desc">Заходь щодня в застосунок</p></div><span class="quest__reward">+10</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Напиши в чат</p><p class="quest__desc">Залиш повідомлення в чаті</p></div><span class="quest__reward">+15</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Заверши профіль</p><p class="quest__desc">Заповни дані профілю</p></div><span class="quest__reward">+20</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Запроси друга</p><p class="quest__desc">Поклич друга в канал</p></div><span class="quest__reward">+30</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Онови статус</p><p class="quest__desc">Онови інформацію про себе</p></div><span class="quest__reward">+10</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Переглянь документацію</p><p class="quest__desc">Ознайомся з правилами</p></div><span class="quest__reward">+5</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Взаємодій з ботом</p><p class="quest__desc">Натисни будь-яку кнопку</p></div><span class="quest__reward">+10</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Постав реакцію</p><p class="quest__desc">Постав реакцію на пост</p></div><span class="quest__reward">+5</span></div>
-                                <div class="quest"><div class="quest__body"><p class="quest__title">Поділись каналом</p><p class="quest__desc">Розкажи про канал другу</p></div><span class="quest__reward">+25</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q1t">Щоденний вхід</p><p class="quest__desc" data-i18n="q1d">Заходь щодня в застосунок</p></div><span class="quest__reward">+10</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q2t">Напиши в чат</p><p class="quest__desc" data-i18n="q2d">Залиш повідомлення в чаті</p></div><span class="quest__reward">+15</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q3t">Заверши профіль</p><p class="quest__desc" data-i18n="q3d">Заповни дані профілю</p></div><span class="quest__reward">+20</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q4t">Запроси друга</p><p class="quest__desc" data-i18n="q4d">Поклич друга в канал</p></div><span class="quest__reward">+30</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q5t">Онови статус</p><p class="quest__desc" data-i18n="q5d">Онови інформацію про себе</p></div><span class="quest__reward">+10</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q6t">Переглянь документацію</p><p class="quest__desc" data-i18n="q6d">Ознайомся з правилами</p></div><span class="quest__reward">+5</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q7t">Взаємодій з ботом</p><p class="quest__desc" data-i18n="q7d">Натисни будь-яку кнопку</p></div><span class="quest__reward">+10</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q8t">Постав реакцію</p><p class="quest__desc" data-i18n="q8d">Постав реакцію на пост</p></div><span class="quest__reward">+5</span></div>
+                                <div class="quest"><div class="quest__body"><p class="quest__title" data-i18n="q9t">Поділись каналом</p><p class="quest__desc" data-i18n="q9d">Розкажи про канал другу</p></div><span class="quest__reward">+25</span></div>
 
                                 <button class="quests-all" type="button">
-                                    <span>Усі квести</span>
+                                    <span data-i18n="allQuests">Усі квести</span>
                                     <svg viewBox="0 0 24 24" fill="none">
                                         <path d="M5 12h13M13 6.5l5.5 5.5L13 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
@@ -92,7 +99,7 @@
                     </div>
 
                     <div class="divider"></div>
-                    <p class="section-label">Інформація</p>
+                    <p class="section-label" data-i18n="info">Інформація</p>
 
                     <button class="docs-card" type="button">
                         <span class="docs-card__icon">
@@ -102,8 +109,8 @@
                             </svg>
                         </span>
                         <span class="docs-card__body">
-                            <span class="docs-card__title">Документація</span>
-                            <span class="docs-card__desc">Гайди, команди та інструкції</span>
+                            <span class="docs-card__title" data-i18n="docs">Документація</span>
+                            <span class="docs-card__desc" data-i18n="docsDesc">Гайди, команди та інструкції</span>
                         </span>
                         <svg class="docs-card__chevron" viewBox="0 0 24 24" fill="none">
                             <path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -114,8 +121,8 @@
                 <!-- ІГРИ -->
                 <section class="screen" id="screen-games">
                     <div class="empty-state">
-                        <p class="empty-state__title">Ігор поки немає</p>
-                        <p class="empty-state__text">Тут з'являться ігри</p>
+                        <p class="empty-state__title" data-i18n="noGames">Ігор поки немає</p>
+                        <p class="empty-state__text" data-i18n="noGamesDesc">Тут з'являться ігри</p>
                     </div>
                 </section>
 
@@ -133,8 +140,8 @@
                 <!-- МАГАЗИН -->
                 <section class="screen" id="screen-shop">
                     <div class="empty-state">
-                        <p class="empty-state__title">Магазин порожній</p>
-                        <p class="empty-state__text">Тут з'являться товари</p>
+                        <p class="empty-state__title" data-i18n="noShop">Магазин порожній</p>
+                        <p class="empty-state__text" data-i18n="noShopDesc">Тут з'являться товари</p>
                     </div>
                 </section>
 
@@ -146,7 +153,7 @@
                 <svg viewBox="0 0 24 24" fill="none">
                     <path d="M3.8 10.2L12 4l8.2 6.2V19a1.4 1.4 0 01-1.4 1.4H5.2A1.4 1.4 0 013.8 19v-8.8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
                 </svg>
-                <span>Головна</span>
+                <span data-i18n="tabHome">Головна</span>
             </button>
             <button class="tabbar__item" type="button" data-index="1">
                 <svg viewBox="0 0 24 24" fill="none">
@@ -154,21 +161,21 @@
                     <path d="M7.5 10.4v2.4M6.3 11.6h2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                     <circle cx="16" cy="11.4" r="1" fill="currentColor"/>
                 </svg>
-                <span>Ігри</span>
+                <span data-i18n="tabGames">Ігри</span>
             </button>
             <button class="tabbar__item" type="button" data-index="2">
                 <svg viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="8.6" r="3.9" stroke="currentColor" stroke-width="1.6"/>
                     <path d="M4.6 20c1.3-3.4 4-5.2 7.4-5.2s6.1 1.8 7.4 5.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
-                <span>Профіль</span>
+                <span data-i18n="tabProfile">Профіль</span>
             </button>
             <button class="tabbar__item" type="button" data-index="3">
                 <svg viewBox="0 0 24 24" fill="none">
                     <path d="M4.4 8h15.2l-1 11.2a1.4 1.4 0 01-1.4 1.3H6.8a1.4 1.4 0 01-1.4-1.3L4.4 8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
                     <path d="M8.8 8V6.6a3.2 3.2 0 016.4 0V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
-                <span>Магазин</span>
+                <span data-i18n="tabShop">Магазин</span>
             </button>
         </nav>
 
@@ -180,7 +187,7 @@
                         <path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
-                <p class="settings__title">Налаштування</p>
+                <p class="settings__title" data-i18n="settings">Налаштування</p>
             </header>
 
             <div class="settings__body">
@@ -193,105 +200,115 @@
                     </div>
                 </div>
 
-                <p class="settings-group__label">Вигляд</p>
+                <p class="settings-group__label" data-i18n="appearance">Вигляд</p>
                 <div class="settings-group">
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Темна тема</p>
-                            <p class="setting-row__desc">Темне оформлення застосунку</p>
+                            <p class="setting-row__title" data-i18n="darkTheme">Темна тема</p>
+                            <p class="setting-row__desc" data-i18n="darkThemeDesc">Темне оформлення застосунку</p>
                         </div>
                         <button class="switch switch--on" id="themeSwitch" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Анімації</p>
-                            <p class="setting-row__desc">Плавні переходи між екранами</p>
+                            <p class="setting-row__title" data-i18n="animations">Анімації</p>
+                            <p class="setting-row__desc" data-i18n="animationsDesc">Плавні переходи між екранами</p>
                         </div>
-                        <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                        <button class="switch switch--on" id="animSwitch" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Фонове свічення</p>
-                            <p class="setting-row__desc">Кольорові відблиски на фоні</p>
+                            <p class="setting-row__title" data-i18n="glow">Фонове свічення</p>
+                            <p class="setting-row__desc" data-i18n="glowDesc">Кольорові відблиски на фоні</p>
                         </div>
                         <button class="switch switch--on" id="orbsSwitch" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                 </div>
 
-                <p class="settings-group__label">Сповіщення</p>
+                <p class="settings-group__label" data-i18n="notifications">Сповіщення</p>
                 <div class="settings-group">
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Нові квести</p>
-                            <p class="setting-row__desc">Коли з'являється завдання</p>
+                            <p class="setting-row__title" data-i18n="newQuests">Нові квести</p>
+                            <p class="setting-row__desc" data-i18n="newQuestsDesc">Коли з'являється завдання</p>
                         </div>
                         <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Нагороди</p>
-                            <p class="setting-row__desc">Коли нараховано коіни</p>
+                            <p class="setting-row__title" data-i18n="rewards">Нагороди</p>
+                            <p class="setting-row__desc" data-i18n="rewardsDesc">Коли нараховано коіни</p>
                         </div>
                         <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Новини каналу</p>
-                            <p class="setting-row__desc">Оголошення та оновлення</p>
+                            <p class="setting-row__title" data-i18n="news">Новини каналу</p>
+                            <p class="setting-row__desc" data-i18n="newsDesc">Оголошення та оновлення</p>
                         </div>
                         <button class="switch" type="button" role="switch" aria-checked="false"><span class="switch__knob"></span></button>
                     </div>
                 </div>
 
-                <p class="settings-group__label">Приватність</p>
+                <p class="settings-group__label" data-i18n="privacy">Приватність</p>
                 <div class="settings-group">
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Показувати профіль</p>
-                            <p class="setting-row__desc">Інші бачать твій рівень</p>
+                            <p class="setting-row__title" data-i18n="showProfile">Показувати профіль</p>
+                            <p class="setting-row__desc" data-i18n="showProfileDesc">Інші бачать твій рівень</p>
                         </div>
                         <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                     <div class="setting-row">
                         <div class="setting-row__body">
-                            <p class="setting-row__title">Рейтинг</p>
-                            <p class="setting-row__desc">Брати участь у таблиці лідерів</p>
+                            <p class="setting-row__title" data-i18n="leaderboard">Рейтинг</p>
+                            <p class="setting-row__desc" data-i18n="leaderboardDesc">Брати участь у таблиці лідерів</p>
                         </div>
                         <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
                     </div>
                 </div>
 
-                <p class="settings-group__label">Мова</p>
+                <p class="settings-group__label" data-i18n="lang">Мова</p>
                 <div class="settings-group">
-                    <button class="setting-link" type="button">
+                    <button class="setting-link" id="langToggle" type="button">
                         <span class="setting-row__body">
-                            <span class="setting-row__title">Мова застосунку</span>
-                            <span class="setting-row__desc">Українська</span>
+                            <span class="setting-row__title" data-i18n="langTitle">Мова застосунку</span>
+                            <span class="setting-row__desc" id="langCurrent">Українська</span>
                         </span>
-                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg class="setting-link__chevron setting-link__chevron--rotatable" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
+                    <div class="lang-options" id="langOptions">
+                        <button class="lang-option lang-option--active" type="button" data-lang="uk">
+                            <span>Українська</span>
+                            <svg class="lang-option__check" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <button class="lang-option" type="button" data-lang="en">
+                            <span>English</span>
+                            <svg class="lang-option__check" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
                 </div>
 
-                <p class="settings-group__label">Інше</p>
+                <p class="settings-group__label" data-i18n="other">Інше</p>
                 <div class="settings-group">
                     <button class="setting-link" type="button">
                         <span class="setting-row__body">
-                            <span class="setting-row__title">Документація</span>
-                            <span class="setting-row__desc">Гайди та команди</span>
+                            <span class="setting-row__title" data-i18n="docs">Документація</span>
+                            <span class="setting-row__desc" data-i18n="docsShort">Гайди та команди</span>
                         </span>
                         <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                     <button class="setting-link" type="button">
                         <span class="setting-row__body">
-                            <span class="setting-row__title">Підтримка</span>
-                            <span class="setting-row__desc">Написати адміністрації</span>
+                            <span class="setting-row__title" data-i18n="support">Підтримка</span>
+                            <span class="setting-row__desc" data-i18n="supportDesc">Написати адміністрації</span>
                         </span>
                         <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                     <button class="setting-link" type="button">
                         <span class="setting-row__body">
-                            <span class="setting-row__title">Про застосунок</span>
-                            <span class="setting-row__desc">Версія 1.0.0</span>
+                            <span class="setting-row__title" data-i18n="about">Про застосунок</span>
+                            <span class="setting-row__desc" data-i18n="version">Версія 1.0.0</span>
                         </span>
                         <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
