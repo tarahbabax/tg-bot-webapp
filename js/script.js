@@ -26,6 +26,7 @@ function initUserData() {
     const settingsTagEl = document.getElementById("settingsTag");
     const settingsAvatarEl = document.getElementById("settingsAvatar");
 
+    document.getElementById("profileName").textContent = fullName;
     settingsNameEl.textContent = fullName;
     settingsTagEl.textContent = tagEl.textContent;
 
@@ -38,6 +39,12 @@ function initUserData() {
         fallback.className = "avatar__fallback";
         fallback.innerHTML = `<span>${FALLBACK_EMOJI}</span>`;
         avatarEl.appendChild(fallback);
+    }
+
+    if (user.photo_url) {
+        document.querySelectorAll(".profile-head__avatar-wrap .avatar").forEach((el) => {
+            el.style.backgroundImage = `url(${user.photo_url})`;
+        });
     }
 
     if (user.is_premium) {
@@ -62,24 +69,19 @@ function initTabs() {
     });
 }
 
-function initTheme() {
-    const toggleBtn = document.getElementById("themeToggle");
+function setTheme(theme) {
+    document.body.dataset.theme = theme;
+
     const themeSwitch = document.getElementById("themeSwitch");
+    const isDark = theme === "dark";
+    themeSwitch.classList.toggle("switch--on", isDark);
+    themeSwitch.setAttribute("aria-checked", String(isDark));
+}
 
-    function setTheme(theme) {
-        document.body.dataset.theme = theme;
-
-        const isDark = theme === "dark";
-        themeSwitch.classList.toggle("switch--on", isDark);
-        themeSwitch.setAttribute("aria-checked", String(isDark));
-    }
-
-    function toggleTheme() {
+function initTheme() {
+    document.getElementById("themeToggle").addEventListener("click", () => {
         setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
-    }
-
-    toggleBtn.addEventListener("click", toggleTheme);
-    themeSwitch.addEventListener("click", toggleTheme);
+    });
 }
 
 function initSettings() {
@@ -91,19 +93,22 @@ function initSettings() {
     backBtn.addEventListener("click", () => screen.classList.remove("settings--open"));
 }
 
-function initOrbsSwitch() {
-    const orbsSwitch = document.getElementById("orbsSwitch");
+function initSwitchesAndToggles() {
+    document.querySelectorAll(".switch").forEach((sw) => {
+        sw.addEventListener("click", () => {
+            const isOn = sw.classList.toggle("switch--on");
+            sw.setAttribute("aria-checked", String(isOn));
 
-    orbsSwitch.addEventListener("click", () => {
-        document.body.classList.toggle("orbs-off", !orbsSwitch.classList.contains("switch--on"));
-    });
-}
-
-function initAnimSwitch() {
-    const animSwitch = document.getElementById("animSwitch");
-
-    animSwitch.addEventListener("click", () => {
-        document.body.classList.toggle("no-anim", !animSwitch.classList.contains("switch--on"));
+            if (sw.id === "themeSwitch") {
+                setTheme(isOn ? "dark" : "light");
+            }
+            if (sw.id === "orbsSwitch") {
+                document.body.classList.toggle("orbs-off", !isOn);
+            }
+            if (sw.id === "animSwitch") {
+                document.body.classList.toggle("no-anim", !isOn);
+            }
+        });
     });
 }
 
@@ -129,6 +134,10 @@ const TRANSLATIONS = {
         lang: "Мова", langTitle: "Мова застосунку",
         other: "Інше", support: "Підтримка", supportDesc: "Написати адміністрації",
         about: "Про застосунок", version: "Версія 1.0.0",
+        aboutMe: "Про мене", editBio: "Редагувати", bioEmpty: "Опис поки порожній",
+        favChat: "Улюблений чат", chatEmpty: "Не вибрано", save: "Зберегти", cancel: "Скасувати",
+        functions: "Функції", inventory: "Інвентар", commands: "Команди", emoji: "Емоджі",
+        skins: "Вітрина скінів", topVisibility: "Видимість у топах", openProfile: "Відкрити профіль",
         q1t: "Щоденний вхід", q1d: "Заходь щодня в застосунок",
         q2t: "Напиши в чат", q2d: "Залиш повідомлення в чаті",
         q3t: "Заверши профіль", q3d: "Заповни дані профілю",
@@ -160,6 +169,10 @@ const TRANSLATIONS = {
         lang: "Language", langTitle: "App language",
         other: "Other", support: "Support", supportDesc: "Contact the admins",
         about: "About the app", version: "Version 1.0.0",
+        aboutMe: "About me", editBio: "Edit", bioEmpty: "No description yet",
+        favChat: "Favourite chat", chatEmpty: "Not selected", save: "Save", cancel: "Cancel",
+        functions: "Functions", inventory: "Inventory", commands: "Commands", emoji: "Emoji",
+        skins: "Skin showcase", topVisibility: "Leaderboard visibility", openProfile: "Open profile",
         q1t: "Daily login", q1d: "Open the app every day",
         q2t: "Write in chat", q2d: "Leave a message in the chat",
         q3t: "Complete profile", q3d: "Fill in your profile details",
@@ -214,11 +227,89 @@ function initSwitches() {
     });
 }
 
+const STORE = window.Telegram.WebApp.CloudStorage;
+
+function storeGet(key, cb) {
+    if (STORE && STORE.getItem) {
+        STORE.getItem(key, (err, value) => cb(err ? null : value));
+    } else {
+        cb(localStorage.getItem(key));
+    }
+}
+
+function storeSet(key, value) {
+    if (STORE && STORE.setItem) {
+        STORE.setItem(key, value, () => {});
+    } else {
+        localStorage.setItem(key, value);
+    }
+}
+
+function initEditor(config) {
+    const editBtn = document.getElementById(config.editBtn);
+    const editor = document.getElementById(config.editor);
+    const input = document.getElementById(config.input);
+    const counter = document.getElementById(config.counter);
+    const text = document.getElementById(config.text);
+    const saveBtn = document.getElementById(config.saveBtn);
+    const cancelBtn = document.getElementById(config.cancelBtn);
+
+    function render(value) {
+        if (value && value.trim()) {
+            text.textContent = value;
+            text.removeAttribute("data-i18n");
+        } else {
+            text.setAttribute("data-i18n", config.emptyKey);
+            text.textContent = config.emptyText;
+        }
+    }
+
+    storeGet(config.key, (value) => {
+        if (value) {
+            input.value = value;
+            render(value);
+            counter.textContent = `${value.length}/${config.max}`;
+        }
+    });
+
+    input.addEventListener("input", () => {
+        counter.textContent = `${input.value.length}/${config.max}`;
+    });
+
+    editBtn.addEventListener("click", () => {
+        editor.classList.toggle("bio-editor--open");
+        if (editor.classList.contains("bio-editor--open")) input.focus();
+    });
+
+    cancelBtn.addEventListener("click", () => {
+        editor.classList.remove("bio-editor--open");
+    });
+
+    saveBtn.addEventListener("click", () => {
+        const value = input.value.trim();
+        storeSet(config.key, value);
+        render(value);
+        editor.classList.remove("bio-editor--open");
+    });
+}
+
+function initProfileEditors() {
+    initEditor({
+        key: "bio", max: 200, emptyKey: "bioEmpty", emptyText: "Опис поки порожній",
+        editBtn: "bioEdit", editor: "bioEditor", input: "bioInput",
+        counter: "bioCounter", text: "bioText", saveBtn: "bioSave", cancelBtn: "bioCancel"
+    });
+    initEditor({
+        key: "favChat", max: 60, emptyKey: "chatEmpty", emptyText: "Не вибрано",
+        editBtn: "chatEdit", editor: "chatEditor", input: "chatInput",
+        counter: "chatCounter", text: "chatText", saveBtn: "chatSave", cancelBtn: "chatCancel"
+    });
+}
+
 initUserData();
+initProfileEditors();
 initTabs();
 initTheme();
 initSettings();
-initOrbsSwitch();
-initAnimSwitch();
 initLanguage();
-initSwitches();
+initSwitchesAndToggles();
