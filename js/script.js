@@ -92,9 +92,9 @@ function initSettings() {
     const backBtn = document.getElementById("settingsBack");
     const screen = document.getElementById("settingsScreen");
 
-    openBtn.addEventListener("click", () => screen.classList.add("settings--open"));
+    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
     backBtn.addEventListener("click", () => {
-        screen.classList.remove("settings--open");
+        screen.classList.remove("fullscreen--open");
         collapseAll();
     });
 
@@ -164,7 +164,7 @@ const TRANSLATIONS = {
         lang: "Мова", langTitle: "Мова застосунку",
         other: "Інше", support: "Підтримка", supportDesc: "Написати адміністрації",
         about: "Про застосунок", version: "Версія 1.0.0",
-        otherUsers: "Інші користувачі", usersTotal: "користувачів",
+        otherUsers: "Інші користувачі", usersTitle: "Користувачі", usersLoading: "Завантаження…",
         aboutMe: "Про мене", editBio: "Редагувати", bioEmpty: "Опис поки порожній",
         save: "Зберегти", cancel: "Скасувати",
         functions: "Функції", inventory: "Інвентар", commands: "Команди", emoji: "Емоджі",
@@ -210,7 +210,7 @@ const TRANSLATIONS = {
         lang: "Language", langTitle: "App language",
         other: "Other", support: "Support", supportDesc: "Contact the admins",
         about: "About the app", version: "Version 1.0.0",
-        otherUsers: "Other users", usersTotal: "users",
+        otherUsers: "Other users", usersTitle: "Users", usersLoading: "Loading…",
         aboutMe: "About me", editBio: "Edit", bioEmpty: "No description yet",
         save: "Save", cancel: "Cancel",
         functions: "Functions", inventory: "Inventory", commands: "Commands", emoji: "Emoji",
@@ -279,22 +279,109 @@ function initSwitches() {
     });
 }
 
-const STORE = window.Telegram.WebApp.CloudStorage;
+let serverAvailable = false;
 
-function storeGet(key, cb) {
-    if (STORE && STORE.getItem) {
-        STORE.getItem(key, (err, value) => cb(err ? null : value));
-    } else {
-        cb(localStorage.getItem(key));
+/** Тягне дані з сервера і розкладає їх по інтерфейсу. */
+async function loadFromServer() {
+    try {
+        const data = await API.getMe();
+        serverAvailable = true;
+
+        const u = data.user;
+
+        document.getElementById("statLevel").textContent = u.level;
+        document.getElementById("statCoins").textContent = u.coins;
+        document.getElementById("statDonate").textContent = u.donate;
+
+        document.getElementById("profileLevel").textContent = u.level;
+        document.getElementById("profileBadge").textContent = u.level;
+        document.getElementById("profileCoins").textContent = u.coins;
+        document.getElementById("profileDonate").textContent = u.donate;
+
+        if (u.bio) {
+            const bioText = document.getElementById("bioText");
+            const bioInput = document.getElementById("bioInput");
+            bioText.textContent = u.bio;
+            bioText.removeAttribute("data-i18n");
+            bioInput.value = u.bio;
+            document.getElementById("bioCounter").textContent = `${u.bio.length}/200`;
+        }
+    } catch (error) {
+        console.warn("Сервер недоступний, працюємо локально:", error.message);
+        serverAvailable = false;
     }
 }
 
-function storeSet(key, value) {
-    if (STORE && STORE.setItem) {
-        STORE.setItem(key, value, () => {});
-    } else {
-        localStorage.setItem(key, value);
+/** Завантажує реальних користувачів бота з сервера. */
+async function loadUsers() {
+    const list = document.getElementById("usersList");
+    const countEl = document.getElementById("usersCount");
+    if (!list) return;
+
+    const myId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+    const palette = ["#6E8BFF", "#3FD9C7", "#A78BFA", "#F0B95A", "#F06478"];
+
+    try {
+        const data = await API.getUsers();
+
+        countEl.textContent = data.total;
+        list.innerHTML = "";
+
+        if (!data.users.length) {
+            list.innerHTML = '<p class="users-empty">Поки нікого немає</p>';
+            return;
+        }
+
+        data.users.forEach((user, index) => {
+            const name = [user.first_name, user.last_name].filter(Boolean).join(" ");
+            const letter = (name || "?").charAt(0).toUpperCase();
+            const colour = palette[index % palette.length];
+            const isMe = user.user_id === myId;
+
+            const row = document.createElement("div");
+            row.className = "user-row" + (isMe ? " user-row--me" : "");
+            row.innerHTML = `
+                <span class="user-row__avatar" style="--c:${colour}">${letter}</span>
+                <span class="user-row__body">
+                    <span class="user-row__name">
+                        ${name || "Без імені"}
+                        ${isMe ? '<span class="user-row__me-badge">ти</span>' : ""}
+                    </span>
+                    <span class="user-row__tag">${user.username ? "@" + user.username : "—"}</span>
+                </span>
+                <span class="user-row__lvl">
+                    <span class="user-row__lvl-value">${user.level}</span>
+                    <span class="user-row__lvl-label">рів</span>
+                </span>
+            `;
+
+            if (user.photo_url) {
+                const avatar = row.querySelector(".user-row__avatar");
+                avatar.textContent = "";
+                avatar.style.backgroundImage = `url(${user.photo_url})`;
+            }
+
+            list.appendChild(row);
+        });
+    } catch (error) {
+        console.warn("Не вдалося завантажити користувачів:", error.message);
+        list.innerHTML = '<p class="users-empty">Сервер недоступний</p>';
     }
+}
+
+function initUsersScreen() {
+    const openBtn = document.getElementById("usersOpen");
+    const backBtn = document.getElementById("usersBack");
+    const screen = document.getElementById("usersScreen");
+
+    openBtn.addEventListener("click", () => {
+        screen.classList.add("fullscreen--open");
+        loadUsers();
+    });
+
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+    });
 }
 
 function initEditor(config) {
@@ -316,14 +403,6 @@ function initEditor(config) {
         }
     }
 
-    storeGet(config.key, (value) => {
-        if (value) {
-            input.value = value;
-            render(value);
-            counter.textContent = `${value.length}/${config.max}`;
-        }
-    });
-
     input.addEventListener("input", () => {
         counter.textContent = `${input.value.length}/${config.max}`;
     });
@@ -337,17 +416,23 @@ function initEditor(config) {
         editor.classList.remove("bio-editor--open");
     });
 
-    saveBtn.addEventListener("click", () => {
+    saveBtn.addEventListener("click", async () => {
         const value = input.value.trim();
-        storeSet(config.key, value);
+
         render(value);
         editor.classList.remove("bio-editor--open");
+
+        try {
+            await API.saveBio(value);
+        } catch (error) {
+            console.warn("Не вдалося зберегти на сервері:", error.message);
+        }
     });
 }
 
 function initProfileEditors() {
     initEditor({
-        key: "bio", max: 200, emptyKey: "bioEmpty", emptyText: "Опис поки порожній",
+        max: 200, emptyKey: "bioEmpty", emptyText: "Опис поки порожній",
         editBtn: "bioEdit", editor: "bioEditor", input: "bioInput",
         counter: "bioCounter", text: "bioText", saveBtn: "bioSave", cancelBtn: "bioCancel"
     });
@@ -358,6 +443,9 @@ initProfileEditors();
 initTabs();
 initTheme();
 initSettings();
+initUsersScreen();
 initExpanders();
 initLanguage();
 initSwitchesAndToggles();
+
+loadFromServer();
