@@ -55,6 +55,32 @@ function initUserData() {
     }
 }
 
+let activeTabIndex = 0;
+
+/**
+ * Примусово повертає стрічку вкладок на позицію активної вкладки.
+ *
+ * У десктопному Telegram (інший рушій рендерингу, ніж на телефоні)
+ * трапляється візуальний глюк: після закриття повноекранного вікна
+ * (рулетка/налаштування/користувачі) transform стрічки лишається
+ * "застряглим" між двома вкладками, і видно одразу дві напівпрозоро.
+ * Викликаємо цю функцію щоразу, коли закривається такий екран —
+ * навіть якщо позиція мала б бути правильною, повторне встановлення
+ * того самого значення примушує браузер перерахувати кадр заново.
+ */
+function snapScreensToActiveTab() {
+    const screens = document.getElementById("screens");
+    const total = document.querySelectorAll(".tabbar__item").length;
+
+    screens.style.transition = "none";
+    // читання offsetHeight форсує reflow між вимкненням і увімкненням transition,
+    // інакше браузер може "з'їсти" наступну зміну без анімації взагалі
+    void screens.offsetHeight;
+    screens.style.transform = `translateX(-${activeTabIndex * (100 / total)}%)`;
+    void screens.offsetHeight;
+    screens.style.transition = "";
+}
+
 function initTabs() {
     const screens = document.getElementById("screens");
     const items = Array.from(document.querySelectorAll(".tabbar__item"));
@@ -63,6 +89,7 @@ function initTabs() {
     items.forEach((item) => {
         item.addEventListener("click", () => {
             const index = Number(item.dataset.index);
+            activeTabIndex = index;
 
             items.forEach((i) => i.classList.remove("tabbar__item--active"));
             item.classList.add("tabbar__item--active");
@@ -96,6 +123,7 @@ function initSettings() {
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
         collapseAll();
+        snapScreensToActiveTab();
     });
 
     function collapseAll() {
@@ -389,6 +417,7 @@ function initUsersScreen() {
 
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
+        snapScreensToActiveTab();
     });
 }
 
@@ -543,6 +572,7 @@ function initRoulette() {
 
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
+        snapScreensToActiveTab();
     });
 
     helpBtn.addEventListener("click", () => {
