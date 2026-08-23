@@ -464,7 +464,7 @@ const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16
 const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 // Два числа перефарбовані у біле — рідкісний сектор із підвищеною виплатою.
 // Мають збігатися з WHITE_NUMBERS на сервері (api.py), інакше кольори розійдуться.
-const WHITE_NUMBERS = new Set([5, 24]);
+const WHITE_NUMBERS = new Set([34, 9]); // індекси 9 і 27 у WHEEL_ORDER — максимально рознесені, не сусідні між собою й не біля зеленого
 
 const PAYOUTS = { green: 100, white: 10, red: 2, black: 2 };
 
@@ -535,24 +535,7 @@ function initRoulette() {
     renderWheelLabels();
 
     function renderWheelLabels() {
-        const labelsLayer = document.getElementById("wheelLabels");
-        if (!labelsLayer || labelsLayer.childElementCount) return;
-
-        const segment = 360 / WHEEL_ORDER.length;
-        const radius = labelsLayer.offsetWidth / 2 - 16;
-
-        WHEEL_ORDER.forEach((num, i) => {
-            const angle = i * segment + segment / 2;
-            const label = document.createElement("span");
-            label.className = "wheel__label";
-            label.textContent = num;
-            label.style.transform = `rotate(${angle}deg) translateY(${radius}px)`;
-            if (numberColor(num) === "white") {
-                label.style.color = "#1A1A1F";
-                label.style.textShadow = "none";
-            }
-            labelsLayer.appendChild(label);
-        });
+        // Цифри на колесі навмисно не рендеряться — лише кольорові сектори.
     }
 
     let selectedCurrency = "coins";
