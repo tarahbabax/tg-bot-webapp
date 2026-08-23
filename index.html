@@ -200,7 +200,7 @@
                         
                     </div>
 
-                    <div class="settings-group profile-last-group">
+                    <div class="settings-group">
                         
                         <button class="setting-link" type="button">
                             <span class="fn-icon fn-icon--amber"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
@@ -213,7 +213,30 @@
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                     </div>
-                </section>
+                
+                    <div class="settings-group profile-last-group">
+                        <button class="setting-link expander" type="button" data-expands="usersPanel">
+                            <span class="fn-icon fn-icon--accent"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8.4" r="3.3" stroke="currentColor" stroke-width="1.6"/><path d="M2.8 19.4c1-2.8 3.3-4.3 6.2-4.3s5.2 1.5 6.2 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16.2 5.6a3.1 3.1 0 010 5.9M18 14.9c2 .5 3.3 1.9 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+                            <span class="setting-row__body"><span class="setting-row__title" data-i18n="otherUsers">Інші користувачі</span></span>
+                            <svg class="setting-link__chevron setting-link__chevron--rotatable" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div class="panel-drop" id="usersPanel">
+                            <div class="panel-drop__inner">
+                                <p class="users-count"><span id="usersCount">8</span> <span data-i18n="usersTotal">користувачів</span></p>
+                                <div class="users-list">
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#6E8BFF">A</span><span class="user-row__body"><span class="user-row__name">Andrii</span><span class="user-row__tag">@andrii_k</span></span><span class="user-row__lvl">12</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#3FD9C7">M</span><span class="user-row__body"><span class="user-row__name">Maria</span><span class="user-row__tag">@mariaaa</span></span><span class="user-row__lvl">9</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#A78BFA">O</span><span class="user-row__body"><span class="user-row__name">Oleh</span><span class="user-row__tag">@oleh_dev</span></span><span class="user-row__lvl">7</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#F0B95A">K</span><span class="user-row__body"><span class="user-row__name">Kateryna</span><span class="user-row__tag">@kate_ua</span></span><span class="user-row__lvl">6</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#F06478">D</span><span class="user-row__body"><span class="user-row__name">Dmytro</span><span class="user-row__tag">@dmytro99</span></span><span class="user-row__lvl">4</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#6E8BFF">S</span><span class="user-row__body"><span class="user-row__name">Sofia</span><span class="user-row__tag">@sofia_m</span></span><span class="user-row__lvl">3</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#3FD9C7">I</span><span class="user-row__body"><span class="user-row__name">Ivan</span><span class="user-row__tag">@ivan_t</span></span><span class="user-row__lvl">2</span></div>
+                                    <div class="user-row"><span class="user-row__avatar" style="--c:#A78BFA">N</span><span class="user-row__body"><span class="user-row__name">Nazar</span><span class="user-row__tag">@nazar_z</span></span><span class="user-row__lvl">1</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+</section>
 
                 <!-- МАГАЗИН -->
                 <section class="screen" id="screen-shop">
