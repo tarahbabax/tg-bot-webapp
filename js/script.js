@@ -460,36 +460,28 @@ loadFromServer();
 
 /* ---------- Roulette ---------- */
 
-const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-// Два числа перефарбовані у біле — рідкісний сектор із підвищеною виплатою.
-// Мають збігатися з WHITE_NUMBERS на сервері (api.py), інакше кольори розійдуться.
-const WHITE_NUMBERS = new Set([34, 9]); // індекси 9 і 27 у WHEEL_ORDER — максимально рознесені, не сусідні між собою й не біля зеленого
+// Колесо — це просто 37 кольорових секторів, без жодної прив'язки до чисел.
+// Той самий масив (літерал!) має бути в api.py — інакше кольори на екрані
+// розійдуться з тим, що рахує сервер.
+const SEGMENT_COLORS = ["green","red","black","red","black","red","black","red","black","white","black","red","black","red","black","red","black","red","black","red","black","red","black","red","black","red","black","white","black","red","black","red","black","red","black","red","black"];
 
 const PAYOUTS = { green: 100, white: 10, red: 2, black: 2 };
 
-function numberColor(n) {
-    if (n === 0) return "green";
-    if (WHITE_NUMBERS.has(n)) return "white";
-    return RED_NUMBERS.has(n) ? "red" : "black";
-}
-
 function buildWheelGradient() {
-    const segment = 360 / WHEEL_ORDER.length;
-    const colours = { red: "#D6281A", black: "#17171B", green: "#1E8F52", white: "#E8E8ED" };
+    const segment = 360 / SEGMENT_COLORS.length;
+    const shades = { red: "#D6281A", black: "#17171B", green: "#1E8F52", white: "#E8E8ED" };
 
-    const stops = WHEEL_ORDER.map((num, i) => {
+    const stops = SEGMENT_COLORS.map((color, i) => {
         const from = (i * segment).toFixed(3);
         const to = ((i + 1) * segment).toFixed(3);
-        return `${colours[numberColor(num)]} ${from}deg ${to}deg`;
+        return `${shades[color]} ${from}deg ${to}deg`;
     });
 
     return `conic-gradient(${stops.join(", ")})`;
 }
 
-function angleForNumber(n) {
-    const segment = 360 / WHEEL_ORDER.length;
-    const index = WHEEL_ORDER.indexOf(n);
+function angleForSegmentIndex(index) {
+    const segment = 360 / SEGMENT_COLORS.length;
     return index * segment + segment / 2;
 }
 
@@ -532,11 +524,6 @@ function initRoulette() {
     if (!openBtn || !wheel) return;
 
     wheel.style.background = buildWheelGradient();
-    renderWheelLabels();
-
-    function renderWheelLabels() {
-        // Цифри на колесі навмисно не рендеряться — лише кольорові сектори.
-    }
 
     let selectedCurrency = "coins";
     let selectedColor = null;
@@ -551,8 +538,7 @@ function initRoulette() {
 
     openBtn.addEventListener("click", () => {
         syncBalances();
-        renderWheelLabels();
-        screen.classList.add("fullscreen--open");
+            screen.classList.add("fullscreen--open");
     });
 
     backBtn.addEventListener("click", () => {
@@ -614,9 +600,9 @@ function initRoulette() {
     winOk.addEventListener("click", closeWinModal);
     winBackdrop.addEventListener("click", closeWinModal);
 
-    function spinWheelAndBall(resultNumber) {
+    function spinWheelAndBall(segmentIndex) {
         return new Promise((resolve) => {
-            const target = angleForNumber(resultNumber);
+            const target = angleForSegmentIndex(segmentIndex);
 
             // Колесо завжди прокручується на ЦІЛУ кількість повних обертів,
             // тому воно візуально крутиться, але повертається в ту саму
@@ -665,7 +651,7 @@ function initRoulette() {
         try {
             const data = await API.spinRoulette(payload);
 
-            await spinWheelAndBall(data.result_number);
+            await spinWheelAndBall(data.segment_index);
 
             coinsEl.textContent = data.balance.coins;
             donateEl.textContent = data.balance.donate;
