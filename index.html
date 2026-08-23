@@ -185,27 +185,6 @@
                         </div>
                     </div>
 
-                    <div class="profile-card">
-                        <div class="profile-card__head">
-                            <p class="profile-card__label" data-i18n="favChat">Улюблений чат</p>
-                            <button class="profile-card__edit" id="chatEdit" type="button">
-                                <svg viewBox="0 0 24 24" fill="none"><path d="M15.6 4.9l3.5 3.5M4.5 19.5l4-.8L19.1 8.4a1.5 1.5 0 000-2.1l-1.4-1.4a1.5 1.5 0 00-2.1 0L5.3 15.5l-.8 4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                                <span data-i18n="editBio">Редагувати</span>
-                            </button>
-                        </div>
-                        <p class="profile-card__text profile-card__text--strong" id="chatText" data-i18n="chatEmpty">Не вибрано</p>
-                        <div class="bio-editor" id="chatEditor">
-                            <input class="bio-editor__input" id="chatInput" maxlength="60" placeholder="Назва чату" />
-                            <div class="bio-editor__foot">
-                                <span class="bio-editor__counter" id="chatCounter">0/60</span>
-                                <div class="bio-editor__actions">
-                                    <button class="btn btn--ghost" id="chatCancel" type="button" data-i18n="cancel">Скасувати</button>
-                                    <button class="btn btn--accent" id="chatSave" type="button" data-i18n="save">Зберегти</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <p class="settings-group__label profile-section-label" data-i18n="functions">Функції</p>
                     <div class="settings-group">
                         <button class="setting-link" type="button">
@@ -218,19 +197,11 @@
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="commands">Команди</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                        <button class="setting-link" type="button">
-                            <span class="fn-icon fn-icon--amber"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/><path d="M8.8 13.6a4 4 0 006.4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.4" cy="9.8" r="1" fill="currentColor"/><circle cx="14.6" cy="9.8" r="1" fill="currentColor"/></svg></span>
-                            <span class="setting-row__body"><span class="setting-row__title" data-i18n="emoji">Емоджі</span></span>
-                            <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </button>
+                        
                     </div>
 
                     <div class="settings-group profile-last-group">
-                        <button class="setting-link" type="button">
-                            <span class="fn-icon fn-icon--rose"><svg viewBox="0 0 24 24" fill="none"><rect x="4.2" y="4.2" width="15.6" height="15.6" rx="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M4.2 9.4h15.6M4.2 14.6h15.6M9.4 4.2v15.6M14.6 4.2v15.6" stroke="currentColor" stroke-width="1.3"/></svg></span>
-                            <span class="setting-row__body"><span class="setting-row__title" data-i18n="skins">Вітрина скінів</span></span>
-                            <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </button>
+                        
                         <button class="setting-link" type="button">
                             <span class="fn-icon fn-icon--amber"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="topVisibility">Видимість у топах</span></span>
@@ -398,27 +369,82 @@
 
                 <p class="settings-group__label" data-i18n="other">Інше</p>
                 <div class="settings-group">
-                    <button class="setting-link" type="button">
+                    <button class="setting-link expander" type="button" data-expands="docsPanel">
                         <span class="setting-row__body">
                             <span class="setting-row__title" data-i18n="docs">Документація</span>
                             <span class="setting-row__desc" data-i18n="docsShort">Гайди та команди</span>
                         </span>
-                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg class="setting-link__chevron setting-link__chevron--rotatable" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
-                    <button class="setting-link" type="button">
+                    <div class="panel-drop" id="docsPanel">
+                        <div class="panel-drop__inner">
+                            <p class="panel-drop__lead" data-i18n="docsLead">Основне, що варто знати про застосунок.</p>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key">/start</span>
+                                <span class="panel-drop__val" data-i18n="docsStart">Відкриває головне меню бота</span>
+                            </div>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key" data-i18n="docsQuestsKey">Квести</span>
+                                <span class="panel-drop__val" data-i18n="docsQuests">Виконуй завдання і отримуй коіни за кожне</span>
+                            </div>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key" data-i18n="docsLevelKey">Рівень</span>
+                                <span class="panel-drop__val" data-i18n="docsLevel">Росте з накопиченими коінами і відкриває нові можливості</span>
+                            </div>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key" data-i18n="docsCoinsKey">Донат-коіни</span>
+                                <span class="panel-drop__val" data-i18n="docsCoins">Окрема валюта для магазину, купується окремо</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="setting-link expander" type="button" data-expands="supportPanel">
                         <span class="setting-row__body">
                             <span class="setting-row__title" data-i18n="support">Підтримка</span>
                             <span class="setting-row__desc" data-i18n="supportDesc">Написати адміністрації</span>
                         </span>
-                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg class="setting-link__chevron setting-link__chevron--rotatable" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
-                    <button class="setting-link" type="button">
+                    <div class="panel-drop" id="supportPanel">
+                        <div class="panel-drop__inner">
+                            <p class="panel-drop__lead" data-i18n="supportLead">Щось не працює або є ідея? Напиши — розберемось.</p>
+                            <a class="panel-drop__contact" href="https://t.me/vlod12k" target="_blank" rel="noopener">
+                                <span class="panel-drop__contact-icon">
+                                    <svg viewBox="0 0 24 24" fill="none"><path d="M20.5 4.6L2.9 11.2c-.9.3-.9 1.5 0 1.8l4.4 1.5 1.7 5.2c.3.8 1.3 1 1.9.4l2.4-2.4 4.5 3.3c.7.5 1.7.1 1.9-.8l3-14.4c.2-1-.7-1.8-1.6-1.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                                </span>
+                                <span class="panel-drop__contact-body">
+                                    <span class="panel-drop__contact-name">Владислав</span>
+                                    <span class="panel-drop__contact-tag">@vlod12k</span>
+                                </span>
+                            </a>
+                            <p class="panel-drop__note" data-i18n="supportNote">Відповідь зазвичай протягом доби.</p>
+                        </div>
+                    </div>
+
+                    <button class="setting-link expander" type="button" data-expands="aboutPanel">
                         <span class="setting-row__body">
                             <span class="setting-row__title" data-i18n="about">Про застосунок</span>
                             <span class="setting-row__desc" data-i18n="version">Версія 1.0.0</span>
                         </span>
-                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg class="setting-link__chevron setting-link__chevron--rotatable" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
+                    <div class="panel-drop" id="aboutPanel">
+                        <div class="panel-drop__inner">
+                            <p class="panel-drop__lead" data-i18n="aboutLead">VLKManageBot — застосунок-менеджер для Telegram-каналу: квести, рівні, внутрішня валюта та керування спільнотою в одному місці.</p>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key" data-i18n="aboutAuthorKey">Автор</span>
+                                <span class="panel-drop__val" data-i18n="aboutAuthor">Владислав (@vlod12k) — ідея, дизайн і розробка</span>
+                            </div>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key" data-i18n="aboutVersionKey">Версія</span>
+                                <span class="panel-drop__val">1.0.0</span>
+                            </div>
+                            <div class="panel-drop__item">
+                                <span class="panel-drop__key" data-i18n="aboutStackKey">Технології</span>
+                                <span class="panel-drop__val">Python · aiogram · Telegram Mini App</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <p class="settings-footer">VLKManageBot · 1.0.0</p>
