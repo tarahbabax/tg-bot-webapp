@@ -571,6 +571,7 @@ function initRoulette() {
     });
 
     backBtn.addEventListener("click", () => {
+        if (spinning) return;
         screen.classList.remove("fullscreen--open");
         snapScreensToActiveTab();
     });
