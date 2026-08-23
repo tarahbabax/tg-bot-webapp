@@ -22,9 +22,17 @@ function initUserData() {
     tagEl.textContent = user.username ? "@" + user.username : "без юзертегу";
     greetingNameEl.textContent = fullName + "!";
 
+    const settingsNameEl = document.getElementById("settingsName");
+    const settingsTagEl = document.getElementById("settingsTag");
+    const settingsAvatarEl = document.getElementById("settingsAvatar");
+
+    settingsNameEl.textContent = fullName;
+    settingsTagEl.textContent = tagEl.textContent;
+
     if (user.photo_url) {
         avatarEl.style.backgroundImage = `url(${user.photo_url})`;
         miniAvatarEl.style.backgroundImage = `url(${user.photo_url})`;
+        settingsAvatarEl.style.backgroundImage = `url(${user.photo_url})`;
     } else {
         const fallback = document.createElement("div");
         fallback.className = "avatar__fallback";
@@ -74,23 +82,21 @@ function initTheme() {
     themeSwitch.addEventListener("click", toggleTheme);
 }
 
-function initSettingsSheet() {
+function initSettings() {
     const openBtn = document.getElementById("settingsBtn");
-    const sheet = document.getElementById("settingsSheet");
-    const backdrop = document.getElementById("settingsBackdrop");
+    const backBtn = document.getElementById("settingsBack");
+    const screen = document.getElementById("settingsScreen");
 
-    function open() {
-        sheet.classList.add("sheet--open");
-        backdrop.classList.add("sheet-backdrop--open");
-    }
+    openBtn.addEventListener("click", () => screen.classList.add("settings--open"));
+    backBtn.addEventListener("click", () => screen.classList.remove("settings--open"));
+}
 
-    function close() {
-        sheet.classList.remove("sheet--open");
-        backdrop.classList.remove("sheet-backdrop--open");
-    }
+function initOrbsSwitch() {
+    const orbsSwitch = document.getElementById("orbsSwitch");
 
-    openBtn.addEventListener("click", open);
-    backdrop.addEventListener("click", close);
+    orbsSwitch.addEventListener("click", () => {
+        document.body.classList.toggle("orbs-off", !orbsSwitch.classList.contains("switch--on"));
+    });
 }
 
 function initSwitches() {
@@ -105,5 +111,6 @@ function initSwitches() {
 initUserData();
 initTabs();
 initTheme();
-initSettingsSheet();
+initSettings();
+initOrbsSwitch();
 initSwitches();
