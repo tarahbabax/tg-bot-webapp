@@ -324,6 +324,13 @@
                     </svg>
                 </button>
                 <p class="fullscreen__title" data-i18n="wheelTitle">Колесо фортуни</p>
+                <button class="fullscreen__back" id="rouletteHelp" type="button" aria-label="Довідка">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.6"/>
+                        <path d="M9.6 9.3a2.4 2.4 0 114.15 1.65c-.75.7-1.35 1.05-1.35 2.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        <circle cx="12" cy="16.3" r="0.9" fill="currentColor"/>
+                    </svg>
+                </button>
             </header>
 
             <div class="fullscreen__body roulette">
@@ -341,16 +348,18 @@
 
                 <div class="roulette-divider"></div>
 
-                <div class="wheel-wrap">
-                    <div class="wheel-bezel"></div>
-                    <div class="wheel-pointer"></div>
-                    <div class="wheel" id="wheel">
-                        <div class="wheel__labels" id="wheelLabels"></div>
-                        <div class="wheel__sheen"></div>
-                        <div class="wheel__hub"></div>
-                    </div>
-                    <div class="ball-pivot" id="ballPivot">
-                        <div class="ball"></div>
+                <div class="wheel-square">
+                    <div class="wheel-wrap">
+                        <div class="wheel-bezel"></div>
+                        <div class="wheel-pointer"></div>
+                        <div class="wheel" id="wheel">
+                            <div class="wheel__labels" id="wheelLabels"></div>
+                            <div class="wheel__sheen"></div>
+                            <div class="wheel__hub"></div>
+                        </div>
+                        <div class="ball-pivot" id="ballPivot">
+                            <div class="ball"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -363,23 +372,25 @@
                     </button>
                 </div>
 
-                <div class="bet-row">
-                    <div class="bet-box">
-                        <span class="bet-box__label" data-i18n="betNumber">Число</span>
-                        <input class="bet-box__input" id="betNumber" type="number" min="0" max="36" placeholder="0–36" />
-                    </div>
+                <div class="bet-row bet-row--single">
                     <div class="bet-box">
                         <span class="bet-box__label" data-i18n="betAmount">Ставка</span>
                         <input class="bet-box__input" id="betAmount" type="number" min="1" placeholder="0" />
                     </div>
                 </div>
 
-                <div class="color-row">
-                    <button class="color-btn color-btn--red" id="colorRed" type="button" data-color="red">
-                        <span data-i18n="red">Червоне</span>
+                <div class="dice-row">
+                    <button class="dice-btn" id="colorGreen" type="button" data-color="green">
+                        <span class="dice-btn__dot dice-btn__dot--green"></span>
                     </button>
-                    <button class="color-btn color-btn--black" id="colorBlack" type="button" data-color="black">
-                        <span data-i18n="black">Чорне</span>
+                    <button class="dice-btn" id="colorWhite" type="button" data-color="white">
+                        <span class="dice-btn__dot dice-btn__dot--white"></span>
+                    </button>
+                    <button class="dice-btn" id="colorRed" type="button" data-color="red">
+                        <span class="dice-btn__dot dice-btn__dot--red"></span>
+                    </button>
+                    <button class="dice-btn" id="colorBlack" type="button" data-color="black">
+                        <span class="dice-btn__dot dice-btn__dot--black"></span>
                     </button>
                 </div>
 
@@ -395,6 +406,33 @@
             <p class="win-modal__amount" id="winAmount">+0</p>
             <p class="win-modal__bet" id="winBetInfo">Ставка: 100 на червоне</p>
             <button class="btn btn--accent win-modal__ok" id="winOk" type="button" data-i18n="ok">Добре!</button>
+        </div>
+
+        <!-- ДОВІДКА -->
+        <div class="modal-backdrop" id="helpBackdrop"></div>
+        <div class="win-modal help-modal" id="helpModal">
+            <p class="help-modal__title" data-i18n="payoutsTitle">Виплати</p>
+            <div class="payout-row">
+                <span class="dice-btn__dot dice-btn__dot--green"></span>
+                <span class="payout-row__label" data-i18n="colorGreen">Зелене</span>
+                <span class="payout-row__mult">×100</span>
+            </div>
+            <div class="payout-row">
+                <span class="dice-btn__dot dice-btn__dot--white"></span>
+                <span class="payout-row__label" data-i18n="colorWhite">Біле</span>
+                <span class="payout-row__mult">×10</span>
+            </div>
+            <div class="payout-row">
+                <span class="dice-btn__dot dice-btn__dot--red"></span>
+                <span class="payout-row__label" data-i18n="red">Червоне</span>
+                <span class="payout-row__mult">×2</span>
+            </div>
+            <div class="payout-row">
+                <span class="dice-btn__dot dice-btn__dot--black"></span>
+                <span class="payout-row__label" data-i18n="black">Чорне</span>
+                <span class="payout-row__mult">×2</span>
+            </div>
+            <button class="btn btn--accent win-modal__ok" id="helpOk" type="button" data-i18n="ok">Добре!</button>
         </div>
 
         <!-- НАЛАШТУВАННЯ -->
