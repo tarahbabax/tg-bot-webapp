@@ -6,28 +6,101 @@
     <title>Manage</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
     <div class="page">
 
-        <header class="topbar">
-            <button class="icon-btn" type="button" aria-label="Налаштування">
-                <span class="icon-btn__emoji">⚙️</span>
-            </button>
-
-            <p class="topbar__label">
-                <span id="userNameTop">Ім'я</span>
-                <span class="topbar__divider">|</span>
-                <span class="topbar__bot">VLKManageBot</span>
-            </p>
-        </header>
+        <div class="fireflies" aria-hidden="true">
+            <span style="top:8%;left:10%;width:5px;height:5px;background:#FF5A45;color:#FF5A45;--dur:5.2s;animation-delay:.1s;"></span>
+            <span style="top:14%;left:82%;width:4px;height:4px;background:#3FD9C7;color:#3FD9C7;--dur:6.4s;animation-delay:.8s;"></span>
+            <span style="top:22%;left:46%;width:3px;height:3px;background:#A78BFA;color:#A78BFA;--dur:5.8s;animation-delay:1.4s;"></span>
+            <span style="top:30%;left:6%;width:4px;height:4px;background:#34D399;color:#34D399;--dur:7s;animation-delay:.3s;"></span>
+            <span style="top:38%;left:90%;width:5px;height:5px;background:#FF5A45;color:#FF5A45;--dur:6.1s;animation-delay:2s;"></span>
+            <span style="top:46%;left:18%;width:3px;height:3px;background:#3FD9C7;color:#3FD9C7;--dur:5.4s;animation-delay:.6s;"></span>
+            <span style="top:54%;left:70%;width:4px;height:4px;background:#A78BFA;color:#A78BFA;--dur:6.8s;animation-delay:1.1s;"></span>
+            <span style="top:62%;left:34%;width:3px;height:3px;background:#34D399;color:#34D399;--dur:5.6s;animation-delay:1.8s;"></span>
+            <span style="top:70%;left:88%;width:4px;height:4px;background:#FF5A45;color:#FF5A45;--dur:6.6s;animation-delay:.4s;"></span>
+            <span style="top:78%;left:14%;width:5px;height:5px;background:#3FD9C7;color:#3FD9C7;--dur:5.9s;animation-delay:1.6s;"></span>
+            <span style="top:85%;left:56%;width:3px;height:3px;background:#A78BFA;color:#A78BFA;--dur:6.3s;animation-delay:.9s;"></span>
+            <span style="top:92%;left:78%;width:4px;height:4px;background:#34D399;color:#34D399;--dur:5.1s;animation-delay:2.2s;"></span>
+            <span style="top:5%;left:60%;width:3px;height:3px;background:#3FD9C7;color:#3FD9C7;--dur:6.9s;animation-delay:.2s;"></span>
+            <span style="top:66%;left:4%;width:3px;height:3px;background:#FF5A45;color:#FF5A45;--dur:5.7s;animation-delay:1.3s;"></span>
+        </div>
 
         <div class="viewport">
             <div class="screens" id="screens">
 
+                <!-- ГОЛОВНА -->
+                <section class="screen" id="screen-home">
+                    <header class="home-header">
+                        <div class="greeting">
+                            <p class="greeting__hello">Привіт,</p>
+                            <p class="greeting__name" id="homeGreetingName">Ім'я користувача!</p>
+                        </div>
+                        <div class="home-header__actions">
+                            <button class="icon-btn" type="button" aria-label="Налаштування">
+                                <span class="icon-btn__emoji">⚙️</span>
+                            </button>
+                            <div class="mini-avatar" id="miniAvatar"></div>
+                        </div>
+                    </header>
+
+                    <div class="dashboard">
+                        <div class="stats-col">
+                            <div class="stat-card stat-card--level">
+                                <p class="stat-card__value" id="statLevel">1</p>
+                                <p class="stat-card__label">Рівень</p>
+                            </div>
+                            <div class="stat-card stat-card--coins">
+                                <p class="stat-card__value" id="statCoins">0</p>
+                                <p class="stat-card__label">Коіни</p>
+                            </div>
+                            <div class="stat-card stat-card--donate">
+                                <p class="stat-card__value" id="statDonate">0</p>
+                                <p class="stat-card__label">Донат-коіни</p>
+                            </div>
+                        </div>
+
+                        <div class="quests-col">
+                            <div class="quest-card"><span class="quest-card__emoji">📅</span><div class="quest-card__body"><p class="quest-card__title">Щоденний вхід</p><p class="quest-card__desc">Заходь щодня в застосунок</p></div><span class="quest-card__reward">+10</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">💬</span><div class="quest-card__body"><p class="quest-card__title">Напиши в чат</p><p class="quest-card__desc">Залиш повідомлення в чаті</p></div><span class="quest-card__reward">+15</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">🧾</span><div class="quest-card__body"><p class="quest-card__title">Заверши профіль</p><p class="quest-card__desc">Заповни дані профілю</p></div><span class="quest-card__reward">+20</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">🤝</span><div class="quest-card__body"><p class="quest-card__title">Запроси друга</p><p class="quest-card__desc">Поклич друга в канал</p></div><span class="quest-card__reward">+30</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">🔄</span><div class="quest-card__body"><p class="quest-card__title">Онови статус</p><p class="quest-card__desc">Онови інформацію про себе</p></div><span class="quest-card__reward">+10</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">📖</span><div class="quest-card__body"><p class="quest-card__title">Переглянь документацію</p><p class="quest-card__desc">Ознайомся з правилами</p></div><span class="quest-card__reward">+5</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">🤖</span><div class="quest-card__body"><p class="quest-card__title">Взаємодій з ботом</p><p class="quest-card__desc">Натисни будь-яку кнопку</p></div><span class="quest-card__reward">+10</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">❤️</span><div class="quest-card__body"><p class="quest-card__title">Постав реакцію</p><p class="quest-card__desc">Постав реакцію на пост</p></div><span class="quest-card__reward">+5</span></div>
+                            <div class="quest-card"><span class="quest-card__emoji">📣</span><div class="quest-card__body"><p class="quest-card__title">Поділись каналом</p><p class="quest-card__desc">Розкажи про канал другу</p></div><span class="quest-card__reward">+25</span></div>
+
+                            <div class="quest-card quest-card--all">
+                                <span>Усі квести</span>
+                                <span class="quest-card__arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider-red"></div>
+                    <p class="info-text">ℹ️ Інформація</p>
+
+                    <button class="docs-card" type="button">
+                        <span class="docs-card__emoji">📄</span>
+                        <span>Документація</span>
+                    </button>
+                </section>
+
+                <!-- ЧАТИ -->
+                <section class="screen" id="screen-chats">
+                    <div class="empty-state">
+                        <span class="empty-state__emoji">💬</span>
+                        <p class="empty-state__title">Чатів поки немає</p>
+                        <p class="empty-state__text">Тут з'являться твої чати</p>
+                    </div>
+                </section>
+
+                <!-- ПРОФІЛЬ -->
                 <section class="screen" id="screen-profile">
                     <div class="profile">
                         <div class="avatar" id="avatar"></div>
@@ -39,19 +112,12 @@
                     </div>
                 </section>
 
-                <section class="screen" id="screen-chats">
+                <!-- МАГАЗИН -->
+                <section class="screen" id="screen-shop">
                     <div class="empty-state">
-                        <span class="empty-state__emoji">💬</span>
-                        <p class="empty-state__title">Чатів поки немає</p>
-                        <p class="empty-state__text">Тут з'являться твої чати</p>
-                    </div>
-                </section>
-
-                <section class="screen" id="screen-servers">
-                    <div class="empty-state">
-                        <span class="empty-state__emoji">🖥️</span>
-                        <p class="empty-state__title">Серверів поки немає</p>
-                        <p class="empty-state__text">Тут з'являться твої сервери</p>
+                        <span class="empty-state__emoji">🛒</span>
+                        <p class="empty-state__title">Магазин порожній</p>
+                        <p class="empty-state__text">Тут з'являться товари</p>
                     </div>
                 </section>
 
@@ -60,18 +126,20 @@
 
         <nav class="tabbar" id="tabbar">
             <button class="tabbar__item tabbar__item--active" type="button" data-index="0">
-                <span class="tabbar__emoji">👤</span>
-                <span>Профіль</span>
+                <span class="tabbar__emoji">🏠</span>
+                <span>Головна</span>
             </button>
-
             <button class="tabbar__item" type="button" data-index="1">
                 <span class="tabbar__emoji">💬</span>
                 <span>Чати</span>
             </button>
-
             <button class="tabbar__item" type="button" data-index="2">
-                <span class="tabbar__emoji">🖥️</span>
-                <span>Сервери</span>
+                <span class="tabbar__emoji">👤</span>
+                <span>Профіль</span>
+            </button>
+            <button class="tabbar__item" type="button" data-index="3">
+                <span class="tabbar__emoji">🛍️</span>
+                <span>Магазин</span>
             </button>
         </nav>
 
