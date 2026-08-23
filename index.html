@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Manage</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,55 +13,64 @@
 <body>
     <div class="page">
 
-        <button class="icon-btn icon-btn--settings" type="button" aria-label="Налаштування">
-            <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.6"/>
-                <path d="M19.4 13.5a1.7 1.7 0 00.34 1.87l.06.06a2.06 2.06 0 11-2.92 2.92l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.03 1.56V20a2.06 2.06 0 01-4.12 0v-.09a1.7 1.7 0 00-1.11-1.56 1.7 1.7 0 00-1.87.34l-.06.06a2.06 2.06 0 11-2.92-2.92l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.56-1.03H4a2.06 2.06 0 010-4.12h.09a1.7 1.7 0 001.56-1.11 1.7 1.7 0 00-.34-1.87l-.06-.06a2.06 2.06 0 112.92-2.92l.06.06a1.7 1.7 0 001.87.34H10a1.7 1.7 0 001.03-1.56V4a2.06 2.06 0 014.12 0v.09a1.7 1.7 0 001.03 1.56 1.7 1.7 0 001.87-.34l.06-.06a2.06 2.06 0 112.92 2.92l-.06.06a1.7 1.7 0 00-.34 1.87V10a1.7 1.7 0 001.56 1.03H20a2.06 2.06 0 010 4.12h-.09a1.7 1.7 0 00-1.56 1.03z" stroke="currentColor" stroke-width="1.6"/>
-            </svg>
-        </button>
+        <header class="topbar">
+            <button class="icon-btn" type="button" aria-label="Налаштування">
+                <span class="icon-btn__emoji">⚙️</span>
+            </button>
 
-        <main class="profile">
-            <div class="avatar" id="avatar"></div>
+            <p class="topbar__label">
+                <span id="userNameTop">Ім'я</span>
+                <span class="topbar__divider">|</span>
+                <span class="topbar__bot">VLKManageBot</span>
+            </p>
+        </header>
 
-            <div class="tag-row">
-                <p class="tag-row__tag" id="userTag">@юзертег</p>
-                <svg id="premiumStar" class="premium-star" viewBox="0 0 24 24" style="display:none;">
-                    <defs>
-                        <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#FFD469" />
-                            <stop offset="100%" stop-color="#FF9A45" />
-                        </linearGradient>
-                    </defs>
-                    <path fill="url(#starGradient)" d="M12 2.5l2.6 5.66 6.15.68-4.6 4.24 1.28 6.1L12 16.9l-5.43 2.28 1.28-6.1-4.6-4.24 6.15-.68z"/>
-                </svg>
+        <div class="viewport">
+            <div class="screens" id="screens">
+
+                <section class="screen" id="screen-profile">
+                    <div class="profile">
+                        <div class="avatar" id="avatar"></div>
+
+                        <div class="tag-row">
+                            <p class="tag-row__tag" id="userTag">@юзертег</p>
+                            <span id="premiumStar" class="premium-star" style="display:none;">⭐</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="screen" id="screen-chats">
+                    <div class="empty-state">
+                        <span class="empty-state__emoji">💬</span>
+                        <p class="empty-state__title">Чатів поки немає</p>
+                        <p class="empty-state__text">Тут з'являться твої чати</p>
+                    </div>
+                </section>
+
+                <section class="screen" id="screen-servers">
+                    <div class="empty-state">
+                        <span class="empty-state__emoji">🖥️</span>
+                        <p class="empty-state__title">Серверів поки немає</p>
+                        <p class="empty-state__text">Тут з'являться твої сервери</p>
+                    </div>
+                </section>
+
             </div>
+        </div>
 
-            <p class="profile__name" id="userName">Ім'я</p>
-        </main>
-
-        <nav class="tabbar">
-            <button class="tabbar__item tabbar__item--active" type="button">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9z" stroke="currentColor" stroke-width="1.7"/>
-                    <path d="M4 20.5c1.4-3.6 4.4-5.5 8-5.5s6.6 1.9 8 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
+        <nav class="tabbar" id="tabbar">
+            <button class="tabbar__item tabbar__item--active" type="button" data-index="0">
+                <span class="tabbar__emoji">👤</span>
                 <span>Профіль</span>
             </button>
 
-            <button class="tabbar__item" type="button">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 5.5A2.5 2.5 0 016.5 3h11A2.5 2.5 0 0120 5.5v8A2.5 2.5 0 0117.5 16H10l-4.5 4v-4H6.5A2.5 2.5 0 014 13.5v-8z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                </svg>
+            <button class="tabbar__item" type="button" data-index="1">
+                <span class="tabbar__emoji">💬</span>
                 <span>Чати</span>
             </button>
 
-            <button class="tabbar__item" type="button">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3.5" y="4" width="17" height="6.5" rx="2" stroke="currentColor" stroke-width="1.7"/>
-                    <rect x="3.5" y="13.5" width="17" height="6.5" rx="2" stroke="currentColor" stroke-width="1.7"/>
-                    <circle cx="7" cy="7.25" r="0.9" fill="currentColor"/>
-                    <circle cx="7" cy="16.75" r="0.9" fill="currentColor"/>
-                </svg>
+            <button class="tabbar__item" type="button" data-index="2">
+                <span class="tabbar__emoji">🖥️</span>
                 <span>Сервери</span>
             </button>
         </nav>
