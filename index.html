@@ -31,14 +31,17 @@
                             <p class="greeting__name" id="homeGreetingName">Користувач!</p>
                         </div>
                         <div class="home-header__actions">
-                            <button class="icon-btn theme-btn" id="themeToggle" type="button" aria-label="Змінити тему">
-                                <svg class="theme-btn__icon theme-btn__icon--sun" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="12" r="4.1" stroke="currentColor" stroke-width="1.5"/>
-                                    <path d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6L17 17M7 7L5.4 5.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                                </svg>
-                                <svg class="theme-btn__icon theme-btn__icon--moon" viewBox="0 0 24 24" fill="none">
-                                    <path d="M20 14.2A8.2 8.2 0 019.8 4a8.4 8.4 0 108.4 10.2c.6.06 1.2.06 1.8 0z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                                </svg>
+                            <button class="theme-btn" id="themeToggle" type="button" aria-label="Змінити тему">
+                                <span class="theme-btn__core">
+                                    <span class="theme-btn__disc"></span>
+                                    <span class="theme-btn__shade"></span>
+                                </span>
+                                <span class="theme-btn__rays">
+                                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                                </span>
+                                <span class="theme-btn__stars">
+                                    <i></i><i></i><i></i>
+                                </span>
                             </button>
                             <button class="icon-btn" id="settingsBtn" type="button" aria-label="Налаштування">
                                 <svg viewBox="0 0 24 24" fill="none">
@@ -170,39 +173,131 @@
         </nav>
 
         <!-- НАЛАШТУВАННЯ -->
-        <div class="sheet-backdrop" id="settingsBackdrop"></div>
-        <div class="sheet" id="settingsSheet">
-            <div class="sheet__handle"></div>
-            <p class="sheet__title">Налаштування</p>
-
-            <div class="setting-row">
-                <div class="setting-row__body">
-                    <p class="setting-row__title">Темна тема</p>
-                    <p class="setting-row__desc">Перемкнути оформлення</p>
-                </div>
-                <button class="switch switch--on" id="themeSwitch" type="button" role="switch" aria-checked="true">
-                    <span class="switch__knob"></span>
+        <div class="settings" id="settingsScreen">
+            <header class="settings__header">
+                <button class="settings__back" id="settingsBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </button>
-            </div>
+                <p class="settings__title">Налаштування</p>
+            </header>
 
-            <div class="setting-row">
-                <div class="setting-row__body">
-                    <p class="setting-row__title">Сповіщення</p>
-                    <p class="setting-row__desc">Повідомлення про квести</p>
-                </div>
-                <button class="switch switch--on" type="button" role="switch" aria-checked="true">
-                    <span class="switch__knob"></span>
-                </button>
-            </div>
+            <div class="settings__body">
 
-            <div class="setting-row">
-                <div class="setting-row__body">
-                    <p class="setting-row__title">Анімації</p>
-                    <p class="setting-row__desc">Плавні переходи</p>
+                <div class="settings-account">
+                    <div class="settings-account__avatar" id="settingsAvatar"></div>
+                    <div class="settings-account__body">
+                        <p class="settings-account__name" id="settingsName">Користувач</p>
+                        <p class="settings-account__tag" id="settingsTag">@юзертег</p>
+                    </div>
                 </div>
-                <button class="switch switch--on" type="button" role="switch" aria-checked="true">
-                    <span class="switch__knob"></span>
-                </button>
+
+                <p class="settings-group__label">Вигляд</p>
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Темна тема</p>
+                            <p class="setting-row__desc">Темне оформлення застосунку</p>
+                        </div>
+                        <button class="switch switch--on" id="themeSwitch" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Анімації</p>
+                            <p class="setting-row__desc">Плавні переходи між екранами</p>
+                        </div>
+                        <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Фонове свічення</p>
+                            <p class="setting-row__desc">Кольорові відблиски на фоні</p>
+                        </div>
+                        <button class="switch switch--on" id="orbsSwitch" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                </div>
+
+                <p class="settings-group__label">Сповіщення</p>
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Нові квести</p>
+                            <p class="setting-row__desc">Коли з'являється завдання</p>
+                        </div>
+                        <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Нагороди</p>
+                            <p class="setting-row__desc">Коли нараховано коіни</p>
+                        </div>
+                        <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Новини каналу</p>
+                            <p class="setting-row__desc">Оголошення та оновлення</p>
+                        </div>
+                        <button class="switch" type="button" role="switch" aria-checked="false"><span class="switch__knob"></span></button>
+                    </div>
+                </div>
+
+                <p class="settings-group__label">Приватність</p>
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Показувати профіль</p>
+                            <p class="setting-row__desc">Інші бачать твій рівень</p>
+                        </div>
+                        <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-row__body">
+                            <p class="setting-row__title">Рейтинг</p>
+                            <p class="setting-row__desc">Брати участь у таблиці лідерів</p>
+                        </div>
+                        <button class="switch switch--on" type="button" role="switch" aria-checked="true"><span class="switch__knob"></span></button>
+                    </div>
+                </div>
+
+                <p class="settings-group__label">Мова</p>
+                <div class="settings-group">
+                    <button class="setting-link" type="button">
+                        <span class="setting-row__body">
+                            <span class="setting-row__title">Мова застосунку</span>
+                            <span class="setting-row__desc">Українська</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+
+                <p class="settings-group__label">Інше</p>
+                <div class="settings-group">
+                    <button class="setting-link" type="button">
+                        <span class="setting-row__body">
+                            <span class="setting-row__title">Документація</span>
+                            <span class="setting-row__desc">Гайди та команди</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="setting-link" type="button">
+                        <span class="setting-row__body">
+                            <span class="setting-row__title">Підтримка</span>
+                            <span class="setting-row__desc">Написати адміністрації</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="setting-link" type="button">
+                        <span class="setting-row__body">
+                            <span class="setting-row__title">Про застосунок</span>
+                            <span class="setting-row__desc">Версія 1.0.0</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+
+                <p class="settings-footer">VLKManageBot · 1.0.0</p>
             </div>
         </div>
 
