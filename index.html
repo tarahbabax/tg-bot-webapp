@@ -10,7 +10,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
+<body data-theme="dark">
     <div class="page">
 
         <div class="orbs" aria-hidden="true">
@@ -31,10 +31,19 @@
                             <p class="greeting__name" id="homeGreetingName">Користувач!</p>
                         </div>
                         <div class="home-header__actions">
-                            <button class="icon-btn" type="button" aria-label="Налаштування">
+                            <button class="icon-btn theme-btn" id="themeToggle" type="button" aria-label="Змінити тему">
+                                <svg class="theme-btn__icon theme-btn__icon--sun" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="4.1" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6L17 17M7 7L5.4 5.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                <svg class="theme-btn__icon theme-btn__icon--moon" viewBox="0 0 24 24" fill="none">
+                                    <path d="M20 14.2A8.2 8.2 0 019.8 4a8.4 8.4 0 108.4 10.2c.6.06 1.2.06 1.8 0z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="settingsBtn" type="button" aria-label="Налаштування">
                                 <svg viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.5"/>
-                                    <path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2L5.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M19.1 14.4a1.6 1.6 0 00.3 1.8l.1.1a1.9 1.9 0 11-2.7 2.7l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5v.2a1.9 1.9 0 11-3.8 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a1.9 1.9 0 11-2.7-2.7l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a1.9 1.9 0 110-3.8h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a1.9 1.9 0 112.7-2.7l.1.1a1.6 1.6 0 001.8.3h.1a1.6 1.6 0 001-1.5V3a1.9 1.9 0 113.8 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a1.9 1.9 0 112.7 2.7l-.1.1a1.6 1.6 0 00-.3 1.8v.1a1.6 1.6 0 001.5 1h.2a1.9 1.9 0 110 3.8h-.1a1.6 1.6 0 00-1.5 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
                                 </svg>
                             </button>
                             <div class="mini-avatar" id="miniAvatar"></div>
@@ -99,11 +108,11 @@
                     </button>
                 </section>
 
-                <!-- ЧАТИ -->
-                <section class="screen" id="screen-chats">
+                <!-- ІГРИ -->
+                <section class="screen" id="screen-games">
                     <div class="empty-state">
-                        <p class="empty-state__title">Чатів поки немає</p>
-                        <p class="empty-state__text">Тут з'являться твої чати</p>
+                        <p class="empty-state__title">Ігор поки немає</p>
+                        <p class="empty-state__text">Тут з'являться ігри</p>
                     </div>
                 </section>
 
@@ -138,9 +147,11 @@
             </button>
             <button class="tabbar__item" type="button" data-index="1">
                 <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 6.4A2.4 2.4 0 016.4 4h11.2A2.4 2.4 0 0120 6.4v7.2a2.4 2.4 0 01-2.4 2.4H9.5L5 20v-4H6.4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path d="M7.6 7h8.8a4 4 0 013.9 3.1l1 4.4a2.5 2.5 0 01-4.5 2l-1.3-1.7H8.5L7.2 16.5a2.5 2.5 0 01-4.5-2l1-4.4A4 4 0 017.6 7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path d="M7.5 10.4v2.4M6.3 11.6h2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <circle cx="16" cy="11.4" r="1" fill="currentColor"/>
                 </svg>
-                <span>Чати</span>
+                <span>Ігри</span>
             </button>
             <button class="tabbar__item" type="button" data-index="2">
                 <svg viewBox="0 0 24 24" fill="none">
@@ -157,6 +168,43 @@
                 <span>Магазин</span>
             </button>
         </nav>
+
+        <!-- НАЛАШТУВАННЯ -->
+        <div class="sheet-backdrop" id="settingsBackdrop"></div>
+        <div class="sheet" id="settingsSheet">
+            <div class="sheet__handle"></div>
+            <p class="sheet__title">Налаштування</p>
+
+            <div class="setting-row">
+                <div class="setting-row__body">
+                    <p class="setting-row__title">Темна тема</p>
+                    <p class="setting-row__desc">Перемкнути оформлення</p>
+                </div>
+                <button class="switch switch--on" id="themeSwitch" type="button" role="switch" aria-checked="true">
+                    <span class="switch__knob"></span>
+                </button>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-row__body">
+                    <p class="setting-row__title">Сповіщення</p>
+                    <p class="setting-row__desc">Повідомлення про квести</p>
+                </div>
+                <button class="switch switch--on" type="button" role="switch" aria-checked="true">
+                    <span class="switch__knob"></span>
+                </button>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-row__body">
+                    <p class="setting-row__title">Анімації</p>
+                    <p class="setting-row__desc">Плавні переходи</p>
+                </div>
+                <button class="switch switch--on" type="button" role="switch" aria-checked="true">
+                    <span class="switch__knob"></span>
+                </button>
+            </div>
+        </div>
 
     </div>
 
