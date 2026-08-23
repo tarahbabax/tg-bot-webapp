@@ -39,9 +39,8 @@ function initUserData() {
 
 function initTabs() {
     const screens = document.getElementById("screens");
-    const tabbar = document.getElementById("tabbar");
-    const items = Array.from(tabbar.querySelectorAll(".tabbar__item"));
-    const totalScreens = items.length;
+    const items = Array.from(document.querySelectorAll(".tabbar__item"));
+    const total = items.length;
 
     items.forEach((item) => {
         item.addEventListener("click", () => {
@@ -50,10 +49,61 @@ function initTabs() {
             items.forEach((i) => i.classList.remove("tabbar__item--active"));
             item.classList.add("tabbar__item--active");
 
-            screens.style.transform = `translateX(-${index * (100 / totalScreens)}%)`;
+            screens.style.transform = `translateX(-${index * (100 / total)}%)`;
+        });
+    });
+}
+
+function initTheme() {
+    const toggleBtn = document.getElementById("themeToggle");
+    const themeSwitch = document.getElementById("themeSwitch");
+
+    function setTheme(theme) {
+        document.body.dataset.theme = theme;
+
+        const isDark = theme === "dark";
+        themeSwitch.classList.toggle("switch--on", isDark);
+        themeSwitch.setAttribute("aria-checked", String(isDark));
+    }
+
+    function toggleTheme() {
+        setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
+    }
+
+    toggleBtn.addEventListener("click", toggleTheme);
+    themeSwitch.addEventListener("click", toggleTheme);
+}
+
+function initSettingsSheet() {
+    const openBtn = document.getElementById("settingsBtn");
+    const sheet = document.getElementById("settingsSheet");
+    const backdrop = document.getElementById("settingsBackdrop");
+
+    function open() {
+        sheet.classList.add("sheet--open");
+        backdrop.classList.add("sheet-backdrop--open");
+    }
+
+    function close() {
+        sheet.classList.remove("sheet--open");
+        backdrop.classList.remove("sheet-backdrop--open");
+    }
+
+    openBtn.addEventListener("click", open);
+    backdrop.addEventListener("click", close);
+}
+
+function initSwitches() {
+    document.querySelectorAll(".switch:not(#themeSwitch)").forEach((sw) => {
+        sw.addEventListener("click", () => {
+            const isOn = sw.classList.toggle("switch--on");
+            sw.setAttribute("aria-checked", String(isOn));
         });
     });
 }
 
 initUserData();
 initTabs();
+initTheme();
+initSettingsSheet();
+initSwitches();
