@@ -1,3 +1,19 @@
+/**
+ * Обгортка над HTTP API бота.
+ *
+ * Кожен запит несе initData — підписаний Telegram рядок,
+ * за яким сервер перевіряє, що запит справді від цього користувача.
+ */
+
+/**
+ * Адреса бекенду.
+ *
+ * Розробка: фронтенд на GitHub Pages, сервер локально на ПК.
+ *   → працює лише в Telegram Desktop (телефон не бачить localhost твого ПК)
+ *
+ * Хостинг: замінити на публічну адресу сервісу,
+ *   напр. "https://vlkmanagebot.onrender.com"
+ */
 const API_URL = "http://localhost:8000";
 
 const initData = window.Telegram.WebApp.initData || "";
@@ -35,4 +51,10 @@ const API = {
         }),
 
     getUsers: () => request("/api/users"),
+
+    spinRoulette: (payload) =>
+        request("/api/game/roulette/spin", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
 };
