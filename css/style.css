@@ -1232,3 +1232,86 @@ body.no-anim *::after {
     font-size: 11.5px;
     color: var(--muted);
 }
+
+/* ---------- Users list ---------- */
+
+.users-count {
+    margin: 12px 0 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.users-list {
+    max-height: 244px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.users-list::-webkit-scrollbar { width: 3px; }
+.users-list::-webkit-scrollbar-thumb {
+    background: var(--stroke-strong);
+    border-radius: 3px;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 0;
+    border-top: 1px solid var(--stroke);
+}
+
+.user-row:first-child { border-top: none; }
+
+.user-row__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--c) 16%, transparent);
+    color: var(--c);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.user-row__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.user-row__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-row__tag {
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+.user-row__lvl {
+    flex-shrink: 0;
+    min-width: 26px;
+    padding: 3px 8px;
+    border-radius: 9px;
+    background: var(--surface-3);
+    border: 1px solid var(--stroke);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+#usersPanel.panel-drop--open { max-height: 320px; }
