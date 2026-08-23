@@ -5,16 +5,7 @@
  * за яким сервер перевіряє, що запит справді від цього користувача.
  */
 
-/**
- * Адреса бекенду.
- *
- * Розробка: фронтенд на GitHub Pages, сервер локально на ПК.
- *   → працює лише в Telegram Desktop (телефон не бачить localhost твого ПК)
- *
- * Хостинг: замінити на публічну адресу сервісу,
- *   напр. "https://vlkmanagebot.onrender.com"
- */
-const API_URL = "http://localhost:8000";
+const API_URL = "https://78.27.235.159.nip.io";
 
 const initData = window.Telegram.WebApp.initData || "";
 
