@@ -125,7 +125,7 @@
                     </header>
 
                     <div class="games">
-                        <button class="game-card game-card--featured" type="button">
+                        <button class="game-card game-card--featured" id="openRoulette" type="button">
                             <span class="game-card__icon">
                                 <svg viewBox="0 0 24 24" fill="none">
                                     <circle cx="12" cy="12" r="8.6" stroke="currentColor" stroke-width="1.6"/>
@@ -313,6 +313,85 @@
                     <p class="users-empty" id="usersEmpty" data-i18n="usersLoading">Завантаження…</p>
                 </div>
             </div>
+        </div>
+
+        <!-- РУЛЕТКА -->
+        <div class="fullscreen" id="rouletteScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="rouletteBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="wheelTitle">Колесо фортуни</p>
+            </header>
+
+            <div class="fullscreen__body roulette">
+
+                <div class="roulette-balances">
+                    <div class="roulette-balance">
+                        <span class="roulette-balance__value" id="rouletteCoins">0</span>
+                        <span class="roulette-balance__label" data-i18n="coins">Коіни</span>
+                    </div>
+                    <div class="roulette-balance">
+                        <span class="roulette-balance__value roulette-balance__value--donate" id="rouletteDonate">0</span>
+                        <span class="roulette-balance__label" data-i18n="donate">Донат-коіни</span>
+                    </div>
+                </div>
+
+                <div class="roulette-divider"></div>
+
+                <div class="wheel-wrap">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel">
+                        <div class="wheel__hub"></div>
+                    </div>
+                    <div class="ball-pivot" id="ballPivot">
+                        <div class="ball"></div>
+                    </div>
+                </div>
+
+                <div class="currency-select">
+                    <button class="currency-pill currency-pill--active" id="curCoins" type="button" data-currency="coins">
+                        <span data-i18n="coins">Коіни</span>
+                    </button>
+                    <button class="currency-pill" id="curDonate" type="button" data-currency="donate">
+                        <span data-i18n="donate">Донат-коіни</span>
+                    </button>
+                </div>
+
+                <div class="bet-row">
+                    <div class="bet-box">
+                        <span class="bet-box__label" data-i18n="betNumber">Число</span>
+                        <input class="bet-box__input" id="betNumber" type="number" min="0" max="36" placeholder="0–36" />
+                    </div>
+                    <div class="bet-box">
+                        <span class="bet-box__label" data-i18n="betAmount">Ставка</span>
+                        <input class="bet-box__input" id="betAmount" type="number" min="1" placeholder="0" />
+                    </div>
+                </div>
+
+                <div class="color-row">
+                    <button class="color-btn color-btn--red" id="colorRed" type="button" data-color="red">
+                        <span data-i18n="red">Червоне</span>
+                    </button>
+                    <button class="color-btn color-btn--black" id="colorBlack" type="button" data-color="black">
+                        <span data-i18n="black">Чорне</span>
+                    </button>
+                </div>
+
+                <button class="spin-btn" id="spinBtn" type="button" data-i18n="placeBet">Зробити ставку</button>
+                <p class="roulette-error" id="rouletteError"></p>
+
+            </div>
+        </div>
+
+        <!-- РЕЗУЛЬТАТ -->
+        <div class="modal-backdrop" id="winBackdrop"></div>
+        <div class="win-modal" id="winModal">
+            <p class="win-modal__amount" id="winAmount">+0</p>
+            <p class="win-modal__bet" id="winBetInfo">Ставка: 100 на червоне</p>
+            <button class="btn btn--accent win-modal__ok" id="winOk" type="button" data-i18n="ok">Добре!</button>
         </div>
 
         <!-- НАЛАШТУВАННЯ -->
