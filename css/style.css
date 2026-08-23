@@ -617,66 +617,9 @@ body[data-theme="light"] .theme-btn__rays { transform: rotate(-60deg) scale(0.35
 body[data-theme="light"] .theme-btn__disc { r: 8.4; }
 body[data-theme="light"] .theme-btn__cut { cx: 17.5; cy: 6.5; }
 
-/* ---------- Settings (fullscreen) ---------- */
+/* ---------- Settings ---------- */
 
-.settings {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg);
-    transform: translateX(100%);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease, background-color 0.45s ease;
-}
-
-.settings--open {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.settings__header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 20px 12px;
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--stroke);
-}
-
-.settings__back {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 1px solid var(--stroke);
-    border-radius: 50%;
-    background: var(--surface-2);
-    color: var(--ink);
-}
-
-.settings__back svg { width: 18px; height: 18px; }
-
-.settings__title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-}
-
-.settings__body {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 18px 20px 32px;
-}
+.settings__body { padding: 18px 20px 32px; }
 
 .settings-account {
     display: flex;
@@ -1233,49 +1176,110 @@ body.no-anim *::after {
     color: var(--muted);
 }
 
-/* ---------- Users list ---------- */
+/* ---------- Fullscreen overlay (спільне для налаштувань і користувачів) ---------- */
 
-.users-count {
-    margin: 12px 0 4px;
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--muted);
+.fullscreen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease, background-color 0.45s ease;
 }
 
-.users-list {
-    max-height: 244px;
+.fullscreen--open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.fullscreen__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 20px 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--stroke);
+}
+
+.fullscreen__back {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--stroke);
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+.fullscreen__back svg { width: 18px; height: 18px; }
+
+.fullscreen__title {
+    margin: 0;
+    flex: 1;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.fullscreen__count {
+    flex-shrink: 0;
+    padding: 4px 11px;
+    border-radius: 10px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.fullscreen__body {
+    flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    padding: 14px 20px 30px;
 }
 
-.users-list::-webkit-scrollbar { width: 3px; }
-.users-list::-webkit-scrollbar-thumb {
-    background: var(--stroke-strong);
-    border-radius: 3px;
-}
+/* ---------- Users list ---------- */
 
 .user-row {
     display: flex;
     align-items: center;
-    gap: 11px;
-    padding: 9px 0;
-    border-top: 1px solid var(--stroke);
+    gap: 12px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    transition: background-color 0.45s ease, border-color 0.45s ease;
 }
 
-.user-row:first-child { border-top: none; }
+.user-row--me {
+    border-color: rgba(110, 139, 255, 0.35);
+    background: var(--accent-dim);
+}
 
 .user-row__avatar {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--c) 16%, transparent);
+    background-color: color-mix(in srgb, var(--c) 16%, transparent);
+    background-size: cover;
+    background-position: center;
     color: var(--c);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 800;
 }
 
@@ -1284,11 +1288,14 @@ body.no-anim *::after {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
 }
 
 .user-row__name {
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13.5px;
     font-weight: 700;
     color: var(--ink);
     white-space: nowrap;
@@ -1296,22 +1303,47 @@ body.no-anim *::after {
     text-overflow: ellipsis;
 }
 
+.user-row__me-badge {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
 .user-row__tag {
-    font-size: 11.5px;
+    font-size: 12px;
     color: var(--muted);
 }
 
 .user-row__lvl {
     flex-shrink: 0;
-    min-width: 26px;
-    padding: 3px 8px;
-    border-radius: 9px;
-    background: var(--surface-3);
-    border: 1px solid var(--stroke);
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
 }
 
-#usersPanel.panel-drop--open { max-height: 320px; }
+.user-row__lvl-value {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--teal);
+}
+
+.user-row__lvl-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.users-empty {
+    margin: 40px 0 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+}
