@@ -27,6 +27,9 @@ function initUserData() {
     const settingsAvatarEl = document.getElementById("settingsAvatar");
 
     document.getElementById("profileName").textContent = fullName;
+
+    const level = document.getElementById("profileLevel").textContent;
+    document.getElementById("profileBadge").textContent = level;
     settingsNameEl.textContent = fullName;
     settingsTagEl.textContent = tagEl.textContent;
 
@@ -90,7 +93,34 @@ function initSettings() {
     const screen = document.getElementById("settingsScreen");
 
     openBtn.addEventListener("click", () => screen.classList.add("settings--open"));
-    backBtn.addEventListener("click", () => screen.classList.remove("settings--open"));
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("settings--open");
+        collapseAll();
+    });
+
+    function collapseAll() {
+        document.getElementById("langOptions").classList.remove("lang-options--open");
+        document.getElementById("langToggle").classList.remove("setting-link--open");
+        document.querySelectorAll(".panel-drop").forEach((p) => p.classList.remove("panel-drop--open"));
+        document.querySelectorAll(".expander").forEach((b) => b.classList.remove("setting-link--open"));
+    }
+}
+
+function initExpanders() {
+    document.querySelectorAll(".expander").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const panel = document.getElementById(btn.dataset.expands);
+            const willOpen = !panel.classList.contains("panel-drop--open");
+
+            document.querySelectorAll(".panel-drop").forEach((p) => p.classList.remove("panel-drop--open"));
+            document.querySelectorAll(".expander").forEach((b) => b.classList.remove("setting-link--open"));
+
+            if (willOpen) {
+                panel.classList.add("panel-drop--open");
+                btn.classList.add("setting-link--open");
+            }
+        });
+    });
 }
 
 function initSwitchesAndToggles() {
@@ -135,9 +165,19 @@ const TRANSLATIONS = {
         other: "Інше", support: "Підтримка", supportDesc: "Написати адміністрації",
         about: "Про застосунок", version: "Версія 1.0.0",
         aboutMe: "Про мене", editBio: "Редагувати", bioEmpty: "Опис поки порожній",
-        favChat: "Улюблений чат", chatEmpty: "Не вибрано", save: "Зберегти", cancel: "Скасувати",
+        save: "Зберегти", cancel: "Скасувати",
         functions: "Функції", inventory: "Інвентар", commands: "Команди", emoji: "Емоджі",
         skins: "Вітрина скінів", topVisibility: "Видимість у топах", openProfile: "Відкрити профіль",
+        docsLead: "Основне, що варто знати про застосунок.",
+        docsStart: "Відкриває головне меню бота",
+        docsQuestsKey: "Квести", docsQuests: "Виконуй завдання і отримуй коіни за кожне",
+        docsLevelKey: "Рівень", docsLevel: "Росте з накопиченими коінами і відкриває нові можливості",
+        docsCoinsKey: "Донат-коіни", docsCoins: "Окрема валюта для магазину, купується окремо",
+        supportLead: "Щось не працює або є ідея? Напиши — розберемось.",
+        supportNote: "Відповідь зазвичай протягом доби.",
+        aboutLead: "VLKManageBot — застосунок-менеджер для Telegram-каналу: квести, рівні, внутрішня валюта та керування спільнотою в одному місці.",
+        aboutAuthorKey: "Автор", aboutAuthor: "Владислав (@vlod12k) — ідея, дизайн і розробка",
+        aboutVersionKey: "Версія", aboutStackKey: "Технології",
         q1t: "Щоденний вхід", q1d: "Заходь щодня в застосунок",
         q2t: "Напиши в чат", q2d: "Залиш повідомлення в чаті",
         q3t: "Заверши профіль", q3d: "Заповни дані профілю",
@@ -170,9 +210,19 @@ const TRANSLATIONS = {
         other: "Other", support: "Support", supportDesc: "Contact the admins",
         about: "About the app", version: "Version 1.0.0",
         aboutMe: "About me", editBio: "Edit", bioEmpty: "No description yet",
-        favChat: "Favourite chat", chatEmpty: "Not selected", save: "Save", cancel: "Cancel",
+        save: "Save", cancel: "Cancel",
         functions: "Functions", inventory: "Inventory", commands: "Commands", emoji: "Emoji",
         skins: "Skin showcase", topVisibility: "Leaderboard visibility", openProfile: "Open profile",
+        docsLead: "The essentials worth knowing about the app.",
+        docsStart: "Opens the bot's main menu",
+        docsQuestsKey: "Quests", docsQuests: "Complete tasks and earn coins for each one",
+        docsLevelKey: "Level", docsLevel: "Grows with the coins you collect and unlocks new features",
+        docsCoinsKey: "Premium coins", docsCoins: "A separate shop currency, purchased on its own",
+        supportLead: "Something broken or got an idea? Message me and we'll sort it out.",
+        supportNote: "Usually answered within a day.",
+        aboutLead: "VLKManageBot is a manager app for a Telegram channel: quests, levels, in-app currency and community tools in one place.",
+        aboutAuthorKey: "Author", aboutAuthor: "Vladyslav (@vlod12k) — idea, design and development",
+        aboutVersionKey: "Version", aboutStackKey: "Built with",
         q1t: "Daily login", q1d: "Open the app every day",
         q2t: "Write in chat", q2d: "Leave a message in the chat",
         q3t: "Complete profile", q3d: "Fill in your profile details",
@@ -299,11 +349,6 @@ function initProfileEditors() {
         editBtn: "bioEdit", editor: "bioEditor", input: "bioInput",
         counter: "bioCounter", text: "bioText", saveBtn: "bioSave", cancelBtn: "bioCancel"
     });
-    initEditor({
-        key: "favChat", max: 60, emptyKey: "chatEmpty", emptyText: "Не вибрано",
-        editBtn: "chatEdit", editor: "chatEditor", input: "chatInput",
-        counter: "chatCounter", text: "chatText", saveBtn: "chatSave", cancelBtn: "chatCancel"
-    });
 }
 
 initUserData();
@@ -311,5 +356,6 @@ initProfileEditors();
 initTabs();
 initTheme();
 initSettings();
+initExpanders();
 initLanguage();
 initSwitchesAndToggles();
