@@ -1025,6 +1025,7 @@ function renderShopItems(items) {
 }
 
 function openItemDetail(item) {
+    // Зберігаємо весь об'єкт, а не тільки id — щоб id не загубився при закритті
     selectedItemId = item.item_id;
     const modal = document.getElementById("itemDetailModal");
     const backdrop = document.getElementById("itemDetailBackdrop");
@@ -1057,15 +1058,28 @@ function openItemDetail(item) {
     const deleteBtn = document.getElementById("deleteItemBtn");
     const restockBtn = document.getElementById("restockItemBtn");
 
-    // Звичайний юзер не може купити закінчений товар (сервер не дасть побачити,
-    // але на всяк випадок — блокуємо і кнопки)
-    buyCoins.style.display = (!isAdmin && isOut) ? "none" : "block";
-    buyDonate.style.display = (!isAdmin && isOut) ? "none" : "block";
-    buyCoins.disabled = isOut;
-    buyDonate.disabled = isOut;
-
-    deleteBtn.style.display = isAdmin ? "block" : "none";
-    restockBtn.style.display = isAdmin ? "block" : "none";
+    // Для адміна коли товар закінчився — тільки restock і delete
+    if (isAdmin && isOut) {
+        buyCoins.style.display = "none";
+        buyDonate.style.display = "none";
+        restockBtn.style.display = "block";
+        deleteBtn.style.display = "block";
+    } else if (isAdmin) {
+        buyCoins.style.display = "block";
+        buyDonate.style.display = "block";
+        buyCoins.disabled = false;
+        buyDonate.disabled = false;
+        restockBtn.style.display = "block";
+        deleteBtn.style.display = "block";
+    } else {
+        // Звичайний юзер — тільки купити
+        buyCoins.style.display = "block";
+        buyDonate.style.display = "block";
+        buyCoins.disabled = isOut;
+        buyDonate.disabled = isOut;
+        restockBtn.style.display = "none";
+        deleteBtn.style.display = "none";
+    }
 
     modal.classList.add("item-detail-modal--open");
     backdrop.classList.add("modal-backdrop--open");
@@ -1074,7 +1088,7 @@ function openItemDetail(item) {
 function closeItemDetail() {
     document.getElementById("itemDetailModal").classList.remove("item-detail-modal--open");
     document.getElementById("itemDetailBackdrop").classList.remove("modal-backdrop--open");
-    selectedItemId = null;
+    // НЕ скидаємо selectedItemId тут — скидаємо лише після виконання дії
 }
 
 function openScreen(id) {
@@ -1263,57 +1277,84 @@ function initShop() {
     });
 
     // Закрити деталь товару
-    document.getElementById("itemDetailClose")?.addEventListener("click", closeItemDetail);
-    document.getElementById("itemDetailBackdrop")?.addEventListener("click", closeItemDetail);
+    document.getElementById("itemDetailClose")?.addEventListener("click", () => {
+        closeItemDetail();
+        selectedItemId = null;
+    });
+    document.getElementById("itemDetailBackdrop")?.addEventListener("click", () => {
+        closeItemDetail();
+        selectedItemId = null;
+    });
     document.getElementById("confirmBackdrop")?.addEventListener("click", closeConfirm);
     document.getElementById("confirmNo")?.addEventListener("click", closeConfirm);
 
-    // Купівля
+    // Купівля — id фіксуємо в момент кліку, до закриття модалки
     async function doBuy(currency) {
-        if (!selectedItemId) return;
+        const itemId = selectedItemId;
+        if (!itemId) { alert("Помилка: товар не обрано"); return; }
         try {
-            const r = await API.buyItem(selectedItemId, currency);
+            const r = await API.buyItem(itemId, currency);
             closeItemDetail();
+            selectedItemId = null;
+
+            // Оновлюємо баланс скрізь
             document.getElementById("statCoins").textContent = r.balance.coins;
             document.getElementById("statDonate").textContent = r.balance.donate;
             document.getElementById("profileCoins").textContent = r.balance.coins;
             document.getElementById("profileDonate").textContent = r.balance.donate;
             syncShopBalances();
+
+            // Оновлюємо товари в магазині
             await loadShopItems();
-            // Завжди оновлюємо інвентар після покупки
+
+            // Оновлюємо інвентар (і в магазині, і у профілі)
             await loadInventory();
+            await loadInventoryScreen();
         } catch (e) {
-            alert(e.message.includes("400") ? "Недостатньо коштів або товар закінчився" : "Помилка");
+            const msg = e.message || "";
+            if (msg.includes("400") || msg.includes("Недостатньо") || msg.includes("закінчився")) {
+                alert("Недостатньо коштів або товар закінчився");
+            } else {
+                alert("Помилка покупки: " + msg);
+            }
         }
     }
 
     document.getElementById("buyCoinsBtn")?.addEventListener("click", () => doBuy("coins"));
     document.getElementById("buyDonateBtn")?.addEventListener("click", () => doBuy("donate"));
 
-    // Видалення
+    // Видалення — id фіксуємо ДО відкриття confirm
     document.getElementById("deleteItemBtn")?.addEventListener("click", () => {
-        openConfirm("Видалити цей предмет з магазину? Куплені екземпляри залишаться в інвентарях.", async () => {
+        const itemId = selectedItemId;
+        if (!itemId) return;
+        openConfirm("Видалити цей предмет з магазину?\nКуплені екземпляри залишаться в інвентарях.", async () => {
             try {
-                await API.deleteItem(selectedItemId);
+                await API.deleteItem(itemId);
                 closeItemDetail();
+                selectedItemId = null;
                 await loadShopItems();
             } catch (e) {
-                alert("Помилка видалення: " + e.message);
+                alert("Помилка видалення: " + (e.message || "невідома"));
             }
         });
     });
 
-    // Поповнення кількості
+    // Поповнення кількості — id фіксуємо ДО prompt і confirm
     document.getElementById("restockItemBtn")?.addEventListener("click", () => {
-        const amount = parseInt(prompt("Скільки одиниць додати?") || "0");
-        if (!amount || amount <= 0) return;
+        const itemId = selectedItemId;
+        if (!itemId) return;
+        const raw = prompt("Скільки одиниць додати?");
+        if (raw === null) return; // натиснули Скасувати
+        const amount = parseInt(raw);
+        if (!amount || amount <= 0) { alert("Вкажи число більше 0"); return; }
         openConfirm(`Додати ${amount} одиниць товару?`, async () => {
             try {
-                await API.restockItem(selectedItemId, amount);
+                await API.restockItem(itemId, amount);
                 closeItemDetail();
+                selectedItemId = null;
                 await loadShopItems();
             } catch (e) {
-                alert("Помилка: " + e.message);
+                alert("Помилка поповнення: " + (e.message || "невідома"));
             }
         });
     });
