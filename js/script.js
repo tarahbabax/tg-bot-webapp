@@ -979,7 +979,7 @@ function renderShopItems(items) {
 
     // прибираємо старі картки (але не empty-state)
     Array.from(grid.children).forEach(c => {
-        if (c !== empty) c.remove();
+        if (c.id !== 'shopEmptyState') c.remove();
     });
 
     if (!items.length) {
@@ -1062,18 +1062,21 @@ function closeScreen(id) {
     document.getElementById(id).classList.remove("fullscreen--open");
 }
 
+let _confirmController = null;
+
 function openConfirm(text, onYes) {
     document.getElementById("confirmText").textContent = text;
     document.getElementById("confirmBackdrop").classList.add("modal-backdrop--open");
     document.getElementById("confirmModal").classList.add("win-modal--open");
 
-    const yesBtn = document.getElementById("confirmYes");
-    const clone = yesBtn.cloneNode(true);
-    yesBtn.parentNode.replaceChild(clone, clone.parentNode.querySelector("#confirmYes") || yesBtn);
+    // Відміняємо попередній listener якщо він є
+    if (_confirmController) _confirmController.abort();
+    _confirmController = new AbortController();
+
     document.getElementById("confirmYes").addEventListener("click", () => {
         closeConfirm();
         onYes();
-    }, { once: true });
+    }, { once: true, signal: _confirmController.signal });
 }
 
 function closeConfirm() {
