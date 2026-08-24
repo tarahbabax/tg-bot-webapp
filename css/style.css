@@ -209,6 +209,7 @@ button {
     height: 100%;
     transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
+    overflow: hidden;
 }
 
 .screen {
@@ -2694,7 +2695,10 @@ body.no-anim *::after {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.03em;
+    z-index: 1;
 }
+
+.shop-item-gift { overflow: hidden; }
 
 .item-detail-modal__actions .btn:disabled {
     opacity: 0.4;
