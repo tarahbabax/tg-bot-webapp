@@ -76,11 +76,21 @@ function ensureDialog() {
     input.style.display = "none";
     input.style.marginBottom = "18px";
 
-    const actions = el("div", "confirm-modal__actions");
-    const no  = el("button", "btn btn--ghost",  t("cancel"));
-    const yes = el("button", "btn btn--accent", t("confirm"));
+    // Кнопки-іконки: хрестик і галочка (макет 2)
+    const actions = el("div", "dialog-icons");
+
+    const no = el("button", "dialog-icon-btn dialog-icon-btn--no");
     no.id = "appDialogNo";
+    no.type = "button";
+    no.setAttribute("aria-label", "Ні");
+    no.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+
+    const yes = el("button", "dialog-icon-btn dialog-icon-btn--yes");
     yes.id = "appDialogYes";
+    yes.type = "button";
+    yes.setAttribute("aria-label", "Так");
+    yes.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
     actions.append(no, yes);
 
     modal.append(title, text, input, actions);
@@ -115,8 +125,6 @@ function dialog({ title, text = "", input = false, confirmLabel }) {
 
     document.getElementById("appDialogTitle").textContent = title;
     document.getElementById("appDialogText").textContent  = text;
-    document.getElementById("appDialogNo").textContent    = t("cancel");
-    document.getElementById("appDialogYes").textContent   = confirmLabel || t("confirm");
 
     inputEl.style.display = input ? "block" : "none";
     inputEl.value = "";
