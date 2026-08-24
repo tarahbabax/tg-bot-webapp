@@ -1159,49 +1159,58 @@ async function loadShopItems() {
     }
 }
 
+function buildItemCard(item) {
+    const el = document.createElement("div");
+    if (item.type === "gift") {
+        el.className = "shop-item-gift";
+        el.innerHTML = `
+            <div style="position:relative;">
+                ${item.photo_url
+                    ? `<img class="shop-item-gift__img" src="${item.photo_url}">`
+                    : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
+            </div>
+            <div class="shop-item-gift__body">
+                <p class="shop-item-gift__name">${item.name}</p>
+                <p class="shop-item-gift__type">Подарунок</p>
+            </div>`;
+    } else {
+        el.className = "shop-item-prefix";
+        el.innerHTML = `
+            <span class="shop-item-prefix__tag" style="color:${item.prefix_color || '#fff'}">${item.prefix_text}</span>
+            <span class="shop-item-prefix__body">
+                <span class="shop-item-prefix__name">${item.name}</span>
+            </span>`;
+    }
+    return el;
+}
+
 async function loadInventoryScreen() {
-    // Рендерить інвентар прямо в fullscreen #inventoryScreen
     const screen = document.getElementById("inventoryScreen");
     if (!screen) return;
-    let grid = screen.querySelector(".inv-screen-grid");
+    const body = screen.querySelector(".fullscreen__body");
+
+    let grid = body.querySelector(".inv-screen-grid");
     if (!grid) {
         grid = document.createElement("div");
         grid.className = "inv-screen-grid shop-grid";
-        screen.querySelector(".fullscreen__body").appendChild(grid);
+        body.appendChild(grid);
     }
-    grid.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:var(--muted);padding:20px'>Завантаження...</p>";
+    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px">Завантаження...</p>`;
 
     try {
         const data = await API.getInventory();
         grid.innerHTML = "";
-        if (!data.items.length) {
-            grid.innerHTML = "<div class='shop-empty'><p class='empty-state__title'>Інвентар порожній</p><p class='empty-state__text'>Придбай предмети у магазині</p></div>";
+
+        if (!data.items || !data.items.length) {
+            grid.innerHTML = `<div class="shop-empty">
+                <p class="empty-state__title">Інвентар порожній</p>
+                <p class="empty-state__text">Придбай предмети у магазині</p>
+            </div>`;
             return;
         }
-        data.items.forEach(item => {
-            const el = document.createElement("div");
-            if (item.type === "gift") {
-                el.className = "shop-item-gift";
-                el.innerHTML = `
-                    ${item.photo_url
-                        ? `<img class="shop-item-gift__img" src="${item.photo_url}">`
-                        : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
-                    <div class="shop-item-gift__body">
-                        <p class="shop-item-gift__name">${item.name}</p>
-                        <p class="shop-item-gift__type">Подарунок</p>
-                    </div>`;
-            } else {
-                el.className = "shop-item-prefix";
-                el.innerHTML = `
-                    <span class="shop-item-prefix__tag" style="color:${item.prefix_color}">${item.prefix_text}</span>
-                    <span class="shop-item-prefix__body">
-                        <span class="shop-item-prefix__name">${item.name}</span>
-                    </span>`;
-            }
-            grid.appendChild(el);
-        });
+        data.items.forEach(item => grid.appendChild(buildItemCard(item)));
     } catch (e) {
-        grid.innerHTML = "<div class='shop-empty'><p class='empty-state__title'>Помилка завантаження</p></div>";
+        grid.innerHTML = `<div class="shop-empty"><p class="empty-state__title">Помилка завантаження</p></div>`;
     }
 }
 
@@ -1214,40 +1223,22 @@ async function loadInventory() {
     }
 }
 
+
 function renderInventory(items) {
     const container = document.getElementById("invContainer");
     if (!container) return;
     container.innerHTML = "";
 
-    if (!items.length) {
-        container.innerHTML = '<div class="shop-empty"><p class="empty-state__title">Інвентар порожній</p><p class="empty-state__text">Придбай предмети у магазині</p></div>';
+    if (!items || !items.length) {
+        container.innerHTML = `<div class="shop-empty">
+            <p class="empty-state__title">Інвентар порожній</p>
+            <p class="empty-state__text">Придбай предмети у магазині</p>
+        </div>`;
         return;
     }
-
-    // items є, рендеримо
-    items.forEach(item => {
-        const el = document.createElement("div");
-        if (item.type === "gift") {
-            el.className = "shop-item-gift";
-            el.innerHTML = `
-                ${item.photo_url
-                    ? `<img class="shop-item-gift__img" src="${item.photo_url}">`
-                    : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
-                <div class="shop-item-gift__body">
-                    <p class="shop-item-gift__name">${item.name}</p>
-                    <p class="shop-item-gift__type">Подарунок</p>
-                </div>`;
-        } else {
-            el.className = "shop-item-prefix";
-            el.innerHTML = `
-                <span class="shop-item-prefix__tag" style="color:${item.prefix_color}">${item.prefix_text}</span>
-                <span class="shop-item-prefix__body">
-                    <span class="shop-item-prefix__name">${item.name}</span>
-                </span>`;
-        }
-        container.appendChild(el);
-    });
+    items.forEach(item => container.appendChild(buildItemCard(item)));
 }
+
 
 function initShop() {
     // Таби магазину
