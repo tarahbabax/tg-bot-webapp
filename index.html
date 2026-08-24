@@ -101,35 +101,20 @@
                     <div class="divider"></div>
                     <p class="section-label" data-i18n="info">Інформація</p>
 
-                    <button class="docs-card" id="docsOpen" type="button">
-                        <span class="docs-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.5"/>
-                                <path d="M14.9 9.1l-1.6 4.2-4.2 1.6 1.6-4.2 4.2-1.6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
-                        <span class="docs-card__body">
-                            <span class="docs-card__title" data-i18n="docs">Документація</span>
-                            <span class="docs-card__desc" data-i18n="docsDesc">Гайди, команди та інструкції</span>
-                        </span>
-                        <svg class="docs-card__chevron" viewBox="0 0 24 24" fill="none">
-                            <path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
-
-                    <button class="docs-card" type="button" style="opacity:0.55;">
-                        <span class="docs-card__icon" style="background:rgba(167,139,250,0.14);color:#A78BFA;">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                                <path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                            </svg>
-                        </span>
-                        <span class="docs-card__body">
-                            <span class="docs-card__title" data-i18n="tops">Топи</span>
-                            <span class="docs-card__desc" data-i18n="topsDesc">Рейтинги гравців</span>
-                        </span>
-                        <span style="font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;" data-i18n="soon">Незабаром</span>
-                    </button>
+                    <div class="home-cards-row">
+                        <button class="home-card" id="docsOpen" type="button">
+                            <span class="home-card__icon" style="background:rgba(110,139,255,0.13);color:var(--accent);">
+                                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.5"/><path d="M14.9 9.1l-1.6 4.2-4.2 1.6 1.6-4.2 4.2-1.6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                            </span>
+                            <span class="home-card__title" data-i18n="docs">Документація</span>
+                        </button>
+                        <button class="home-card" type="button" style="opacity:0.55;" disabled>
+                            <span class="home-card__icon" style="background:rgba(167,139,250,0.13);color:#A78BFA;">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            </span>
+                            <span class="home-card__title" data-i18n="tops">Топи</span>
+                        </button>
+                    </div>
                 </section>
 
                 <!-- ІГРИ -->
@@ -240,7 +225,7 @@
 
                     <p class="settings-group__label profile-section-label" data-i18n="functions">Функції</p>
                     <div class="settings-group">
-                        <button class="setting-link" type="button">
+                        <button class="setting-link" id="inventoryOpen" type="button">
                             <span class="fn-icon fn-icon--teal"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.4l7.4 4.3v8.6L12 20.6l-7.4-4.3V7.7L12 3.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4.6 7.7L12 12l7.4-4.3M12 12v8.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="inventory">Інвентар</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -260,7 +245,7 @@
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="topVisibility">Видимість у топах</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                        <button class="setting-link" type="button">
+                        <button class="setting-link" id="showcaseOpen" type="button">
                             <span class="fn-icon fn-icon--accent"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l2.5 5.3 5.6.8-4 4 .9 5.7-5-2.7-5 2.7.9-5.7-4-4 5.6-.8L12 3.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="showcase">Вітрина</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -304,11 +289,17 @@
                         <input class="shop-search__input" type="text" data-i18n-placeholder="shopSearch" placeholder="Пошук за назвою"/>
                     </div>
 
-                    <button class="shop-filter" type="button">
+                    <button class="shop-filter" id="shopFilterBtn" type="button">
                         <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                         <span data-i18n="shopFilter">Тип предмета</span>
-                        <svg class="shop-filter__chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        <svg class="shop-filter__chevron" id="shopFilterChevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                     </button>
+                    <div class="filter-drop" id="shopFilterDrop">
+                        <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
+                        <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterCase">Кейс</span></label>
+                        <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterGift">Подарунок</span></label>
+                        <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterPrefix">Префікс</span></label>
+                    </div>
 
                     <div class="shop-grid">
                         <div class="empty-state" style="padding-top:40px;">
@@ -477,6 +468,61 @@
 
                 <button class="spin-btn" id="visSave" type="button" style="margin-top:20px;" data-i18n="save">Зберегти</button>
                 <p class="roulette-error" id="visResult"></p>
+            </div>
+        </div>
+
+        <!-- ІНВЕНТАР -->
+        <div class="fullscreen" id="inventoryScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="inventoryBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="inventory">Інвентар</p>
+            </header>
+            <div class="fullscreen__body">
+                <div class="shop-search">
+                    <svg class="shop-search__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    <input class="shop-search__input" type="text" placeholder="Пошук за назвою"/>
+                </div>
+                <button class="shop-filter" id="invFilterBtn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    <span data-i18n="shopFilter">Тип предмета</span>
+                    <svg class="shop-filter__chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </button>
+                <div class="filter-drop" id="invFilterDrop">
+                    <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
+                    <label class="filter-opt"><input type="checkbox" data-i18n-label="filterCase"> <span data-i18n="filterCase">Кейс</span></label>
+                    <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterGift">Подарунок</span></label>
+                    <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterPrefix">Префікс</span></label>
+                </div>
+                <div class="empty-state" style="padding-top:30px;">
+                    <svg viewBox="0 0 24 24" fill="none" style="width:38px;height:38px;margin-bottom:10px;color:var(--muted)"><path d="M12 3.4l7.4 4.3v8.6L12 20.6l-7.4-4.3V7.7L12 3.4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                    <p class="empty-state__title" data-i18n="invEmpty">Інвентар порожній</p>
+                    <p class="empty-state__text" data-i18n="invEmptyDesc">Придбай предмети у магазині</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВІТРИНА -->
+        <div class="fullscreen" id="showcaseScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="showcaseBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="showcase">Вітрина</p>
+            </header>
+            <div class="fullscreen__body">
+                <p class="visibility-desc" data-i18n="showcaseDesc">Вітрина видна у твоєму публічному профілі.</p>
+                <div class="showcase-slots">
+                    <div class="empty-state" style="padding-top:30px;">
+                        <p class="empty-state__title" data-i18n="showcaseEmpty">Вітрина порожня</p>
+                        <p class="empty-state__text" data-i18n="showcaseEmptyDesc">Додай предмети з інвентарю</p>
+                    </div>
+                </div>
+                <div class="showcase-footer">
+                    <button class="btn btn--ghost showcase-footer__btn" type="button" data-i18n="addItem">Додати скін</button>
+                    <button class="btn btn--accent showcase-footer__btn" type="button" data-i18n="save">Зберегти</button>
+                </div>
             </div>
         </div>
 
