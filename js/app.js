@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 6. Магазин (всередині: інвентар, вітрина, топи, форми)
     initShop();
+    initAdminTools();
     initDocsScreen();
 
     // 7. Рулетка
