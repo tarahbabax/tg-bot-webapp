@@ -561,6 +561,15 @@
                     <label class="item-form__label" data-i18n="stockTotal">Кількість (всього)</label>
                     <input class="bio-editor__input" id="giftStock" type="number" min="1" placeholder="1">
                 </div>
+                <div class="sell-toggle">
+                    <div class="sell-toggle__body">
+                        <span class="sell-toggle__title" data-i18n="canSell">Можна продати</span>
+                        <span class="sell-toggle__desc" data-i18n="canSellDesc">Гравець зможе продати за пів ціни</span>
+                    </div>
+                    <button class="switch switch--on" id="giftSellable" type="button" role="switch" aria-checked="true">
+                        <span class="switch__knob"></span>
+                    </button>
+                </div>
                 <p class="roulette-error" id="giftError"></p>
                 <button class="spin-btn" id="giftSubmit" type="button" data-i18n="addItemBtn">Додати предмет</button>
             </div>
@@ -611,6 +620,15 @@
                     <label class="item-form__label" data-i18n="stockTotal">Кількість (всього)</label>
                     <input class="bio-editor__input" id="prefixStock" type="number" min="1" placeholder="1">
                 </div>
+                <div class="sell-toggle">
+                    <div class="sell-toggle__body">
+                        <span class="sell-toggle__title" data-i18n="canSell">Можна продати</span>
+                        <span class="sell-toggle__desc" data-i18n="canSellDesc">Гравець зможе продати за пів ціни</span>
+                    </div>
+                    <button class="switch switch--on" id="prefixSellable" type="button" role="switch" aria-checked="true">
+                        <span class="switch__knob"></span>
+                    </button>
+                </div>
                 <p class="roulette-error" id="prefixError"></p>
                 <button class="spin-btn" id="prefixSubmit" type="button" data-i18n="addItemBtn">Додати предмет</button>
             </div>
@@ -629,44 +647,117 @@
 
         <!-- КАРТКА ТОВАРУ (ДЕТАЛІ + ПОКУПКА + ВИДАЛЕННЯ) -->
         <div class="modal-backdrop" id="itemDetailBackdrop"></div>
-        <div class="item-detail-modal" id="itemDetailModal">
-            <button class="item-detail-modal__close" id="itemDetailClose" type="button">
+        <div class="item-detail-modal item-sheet" id="itemDetailModal">
+            <button class="item-detail-modal__close" id="itemDetailClose" type="button" aria-label="Закрити">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </button>
-            <div class="item-hero" id="itemDetailHero">
-                <img class="item-hero__img" id="itemDetailImg" src="" alt="" style="display:none;">
-                <div class="item-hero__prefix" id="itemDetailPrefix" style="display:none;"></div>
+            <div class="item-hero" id="itemDetailHero"></div>
+            <div class="item-sheet__info">
+                <p class="item-sheet__name" id="itemDetailName"></p>
+                <p class="item-sheet__desc" id="itemDetailDesc"></p>
+                <p class="item-sheet__stock" id="itemDetailStock"></p>
             </div>
-            <p class="item-detail-modal__name" id="itemDetailName"></p>
-            <p class="item-detail-modal__desc" id="itemDetailDesc"></p>
-            <div class="item-detail-modal__prices">
-                <span class="item-detail-modal__price item-detail-modal__price--coins" id="itemDetailCoins"></span>
-                <span class="item-detail-modal__price item-detail-modal__price--donate" id="itemDetailDonate"></span>
+            <div class="item-sheet__prices">
+                <div class="price-chip price-chip--coins">
+                    <span class="price-chip__icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7.6" stroke="currentColor" stroke-width="1.7"/><path d="M12 8.2v7.6M9.8 10.2h3.4a1.7 1.7 0 010 3.4H9.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+                    <span class="price-chip__val" id="itemDetailCoins">0</span>
+                </div>
+                <div class="price-chip price-chip--donate">
+                    <span class="price-chip__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l2.5 5.3 5.6.8-4 4 .9 5.7-5-2.7-5 2.7.9-5.7-4-4 5.6-.8L12 3.6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+                    <span class="price-chip__val" id="itemDetailDonate">0</span>
+                </div>
             </div>
-            <p class="item-detail-modal__stock" id="itemDetailStock"></p>
-            <div class="item-detail-modal__actions">
+            <div class="item-sheet__actions">
                 <button class="btn btn--accent" id="buyCoinsBtn" type="button" data-i18n="buyCoins">Купити за коіни</button>
-                <button class="btn btn--accent" id="buyDonateBtn" type="button" data-i18n="buyDonate" style="background:var(--violet);">Купити за донат</button>
-                <button class="btn btn--ghost" id="restockItemBtn" style="display:none;color:var(--teal);border-color:var(--teal);" type="button" data-i18n="restockItem">Додати кількість</button>
-                <button class="btn btn--ghost" id="deleteItemBtn" style="display:none;color:#F06478;border-color:#F06478;" type="button" data-i18n="deleteItem">Видалити з магазину</button>
+                <button class="btn btn--violet" id="buyDonateBtn" type="button" data-i18n="buyDonate">Купити за донат</button>
+                <button class="btn btn--teal"   id="restockItemBtn" type="button" style="display:none" data-i18n="restockItem">Додати кількість</button>
+                <button class="btn btn--danger" id="deleteItemBtn"  type="button" style="display:none" data-i18n="deleteItem">Видалити з магазину</button>
             </div>
         </div>
-
-
         <!-- ПРЕДМЕТ В ІНВЕНТАРІ -->
         <div class="modal-backdrop" id="invItemBackdrop"></div>
-        <div class="item-detail-modal" id="invItemModal">
+        <div class="item-detail-modal item-sheet" id="invItemModal">
             <button class="item-detail-modal__close" id="invItemClose" type="button" aria-label="Закрити">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </button>
             <div class="item-hero" id="invItemHero"></div>
-            <p class="item-detail-modal__name" id="invItemName"></p>
-            <p class="item-detail-modal__desc" id="invItemDesc"></p>
-            <div class="item-sell-note" id="invItemSellNote"></div>
-            <div class="item-detail-modal__actions">
-                <button class="btn btn--teal" id="invSellBtn" type="button" data-i18n="sellItem">Продати</button>
-                <button class="btn btn--ghost" id="invDropBtn" type="button" data-i18n="dropItem">Викинути</button>
+            <div class="item-sheet__info">
+                <p class="item-sheet__name" id="invItemName"></p>
+                <p class="item-sheet__desc" id="invItemDesc"></p>
             </div>
+            <div class="item-sell-note" id="invItemSellNote"></div>
+            <div class="item-sheet__actions">
+                <button class="btn btn--gold" id="invSellBtn" type="button" data-i18n="sellItem">Продати</button>
+                <button class="btn btn--gold btn--gold-alt" id="invDropBtn" type="button" data-i18n="dropItem">Викинути</button>
+            </div>
+        </div>
+
+        <!-- ПРИЗНАЧЕННЯ АДМІНА (макет 4) -->
+        <div class="fullscreen" id="assignAdminScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="assignBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="assignAdmin">Призначити адміністратора</p>
+            </header>
+            <div class="assign-body">
+                <div class="assign-list" id="assignList"></div>
+                <div class="assign-foot">
+                    <div class="shop-search assign-search">
+                        <svg class="shop-search__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        <input class="shop-search__input" id="assignSearch" type="text" data-i18n-placeholder="searchUser" placeholder="Пошук користувача"/>
+                    </div>
+                    <div class="level-picker" id="levelPicker">
+                        <button class="level-btn" type="button" data-level="1">1</button>
+                        <button class="level-btn" type="button" data-level="2">2</button>
+                        <button class="level-btn" type="button" data-level="3">3</button>
+                        <button class="level-btn" type="button" data-level="4">4</button>
+                        <button class="level-btn" type="button" data-level="5">5</button>
+                    </div>
+                    <button class="btn btn--accent assign-submit" id="assignSubmit" type="button" data-i18n="assignBtn">Призначити</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- СПИСОК АДМІНІСТРАТОРІВ (макет 5) -->
+        <div class="fullscreen" id="adminListScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="adminListBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="adminsList">Адміністратори</p>
+            </header>
+            <div class="assign-body">
+                <div class="assign-list" id="adminsList"></div>
+                <div class="assign-foot">
+                    <button class="btn btn--ghost" id="adminListClose" type="button" data-i18n="close">Закрити</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- КАРТКА АДМІНА (макет 6) -->
+        <div class="modal-backdrop" id="adminCardBackdrop"></div>
+        <div class="item-detail-modal item-sheet" id="adminCardModal">
+            <button class="item-detail-modal__close" id="adminCardClose" type="button" aria-label="Закрити">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <div class="admin-card__head">
+                <div class="admin-card__avatar" id="adminCardAvatar"></div>
+                <div class="admin-card__ident">
+                    <p class="admin-card__name" id="adminCardName"></p>
+                    <p class="admin-card__tag"  id="adminCardTag"></p>
+                    <span class="admin-card__lvl" id="adminCardLvl">Lv 0</span>
+                </div>
+            </div>
+            <div class="admin-card__info">
+                <span class="admin-card__info-key" data-i18n="assignedBy">Призначив</span>
+                <span class="admin-card__info-val" id="adminCardBy">—</span>
+            </div>
+            <div class="admin-card__actions">
+                <button class="btn btn--ghost"  id="adminDemote"  type="button" data-i18n="demote">Понизити</button>
+                <button class="btn btn--violet" id="adminPromote" type="button" data-i18n="promote">Підвищити</button>
+            </div>
+            <button class="btn btn--gold admin-card__fire" id="adminFire" type="button" data-i18n="fireAdmin">Звільнити</button>
         </div>
 
         <!-- ІНВЕНТАР -->
@@ -1102,6 +1193,26 @@
                         </span>
                         <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
+                    <button class="setting-link" id="admAssign" type="button">
+                        <span class="fn-icon fn-icon--rose">
+                            <svg viewBox="0 0 24 24" fill="none"><circle cx="10" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.6"/><path d="M3.4 19.4c1.2-3 3.5-4.6 6.6-4.6 1 0 1.9.2 2.7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M17.5 14v6M14.5 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="setting-row__body">
+                            <span class="setting-row__title" data-i18n="assignAdmin">Призначити адміністратора</span>
+                            <span class="setting-row__desc" data-i18n="assignAdminDesc">Видати права користувачу</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="setting-link" id="admListOpen" type="button">
+                        <span class="fn-icon fn-icon--violet">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.4l7 2.6v5.4c0 4.4-3 8.1-7 9.2-4-1.1-7-4.8-7-9.2V6l7-2.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="setting-row__body">
+                            <span class="setting-row__title" data-i18n="adminsList">Адміністратори</span>
+                            <span class="setting-row__desc" data-i18n="adminsListDesc">Тир-лист усіх адмінів</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                     <button class="setting-link" id="admRefresh" type="button">
                         <span class="fn-icon fn-icon--amber">
                             <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 11-2.3-5.6M20 4v4h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1125,6 +1236,7 @@
     <script src="js/modules/nav.js"></script>
     <script src="js/modules/user.js"></script>
     <script src="js/modules/shop.js"></script>
+    <script src="js/modules/admin.js"></script>
     <script src="js/modules/roulette.js"></script>
     <script src="js/app.js"></script>
 </body>
