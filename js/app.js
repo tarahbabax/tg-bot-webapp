@@ -1,18 +1,18 @@
 /**
- * app.js — точка входу: запускає всі модулі в правильному порядку
+ * app.js — точка входу: запускає модулі в правильному порядку.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Збережені налаштування (тема, анімації) — перше, щоб уникнути блимання
+    // 1. Налаштування (тема/анімації) — до рендеру, щоб не блимало
     applyPrefsOnLoad();
 
-    // 2. Дані Telegram-юзера (локально, без сервера)
+    // 2. Telegram-дані (або dev-банер, якщо SDK недоступний)
     initUserData();
 
-    // 3. Переклади
+    // 3. Переклади — після того як DOM готовий
     applyTranslations();
 
-    // 4. Навігація
+    // 4. Навігація та налаштування
     initTabs();
     initSettings();
     initExpanders();
@@ -20,18 +20,18 @@ document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initLanguage();
 
-    // 5. Профіль і адмін
+    // 5. Профіль / адмін / користувачі
     initProfileEditors();
     initAdminPanel();
     initUsersScreen();
 
-    // 6. Магазин і всі fullscreen
+    // 6. Магазин (всередині: інвентар, вітрина, топи, форми)
     initShop();
     initDocsScreen();
 
     // 7. Рулетка
     initRoulette();
 
-    // 8. Дані з сервера (баланс, рівень, admin_level)
+    // 8. Дані з сервера — останнім, вже на готовий UI
     loadFromServer();
 });
