@@ -172,11 +172,58 @@ function initAdminPanel() {
         const adminName = document.getElementById("adminName");
         if (adminName && nameEl) adminName.textContent = nameEl.textContent;
         screen?.classList.add("fullscreen--open");
+        refreshAdminStats();
     });
     backBtn?.addEventListener("click", () => {
         screen?.classList.remove("fullscreen--open");
         snapScreensToActiveTab();
     });
+
+    // Інструменти адмін-панелі
+    document.getElementById("admGoShop")?.addEventListener("click", () => {
+        screen?.classList.remove("fullscreen--open");
+        document.getElementById("settingsScreen")?.classList.remove("fullscreen--open");
+        // Перемикаємо на вкладку "Магазин"
+        document.querySelectorAll(".tabbar__item")[3]?.click();
+    });
+
+    document.getElementById("admGoUsers")?.addEventListener("click", () => {
+        document.getElementById("usersScreen")?.classList.add("fullscreen--open");
+        loadUsers();
+    });
+
+    document.getElementById("admRefresh")?.addEventListener("click", async () => {
+        await loadFromServer();
+        if (typeof loadShopItems === "function") await loadShopItems();
+        await refreshAdminStats();
+        toast(t("admRefreshed"), "success");
+    });
+}
+
+/** Підтягує цифри для адмін-панелі з уже завантажених даних. */
+async function refreshAdminStats() {
+    const set = (id, val) => {
+        const node = document.getElementById(id);
+        if (node) node.textContent = val;
+    };
+
+    try {
+        const users = await API.getUsers();
+        set("adminStatUsers", (users.users || []).length);
+    } catch { set("adminStatUsers", "—"); }
+
+    try {
+        const shop  = await API.getShopItems();
+        const items = shop.items || [];
+        set("adminStatItems", items.length);
+        // Продано = скільки одиниць пішло з початкового запасу
+        const sold = items.reduce((acc, i) =>
+            acc + Math.max(0, (i.stock_total || 0) - (i.stock_left || 0)), 0);
+        set("adminStatSold", sold);
+    } catch {
+        set("adminStatItems", "—");
+        set("adminStatSold", "—");
+    }
 }
 
 function initUsersScreen() {
