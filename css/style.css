@@ -2132,6 +2132,10 @@ body.no-anim *::after {
     padding: 12px 20px 28px;
 }
 
+/* Потрібно щоб абсолютний filter-drop позиціонувався відносно секції */
+#screen-shop { position: relative; }
+#inventoryScreen .fullscreen__body { position: relative; }
+
 /* ---------- Home cards row (документація + топи) ---------- */
 
 .home-cards-row {
@@ -2177,17 +2181,27 @@ body.no-anim *::after {
 /* ---------- Filter drop ---------- */
 
 .filter-drop {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    z-index: 10;
     max-height: 0;
     overflow: hidden;
-    margin: 0 20px;
+    border-radius: 0 0 16px 16px;
+    background: var(--surface-2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--stroke);
+    border-top: none;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.35);
     transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.filter-drop--open { max-height: 280px; }
+.filter-drop--open { max-height: 300px; overflow-y: auto; }
 
 .filter-drop__all {
     margin: 0;
-    padding: 12px 0 8px;
+    padding: 12px 16px 8px;
     font-size: 12px;
     font-weight: 700;
     color: var(--accent);
@@ -2196,8 +2210,8 @@ body.no-anim *::after {
 .filter-opt {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 0;
+    gap: 12px;
+    padding: 12px 16px;
     border-top: 1px solid var(--stroke);
     font-size: 13px;
     color: var(--ink);
@@ -2205,9 +2219,10 @@ body.no-anim *::after {
 }
 
 .filter-opt input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     accent-color: var(--accent);
+    border-radius: 5px;
     flex-shrink: 0;
 }
 
@@ -2216,6 +2231,11 @@ body.no-anim *::after {
     width: 16px;
     height: 16px;
     transition: transform 0.3s ease;
+}
+
+.shop-filter--open {
+    border-radius: 16px 16px 0 0;
+    border-bottom-color: transparent;
 }
 
 .shop-filter--open .shop-filter__chevron { transform: rotate(180deg); }
@@ -2231,3 +2251,23 @@ body.no-anim *::after {
 }
 
 .showcase-footer__btn { flex: 1; padding: 13px; }
+
+
+/* ---------- Showcase layout ---------- */
+
+.showcase-body {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.showcase-slots {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.showcase-footer {
+    flex-shrink: 0;
+}
