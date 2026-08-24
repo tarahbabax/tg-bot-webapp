@@ -1,269 +1,269 @@
 /**
- * shop.js — магазин, інвентар, вітрина, видимість у топах
+ * shop.js — магазин, інвентар, вітрина, видимість у топах.
+ * Рендер через DOM API (без innerHTML із даними) — захист від XSS.
  */
 
-let shopItems    = [];
-let selectedItem = null; // весь об'єкт товару, а не тільки id
+let shopItems      = [];
+let inventoryItems = [];
+let selectedItem   = null;
+let topVisSelected = "public";
 
-// ─── Допоміжні функції ─────────────────────────────────────────────────────
+const shopFilterState = { query: "", types: new Set() };
+const invFilterState  = { query: "", types: new Set() };
 
-function buildItemCard(item) {
-    const el = document.createElement("div");
-    if (item.type === "gift") {
-        el.className = "shop-item-gift";
-        el.innerHTML = `
-            <div style="position:relative;overflow:hidden;">
-                ${item.photo_url
-                    ? `<img class="shop-item-gift__img" src="${item.photo_url}" alt="${item.name}" loading="lazy">`
-                    : `<div class="shop-item-gift__img-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M20 12v9H4v-9M22 7H2v5h20V7zM12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                            </svg>
-                       </div>`}
-                ${item.stock_left <= 0 ? `<span class="item-out-badge">Закінчився</span>` : ""}
-            </div>
-            <div class="shop-item-gift__body">
-                <span class="shop-item-gift__stock">${item.stock_left}/${item.stock_total}</span>
-                <p class="shop-item-gift__name">${item.name}</p>
-                <p class="shop-item-gift__type">Подарунок</p>
-                <p class="shop-item-gift__price">${item.price_coins} коінів</p>
-            </div>`;
-    } else {
-        el.className = "shop-item-prefix";
-        el.innerHTML = `
-            <span class="shop-item-prefix__tag" style="color:${item.prefix_color || "#fff"}">${item.prefix_text}</span>
-            <span class="shop-item-prefix__body">
-                <span class="shop-item-prefix__name">${item.name}</span>
-                <span class="shop-item-prefix__price">${item.price_coins} коінів</span>
-            </span>
-            ${item.stock_left <= 0 ? `<span class="item-out-badge" style="position:static;border-radius:8px;">Закінчився</span>` : ""}`;
-    }
-    if (item.stock_left <= 0) el.classList.add(item.type === "gift" ? "shop-item-gift--out" : "shop-item-prefix--out");
-    return el;
+/* ── Побудова картки (безпечно) ────────────────────────────── */
+
+function buildGiftPlaceholder() {
+    const ph = el("div", "shop-item-gift__img-placeholder");
+    ph.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7zM12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+    return ph;
 }
 
-// ─── Рендер магазину ────────────────────────────────────────────────────────
+function buildItemCard(item, opts) {
+    opts = opts || {};
+    const isOut = (item.stock_left != null ? item.stock_left : 1) <= 0;
 
-function renderShopItems(items) {
-    const grid  = document.getElementById("shopGrid");
-    const empty = document.getElementById("shopEmptyState");
+    if (item.type === "gift") {
+        const card = el("div", "shop-item-gift" + (isOut ? " shop-item-gift--out" : ""));
+
+        const media = el("div", "shop-item-gift__media");
+        const src = safeImageUrl(item.photo_url);
+        if (src) {
+            const img = el("img", "shop-item-gift__img");
+            img.src = src;
+            img.alt = item.name || "";
+            img.loading = "lazy";
+            img.addEventListener("error", function () {
+                img.remove();
+                media.prepend(buildGiftPlaceholder());
+            });
+            media.appendChild(img);
+        } else {
+            media.appendChild(buildGiftPlaceholder());
+        }
+        if (isOut) media.appendChild(el("span", "item-out-badge", t("outOfStock")));
+        card.appendChild(media);
+
+        const body = el("div", "shop-item-gift__body");
+        if (!opts.hideStock) {
+            body.appendChild(el("span", "shop-item-gift__stock",
+                item.stock_left + "/" + item.stock_total));
+        }
+        body.appendChild(el("p", "shop-item-gift__name", item.name));
+        body.appendChild(el("p", "shop-item-gift__type", t("typeGift")));
+        if (!opts.hidePrice) {
+            body.appendChild(el("p", "shop-item-gift__price",
+                item.price_coins + " " + t("coinsShort")));
+        }
+        card.appendChild(body);
+        return card;
+    }
+
+    const card = el("div", "shop-item-prefix" + (isOut ? " shop-item-prefix--out" : ""));
+    const tag  = el("span", "shop-item-prefix__tag", item.prefix_text);
+    const color = safeColor(item.prefix_color);
+    if (color) tag.style.color = color;
+    card.appendChild(tag);
+
+    const body = el("span", "shop-item-prefix__body");
+    body.appendChild(el("span", "shop-item-prefix__name", item.name));
+    if (!opts.hidePrice) {
+        body.appendChild(el("span", "shop-item-prefix__price",
+            item.price_coins + " " + t("coinsShort")));
+    }
+    card.appendChild(body);
+    if (isOut) card.appendChild(el("span", "item-out-badge item-out-badge--inline", t("outOfStock")));
+    return card;
+}
+
+/* ── Фільтрація ────────────────────────────────────────────── */
+
+function applyFilters(items, state) {
+    const q = state.query.trim().toLowerCase();
+    return items.filter(function (item) {
+        if (state.types.size && !state.types.has(item.type)) return false;
+        if (!q) return true;
+        const hay = [item.name, item.description, item.prefix_text]
+            .filter(Boolean).join(" ").toLowerCase();
+        return hay.indexOf(q) !== -1;
+    });
+}
+
+/* ── Магазин ───────────────────────────────────────────────── */
+
+function renderShopItems() {
+    const grid = document.getElementById("shopGrid");
     if (!grid) return;
+    grid.innerHTML = "";
 
-    // Видаляємо всі картки, але лишаємо #shopEmptyState
-    Array.from(grid.children).forEach((c) => { if (c.id !== "shopEmptyState") c.remove(); });
-
-    if (!items.length) {
-        if (empty) empty.style.display = "";
+    const visible = applyFilters(shopItems, shopFilterState);
+    if (!visible.length) {
+        const hasItems = shopItems.length > 0;
+        renderEmpty(grid,
+            hasItems ? "noMatch"     : "shopEmpty",
+            hasItems ? "noMatchDesc" : "shopEmptyDesc");
         return;
     }
-    if (empty) empty.style.display = "none";
-
-    items.forEach((item) => {
+    visible.forEach(function (item) {
         const card = buildItemCard(item);
-        card.addEventListener("click", () => openItemDetail(item));
+        card.addEventListener("click", function () { openItemDetail(item); });
         grid.appendChild(card);
     });
 }
 
 async function loadShopItems() {
+    const grid = document.getElementById("shopGrid");
     try {
         const data = await API.getShopItems();
         shopItems = data.items || [];
         if (data.is_admin) currentAdminLevel = 5;
-        renderShopItems(shopItems);
+        renderShopItems();
     } catch (e) {
-        console.warn("loadShopItems:", e.message);
+        if (grid) renderError(grid, loadShopItems);
     }
 }
 
-// ─── Деталі товару (нижня шторка) ──────────────────────────────────────────
+/* ── Деталі товару ─────────────────────────────────────────── */
 
 function openItemDetail(item) {
     selectedItem = item;
-    const modal   = document.getElementById("itemDetailModal");
-    const backdrop = document.getElementById("itemDetailBackdrop");
 
-    // Фото або префікс
     const imgEl = document.getElementById("itemDetailImg");
     const preEl = document.getElementById("itemDetailPrefix");
     imgEl.style.display = "none";
     preEl.style.display = "none";
 
-    if (item.type === "gift" && item.photo_url) {
-        imgEl.src = item.photo_url;
-        imgEl.style.display = "block";
-    } else if (item.type === "prefix") {
-        preEl.textContent   = item.prefix_text;
-        preEl.style.color   = item.prefix_color || "#fff";
+    if (item.type === "gift") {
+        const src = safeImageUrl(item.photo_url);
+        if (src) {
+            imgEl.src = src;
+            imgEl.style.display = "block";
+            imgEl.onerror = function () { imgEl.style.display = "none"; };
+        }
+    } else {
+        preEl.textContent = item.prefix_text;
+        preEl.style.color = safeColor(item.prefix_color) || "";
         preEl.style.display = "block";
     }
 
-    document.getElementById("itemDetailName").textContent  = item.name;
-    document.getElementById("itemDetailDesc").textContent  = item.description || "";
-    document.getElementById("itemDetailCoins").textContent = `${item.price_coins} коінів`;
-    document.getElementById("itemDetailDonate").textContent = `${item.price_donate} донат`;
-    document.getElementById("itemDetailStock").textContent  = `Залишилось: ${item.stock_left} з ${item.stock_total}`;
+    document.getElementById("itemDetailName").textContent   = item.name;
+    document.getElementById("itemDetailDesc").textContent   = item.description || "";
+    document.getElementById("itemDetailCoins").textContent  = item.price_coins + " " + t("coinsShort");
+    document.getElementById("itemDetailDonate").textContent = item.price_donate + " " + t("donateShort");
+    document.getElementById("itemDetailStock").textContent  =
+        t("stockLeft") + ": " + item.stock_left + " / " + item.stock_total;
 
     const isOut   = item.stock_left <= 0;
     const isAdmin = currentAdminLevel >= 5;
 
-    const buyCoins   = document.getElementById("buyCoinsBtn");
-    const buyDonate  = document.getElementById("buyDonateBtn");
-    const deleteBtn  = document.getElementById("deleteItemBtn");
-    const restockBtn = document.getElementById("restockItemBtn");
+    document.getElementById("buyCoinsBtn").style.display   = isOut ? "none" : "flex";
+    document.getElementById("buyDonateBtn").style.display  = isOut ? "none" : "flex";
+    document.getElementById("restockItemBtn").style.display = isAdmin ? "flex" : "none";
+    document.getElementById("deleteItemBtn").style.display  = isAdmin ? "flex" : "none";
 
-    if (isAdmin && isOut) {
-        // Закінчився — адмін бачить тільки restock і delete
-        buyCoins.style.display   = "none";
-        buyDonate.style.display  = "none";
-        restockBtn.style.display = "block";
-        deleteBtn.style.display  = "block";
-    } else if (isAdmin) {
-        // Є в наявності — адмін може і купити, і керувати
-        buyCoins.style.display   = "block";
-        buyDonate.style.display  = "block";
-        buyCoins.disabled        = false;
-        buyDonate.disabled       = false;
-        restockBtn.style.display = "block";
-        deleteBtn.style.display  = "block";
-    } else {
-        // Звичайний юзер
-        buyCoins.style.display   = "block";
-        buyDonate.style.display  = "block";
-        buyCoins.disabled        = isOut;
-        buyDonate.disabled       = isOut;
-        restockBtn.style.display = "none";
-        deleteBtn.style.display  = "none";
-    }
-
-    modal.classList.add("item-detail-modal--open");
-    backdrop.classList.add("modal-backdrop--open");
+    document.getElementById("itemDetailModal").classList.add("item-detail-modal--open");
+    document.getElementById("itemDetailBackdrop").classList.add("modal-backdrop--open");
 }
 
 function closeItemDetail() {
-    document.getElementById("itemDetailModal")?.classList.remove("item-detail-modal--open");
-    document.getElementById("itemDetailBackdrop")?.classList.remove("modal-backdrop--open");
-    // selectedItem скидаємо окремо — тільки після завершення дії
+    const m = document.getElementById("itemDetailModal");
+    const b = document.getElementById("itemDetailBackdrop");
+    if (m) m.classList.remove("item-detail-modal--open");
+    if (b) b.classList.remove("modal-backdrop--open");
 }
 
-// ─── Підтвердження ─────────────────────────────────────────────────────────
+/* ── Інвентар ──────────────────────────────────────────────── */
 
-let _confirmController = null;
-
-function openConfirm(text, onYes) {
-    document.getElementById("confirmText").textContent = text;
-    document.getElementById("confirmBackdrop").classList.add("modal-backdrop--open");
-    document.getElementById("confirmModal").classList.add("win-modal--open");
-
-    if (_confirmController) _confirmController.abort();
-    _confirmController = new AbortController();
-
-    document.getElementById("confirmYes").addEventListener("click", () => {
-        closeConfirm();
-        onYes();
-    }, { once: true, signal: _confirmController.signal });
-}
-
-function closeConfirm() {
-    document.getElementById("confirmBackdrop").classList.remove("modal-backdrop--open");
-    document.getElementById("confirmModal").classList.remove("win-modal--open");
-}
-
-// ─── Інвентар ──────────────────────────────────────────────────────────────
-
-async function loadInventoryScreen() {
-    const screen = document.getElementById("inventoryScreen");
-    if (!screen) return;
-    const body = screen.querySelector(".fullscreen__body");
-
-    let grid = body.querySelector(".inv-screen-grid");
-    if (!grid) {
-        grid = document.createElement("div");
-        grid.className = "inv-screen-grid shop-grid";
-        body.appendChild(grid);
-    }
-    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px">Завантаження...</p>`;
-
-    try {
-        const data = await API.getInventory();
-        grid.innerHTML = "";
-        if (!data.items?.length) {
-            grid.innerHTML = `<div class="shop-empty">
-                <p class="empty-state__title">Інвентар порожній</p>
-                <p class="empty-state__text">Придбай предмети у магазині</p>
-            </div>`;
-            return;
-        }
-        data.items.forEach((item) => grid.appendChild(buildItemCard(item)));
-    } catch (e) {
-        grid.innerHTML = `<div class="shop-empty"><p class="empty-state__title">Помилка завантаження</p></div>`;
-    }
-}
-
-// Версія для вкладки "Мої предмети" всередині магазину
-function renderInventory(items) {
-    const container = document.getElementById("invContainer");
+function renderInventoryInto(container) {
     if (!container) return;
     container.innerHTML = "";
-    if (!items?.length) {
-        container.innerHTML = `<div class="shop-empty">
-            <p class="empty-state__title">Інвентар порожній</p>
-            <p class="empty-state__text">Придбай предмети у магазині</p>
-        </div>`;
+
+    const state   = container.id === "invContainer" ? shopFilterState : invFilterState;
+    const visible = applyFilters(inventoryItems, state);
+
+    if (!visible.length) {
+        const hasItems = inventoryItems.length > 0;
+        renderEmpty(container,
+            hasItems ? "noMatch"     : "invEmpty",
+            hasItems ? "noMatchDesc" : "invEmptyDesc");
         return;
     }
-    items.forEach((item) => container.appendChild(buildItemCard(item)));
+    visible.forEach(function (item) {
+        container.appendChild(buildItemCard(item, { hideStock: true, hidePrice: true }));
+    });
 }
 
 async function loadInventory() {
+    const targets = [
+        document.getElementById("invContainer"),
+        document.querySelector("#inventoryScreen .inv-screen-grid")
+    ].filter(Boolean);
+
     try {
         const data = await API.getInventory();
-        renderInventory(data.items || []);
+        inventoryItems = data.items || [];
+        targets.forEach(renderInventoryInto);
     } catch (e) {
-        console.warn("loadInventory:", e.message);
+        targets.forEach(function (c) { renderError(c, loadInventory); });
     }
 }
 
-// ─── Ініціалізація ─────────────────────────────────────────────────────────
+/* ── Ініціалізація магазину ────────────────────────────────── */
 
 function initShop() {
-    // Вкладки магазину
-    const shopGrid     = document.getElementById("shopGrid");
-    const invContainer = document.createElement("div");
-    invContainer.id        = "invContainer";
-    invContainer.className = "shop-grid";
-    invContainer.style.display = "none";
-    shopGrid?.parentNode.insertBefore(invContainer, shopGrid.nextSibling);
+    const shopGrid = document.getElementById("shopGrid");
+    if (!shopGrid) return;
 
-    document.querySelectorAll(".shop-tab").forEach((tab, i) => {
-        tab.addEventListener("click", () => {
-            document.querySelectorAll(".shop-tab").forEach((t) => t.classList.remove("shop-tab--active"));
+    const invContainer = el("div", "shop-grid");
+    invContainer.id = "invContainer";
+    invContainer.style.display = "none";
+
+    const tradeContainer = el("div", "shop-grid");
+    tradeContainer.id = "tradeContainer";
+    tradeContainer.style.display = "none";
+    renderEmpty(tradeContainer, "tradeSoon", "tradeSoonDesc");
+
+    shopGrid.parentNode.insertBefore(invContainer, shopGrid.nextSibling);
+    shopGrid.parentNode.insertBefore(tradeContainer, invContainer.nextSibling);
+
+    document.querySelectorAll(".shop-tab").forEach(function (tab, i) {
+        tab.addEventListener("click", function () {
+            document.querySelectorAll(".shop-tab").forEach(function (x) {
+                x.classList.remove("shop-tab--active");
+            });
             tab.classList.add("shop-tab--active");
-            if (i === 0) {
-                shopGrid.style.display  = "";
-                invContainer.style.display = "none";
-            } else if (i === 1) {
-                shopGrid.style.display  = "none";
-                invContainer.style.display = "";
-                loadInventory();
-            } else {
-                shopGrid.style.display  = "none";
-                invContainer.style.display = "none";
-            }
+            shopGrid.style.display       = i === 0 ? "" : "none";
+            invContainer.style.display   = i === 1 ? "" : "none";
+            tradeContainer.style.display = i === 2 ? "" : "none";
+            if (i === 1) loadInventory();
         });
     });
 
-    // Фільтр магазину
+    const shopSearch = document.getElementById("shopSearchInput");
+    if (shopSearch) {
+        shopSearch.addEventListener("input", function (e) {
+            shopFilterState.query = e.target.value;
+            renderShopItems();
+            renderInventoryInto(invContainer);
+        });
+    }
+
     makeFilter("shopFilterBtn", "shopFilterDrop");
+    document.querySelectorAll("#shopFilterDrop input[type=checkbox]").forEach(function (cb) {
+        cb.addEventListener("change", function () {
+            if (cb.checked) shopFilterState.types.add(cb.dataset.type);
+            else shopFilterState.types.delete(cb.dataset.type);
+            renderShopItems();
+            renderInventoryInto(invContainer);
+        });
+    });
 
-    // Закрити деталь
-    document.getElementById("itemDetailClose")?.addEventListener("click",    () => { closeItemDetail(); selectedItem = null; });
-    document.getElementById("itemDetailBackdrop")?.addEventListener("click", () => { closeItemDetail(); selectedItem = null; });
-    document.getElementById("confirmBackdrop")?.addEventListener("click", closeConfirm);
-    document.getElementById("confirmNo")?.addEventListener("click", closeConfirm);
+    const closeDetail = function () { closeItemDetail(); selectedItem = null; };
+    const dc = document.getElementById("itemDetailClose");
+    const db = document.getElementById("itemDetailBackdrop");
+    if (dc) dc.addEventListener("click", closeDetail);
+    if (db) db.addEventListener("click", closeDetail);
 
-    // Купівля
     async function doBuy(currency) {
         const item = selectedItem;
         if (!item) return;
@@ -272,258 +272,295 @@ function initShop() {
             closeItemDetail();
             selectedItem = null;
             syncBalance(r.balance);
+            toast(t("bought"), "success");
             await loadShopItems();
             await loadInventory();
-            await loadInventoryScreen();
         } catch (e) {
-            const msg = e.message || "";
-            alert(msg.includes("Недостатньо") || msg.includes("400") || msg.includes("закінчився")
-                ? "Недостатньо коштів або товар закінчився"
-                : "Помилка покупки: " + msg);
+            const msg = String(e.message || "");
+            toast(msg.indexOf("400") !== -1 ? t("errFunds") : t("errBuy"), "error");
         }
     }
-    document.getElementById("buyCoinsBtn")?.addEventListener("click",  () => doBuy("coins"));
-    document.getElementById("buyDonateBtn")?.addEventListener("click", () => doBuy("donate"));
+    const bc = document.getElementById("buyCoinsBtn");
+    const bd = document.getElementById("buyDonateBtn");
+    if (bc) bc.addEventListener("click", function () { doBuy("coins"); });
+    if (bd) bd.addEventListener("click", function () { doBuy("donate"); });
 
-    // Видалення
-    document.getElementById("deleteItemBtn")?.addEventListener("click", () => {
+    const delBtn = document.getElementById("deleteItemBtn");
+    if (delBtn) delBtn.addEventListener("click", async function () {
         const item = selectedItem;
         if (!item) return;
-        openConfirm("Видалити цей предмет?\nКуплені екземпляри залишаться в інвентарях.", async () => {
-            try {
-                await API.deleteItem(item.item_id);
-                closeItemDetail();
-                selectedItem = null;
-                await loadShopItems();
-            } catch (e) {
-                alert("Помилка видалення: " + (e.message || ""));
-            }
+        const ok = await dialog({
+            title: t("deleteItem"),
+            text: t("deleteItemText"),
+            confirmLabel: t("deleteConfirm")
         });
+        if (!ok) return;
+        try {
+            await API.deleteItem(item.item_id);
+            closeItemDetail();
+            selectedItem = null;
+            toast(t("deleted"), "success");
+            await loadShopItems();
+        } catch (e) {
+            toast(t("errDelete"), "error");
+        }
     });
 
-    // Поповнення
-    document.getElementById("restockItemBtn")?.addEventListener("click", () => {
+    const reBtn = document.getElementById("restockItemBtn");
+    if (reBtn) reBtn.addEventListener("click", async function () {
         const item = selectedItem;
         if (!item) return;
-        const raw = prompt("Скільки одиниць додати?");
+        const raw = await dialog({
+            title: t("restockItem"),
+            text: item.name + "\n" + t("stockLeft") + ": " + item.stock_left + " / " + item.stock_total,
+            input: true,
+            confirmLabel: t("addBtn")
+        });
         if (raw === null) return;
-        const amount = parseInt(raw);
-        if (!amount || amount <= 0) { alert("Вкажи число більше 0"); return; }
-        openConfirm(`Додати ${amount} одиниць до «${item.name}»?`, async () => {
-            try {
-                await API.restockItem(item.item_id, amount);
-                closeItemDetail();
-                selectedItem = null;
-                await loadShopItems();
-            } catch (e) {
-                alert("Помилка поповнення: " + (e.message || ""));
-            }
-        });
+        const amount = parseInt(raw, 10);
+        if (!amount || amount <= 0) { toast(t("errAmount"), "error"); return; }
+        try {
+            await API.restockItem(item.item_id, amount);
+            closeItemDetail();
+            selectedItem = null;
+            toast(t("restocked"), "success");
+            await loadShopItems();
+        } catch (e) {
+            toast(t("errRestock"), "error");
+        }
     });
 
-    // Адмін: вибір типу предмету
-    document.getElementById("addItemBtn")?.addEventListener("click", ()  => openScreen("addItemTypeScreen"));
-    document.getElementById("addItemTypeBack")?.addEventListener("click", () => closeScreen("addItemTypeScreen"));
-    document.getElementById("chooseGift")?.addEventListener("click", () => {
-        closeScreen("addItemTypeScreen");
-        openScreen("addGiftScreen");
+    initAddItemForms();
+    initInventoryScreen();
+    initShowcase();
+    initTopVisibility();
+    loadShopItems();
+}
+
+/* ── Форми додавання (адмін) ──────────────────────────────── */
+
+function resetForm(ids) {
+    ids.forEach(function (id) {
+        const node = document.getElementById(id);
+        if (node) node.value = "";
     });
-    document.getElementById("choosePrefix")?.addEventListener("click", () => {
-        closeScreen("addItemTypeScreen");
-        openScreen("addPrefixScreen");
+}
+
+function initAddItemForms() {
+    const on = function (id, ev, fn) {
+        const n = document.getElementById(id);
+        if (n) n.addEventListener(ev, fn);
+    };
+
+    on("addItemBtn",      "click", function () { openScreen("addItemTypeScreen"); });
+    on("addItemTypeBack", "click", function () { closeScreen("addItemTypeScreen"); });
+    on("chooseGift",      "click", function () { closeScreen("addItemTypeScreen"); openScreen("addGiftScreen"); });
+    on("choosePrefix",    "click", function () { closeScreen("addItemTypeScreen"); openScreen("addPrefixScreen"); });
+    on("addGiftBack",     "click", function () { closeScreen("addGiftScreen");   openScreen("addItemTypeScreen"); });
+    on("addPrefixBack",   "click", function () { closeScreen("addPrefixScreen"); openScreen("addItemTypeScreen"); });
+
+    on("giftPhotoUpload", "click", function () {
+        const f = document.getElementById("giftPhotoFile");
+        if (f) f.click();
     });
 
-    // Форма подарунку
-    document.getElementById("giftPhotoUpload")?.addEventListener("click", () =>
-        document.getElementById("giftPhotoFile")?.click()
-    );
-    document.getElementById("giftPhotoFile")?.addEventListener("change", (e) => {
-        const file = e.target.files?.[0];
+    on("giftPhotoFile", "change", function (e) {
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = function (ev) {
             const preview = document.getElementById("giftPhotoPreview");
-            const upload  = document.getElementById("giftPhotoUpload");
             preview.src = ev.target.result;
             preview.style.display = "block";
-            upload.style.display  = "none";
+            document.getElementById("giftPhotoUpload").style.display = "none";
         };
         reader.readAsDataURL(file);
     });
 
-    document.getElementById("addGiftBack")?.addEventListener("click", () => {
-        closeScreen("addGiftScreen");
-        openScreen("addItemTypeScreen");
+    on("prefixText", "input", function (e) {
+        document.getElementById("prefixPreviewText").textContent = e.target.value || "VIP";
+    });
+    on("prefixColor", "input", function (e) {
+        document.getElementById("prefixColorVal").textContent    = e.target.value;
+        document.getElementById("prefixPreviewText").style.color = e.target.value;
     });
 
-    document.getElementById("giftSubmit")?.addEventListener("click", () => {
-        const name = document.getElementById("giftName").value.trim();
-        if (!name) { document.getElementById("giftError").textContent = "Вкажи назву"; return; }
+    on("giftSubmit", "click", async function () {
+        const errEl = document.getElementById("giftError");
+        const name  = document.getElementById("giftName").value.trim();
+        errEl.textContent = "";
+        if (!name) { errEl.textContent = t("errName"); return; }
 
         const preview  = document.getElementById("giftPhotoPreview");
         const urlField = document.getElementById("giftPhotoUrl");
-        const photo_url = (preview?.style.display !== "none" && preview?.src && !preview.src.endsWith(window.location.href))
+        const photo_url = (preview.style.display !== "none" && preview.src.indexOf("data:") === 0)
             ? preview.src
-            : (urlField?.value?.trim() || "");
+            : (urlField ? urlField.value.trim() : "");
 
-        const data = {
-            type: "gift",
-            name,
-            description: document.getElementById("giftDesc").value.trim(),
-            photo_url,
-            price_coins:  parseInt(document.getElementById("giftPriceCoins").value)  || 0,
-            price_donate: parseInt(document.getElementById("giftPriceDonate").value) || 0,
-            stock_total:  parseInt(document.getElementById("giftStock").value)        || 1,
-        };
+        const ok = await dialog({ title: t("addItemBtn"), text: name, confirmLabel: t("confirm") });
+        if (!ok) return;
 
-        openConfirm(`Додати «${name}» до магазину?`, async () => {
-            try {
-                await API.createItem(data);
-                closeScreen("addGiftScreen");
-                // Скидаємо форму
-                ["giftName","giftDesc","giftPriceCoins","giftPriceDonate","giftStock"].forEach((id) => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = "";
-                });
-                document.getElementById("giftPhotoPreview").style.display = "none";
-                document.getElementById("giftPhotoUpload").style.display  = "";
-                document.getElementById("giftError").textContent = "";
-                await loadShopItems();
-            } catch (e) {
-                const msg = e.message || "";
-                document.getElementById("giftError").textContent =
-                    msg.includes("409") || msg.includes("вже існує")
-                        ? "Товар з такою назвою вже є в магазині"
-                        : "Помилка: " + msg;
-            }
-        });
-    });
-
-    // Форма префіксу
-    document.getElementById("addPrefixBack")?.addEventListener("click", () => {
-        closeScreen("addPrefixScreen");
-        openScreen("addItemTypeScreen");
-    });
-    document.getElementById("prefixText")?.addEventListener("input", (e) => {
-        document.getElementById("prefixPreviewText").textContent = e.target.value || "VIP";
-    });
-    document.getElementById("prefixColor")?.addEventListener("input", (e) => {
-        const c = e.target.value;
-        document.getElementById("prefixColorVal").textContent          = c;
-        document.getElementById("prefixPreviewText").style.color       = c;
-    });
-
-    document.getElementById("prefixSubmit")?.addEventListener("click", () => {
-        const name = document.getElementById("prefixName").value.trim();
-        const text = document.getElementById("prefixText").value.trim();
-        if (!name) { document.getElementById("prefixError").textContent = "Вкажи назву"; return; }
-        if (!text) { document.getElementById("prefixError").textContent = "Вкажи текст префіксу"; return; }
-
-        const data = {
-            type: "prefix",
-            name,
-            description:  document.getElementById("prefixDesc").value.trim(),
-            photo_url:    "",
-            price_coins:  parseInt(document.getElementById("prefixPriceCoins").value)  || 0,
-            price_donate: parseInt(document.getElementById("prefixPriceDonate").value) || 0,
-            stock_total:  parseInt(document.getElementById("prefixStock").value)        || 1,
-            prefix_text:  text,
-            prefix_color: document.getElementById("prefixColor").value,
-        };
-
-        openConfirm(`Додати префікс «${text}» до магазину?`, async () => {
-            try {
-                await API.createItem(data);
-                closeScreen("addPrefixScreen");
-                ["prefixName","prefixDesc","prefixText","prefixPriceCoins","prefixPriceDonate","prefixStock"].forEach((id) => {
-                    const el = document.getElementById(id);
-                    if (el) el.value = "";
-                });
-                document.getElementById("prefixError").textContent = "";
-                await loadShopItems();
-            } catch (e) {
-                const msg = e.message || "";
-                document.getElementById("prefixError").textContent =
-                    msg.includes("409") || msg.includes("вже існує")
-                        ? "Товар з такою назвою вже є"
-                        : "Помилка: " + msg;
-            }
-        });
-    });
-
-    // Інвентар (з профілю)
-    const invOpenBtn = document.getElementById("inventoryOpen");
-    const invBackBtn = document.getElementById("inventoryBack");
-    const invScreen  = document.getElementById("inventoryScreen");
-    if (invOpenBtn) {
-        makeFilter("invFilterBtn", "invFilterDrop");
-        invOpenBtn.addEventListener("click", () => {
-            invScreen?.classList.add("fullscreen--open");
-            loadInventoryScreen();
-        });
-        invBackBtn?.addEventListener("click", () => {
-            invScreen?.classList.remove("fullscreen--open");
-            snapScreensToActiveTab();
-        });
-    }
-
-    // Вітрина
-    const showcaseOpenBtn = document.getElementById("showcaseOpen");
-    const showcaseBackBtn = document.getElementById("showcaseBack");
-    const showcaseScreen  = document.getElementById("showcaseScreen");
-    showcaseOpenBtn?.addEventListener("click", () => showcaseScreen?.classList.add("fullscreen--open"));
-    showcaseBackBtn?.addEventListener("click", () => {
-        showcaseScreen?.classList.remove("fullscreen--open");
-        snapScreensToActiveTab();
-    });
-
-    // Топи
-    const topVisOpenBtn = document.getElementById("topVisibilityOpen");
-    const topVisBackBtn = document.getElementById("topVisibilityBack");
-    const topVisScreen  = document.getElementById("topVisibilityScreen");
-    let topVisSelected  = "public";
-
-    topVisOpenBtn?.addEventListener("click", () => {
-        document.getElementById("visResult").textContent = "";
-        topVisScreen?.classList.add("fullscreen--open");
-    });
-    topVisBackBtn?.addEventListener("click", () => {
-        topVisScreen?.classList.remove("fullscreen--open");
-        snapScreensToActiveTab();
-    });
-
-    function pickTopVis(val) {
-        topVisSelected = val;
-        document.getElementById("visPublic")?.classList.toggle("visibility-opt--active", val === "public");
-        document.getElementById("visAnon")?.classList.toggle("visibility-opt--active",   val === "anon");
-    }
-    document.getElementById("visPublic")?.addEventListener("click", () => pickTopVis("public"));
-    document.getElementById("visAnon")?.addEventListener("click",   () => pickTopVis("anon"));
-    document.getElementById("visSave")?.addEventListener("click", async () => {
-        const resultEl = document.getElementById("visResult");
-        savePrefs({ topVisibility: topVisSelected });
         try {
-            await API.saveSettings({ top_visibility: topVisSelected });
-            resultEl.textContent = "✓ Збережено";
-            resultEl.style.color = "var(--teal)";
-        } catch {
-            resultEl.textContent = "✓ Збережено (локально)";
-            resultEl.style.color = "var(--teal)";
+            await API.createItem({
+                type: "gift", name: name,
+                description:  document.getElementById("giftDesc").value.trim(),
+                photo_url:    photo_url,
+                price_coins:  parseInt(document.getElementById("giftPriceCoins").value)  || 0,
+                price_donate: parseInt(document.getElementById("giftPriceDonate").value) || 0,
+                stock_total:  parseInt(document.getElementById("giftStock").value)       || 1
+            });
+            closeScreen("addGiftScreen");
+            resetForm(["giftName","giftDesc","giftPriceCoins","giftPriceDonate","giftStock","giftPhotoUrl"]);
+            preview.style.display = "none";
+            document.getElementById("giftPhotoUpload").style.display = "";
+            toast(t("itemAdded"), "success");
+            await loadShopItems();
+        } catch (e) {
+            const msg = String(e.message || "");
+            errEl.textContent = msg.indexOf("409") !== -1 ? t("errDuplicate") : t("errGeneric");
         }
     });
 
-    // Завантажуємо товари
-    loadShopItems();
+    on("prefixSubmit", "click", async function () {
+        const errEl = document.getElementById("prefixError");
+        const name  = document.getElementById("prefixName").value.trim();
+        const text  = document.getElementById("prefixText").value.trim();
+        errEl.textContent = "";
+        if (!name) { errEl.textContent = t("errName");   return; }
+        if (!text) { errEl.textContent = t("errPrefix"); return; }
+
+        const ok = await dialog({ title: t("addItemBtn"), text: name, confirmLabel: t("confirm") });
+        if (!ok) return;
+
+        try {
+            await API.createItem({
+                type: "prefix", name: name,
+                description:  document.getElementById("prefixDesc").value.trim(),
+                photo_url: "",
+                price_coins:  parseInt(document.getElementById("prefixPriceCoins").value)  || 0,
+                price_donate: parseInt(document.getElementById("prefixPriceDonate").value) || 0,
+                stock_total:  parseInt(document.getElementById("prefixStock").value)       || 1,
+                prefix_text:  text,
+                prefix_color: document.getElementById("prefixColor").value
+            });
+            closeScreen("addPrefixScreen");
+            resetForm(["prefixName","prefixDesc","prefixText","prefixPriceCoins","prefixPriceDonate","prefixStock"]);
+            toast(t("itemAdded"), "success");
+            await loadShopItems();
+        } catch (e) {
+            const msg = String(e.message || "");
+            errEl.textContent = msg.indexOf("409") !== -1 ? t("errDuplicate") : t("errGeneric");
+        }
+    });
 }
 
-function initDocsScreen() {
-    const openBtn = document.getElementById("docsOpen");
-    const backBtn = document.getElementById("docsBack");
-    const screen  = document.getElementById("docsScreen");
-    if (!openBtn) return;
-    openBtn.addEventListener("click", () => screen?.classList.add("fullscreen--open"));
-    backBtn?.addEventListener("click", () => {
-        screen?.classList.remove("fullscreen--open");
-        snapScreensToActiveTab();
+/* ── Екран інвентарю ──────────────────────────────────────── */
+
+function initInventoryScreen() {
+    const openBtn = document.getElementById("inventoryOpen");
+    const screen  = document.getElementById("inventoryScreen");
+    if (!openBtn || !screen) return;
+
+    const body = screen.querySelector(".fullscreen__body");
+    let grid = body.querySelector(".inv-screen-grid");
+    if (!grid) {
+        grid = el("div", "inv-screen-grid shop-grid");
+        body.appendChild(grid);
+    }
+
+    const search = document.getElementById("invSearchInput");
+    if (search) search.addEventListener("input", function (e) {
+        invFilterState.query = e.target.value;
+        renderInventoryInto(grid);
     });
+
+    makeFilter("invFilterBtn", "invFilterDrop");
+    document.querySelectorAll("#invFilterDrop input[type=checkbox]").forEach(function (cb) {
+        cb.addEventListener("change", function () {
+            if (cb.checked) invFilterState.types.add(cb.dataset.type);
+            else invFilterState.types.delete(cb.dataset.type);
+            renderInventoryInto(grid);
+        });
+    });
+
+    openBtn.addEventListener("click", function () {
+        screen.classList.add("fullscreen--open");
+        loadInventory();
+    });
+    const back = document.getElementById("inventoryBack");
+    if (back) back.addEventListener("click", function () { closeScreen("inventoryScreen"); });
+}
+
+/* ── Вітрина ──────────────────────────────────────────────── */
+
+function initShowcase() {
+    const openBtn = document.getElementById("showcaseOpen");
+    const screen  = document.getElementById("showcaseScreen");
+    if (!openBtn || !screen) return;
+
+    openBtn.addEventListener("click", function () { screen.classList.add("fullscreen--open"); });
+    const back = document.getElementById("showcaseBack");
+    if (back) back.addEventListener("click", function () { closeScreen("showcaseScreen"); });
+
+    const add = document.getElementById("showcaseAdd");
+    if (add) add.addEventListener("click", function () {
+        toast(inventoryItems.length ? t("soonFeature") : t("showcaseNoItems"), "info");
+    });
+
+    const save = document.getElementById("showcaseSave");
+    if (save) save.addEventListener("click", function () { toast(t("soonFeature"), "info"); });
+}
+
+/* ── Видимість у топах ────────────────────────────────────── */
+
+function initTopVisibility() {
+    const openBtn = document.getElementById("topVisibilityOpen");
+    const screen  = document.getElementById("topVisibilityScreen");
+    if (!openBtn || !screen) return;
+
+    openBtn.addEventListener("click", function () { screen.classList.add("fullscreen--open"); });
+    const back = document.getElementById("topVisibilityBack");
+    if (back) back.addEventListener("click", function () { closeScreen("topVisibilityScreen"); });
+
+    const pick = function (val) {
+        topVisSelected = val;
+        const p = document.getElementById("visPublic");
+        const a = document.getElementById("visAnon");
+        if (p) p.classList.toggle("visibility-opt--active", val === "public");
+        if (a) a.classList.toggle("visibility-opt--active", val === "anon");
+    };
+    const p = document.getElementById("visPublic");
+    const a = document.getElementById("visAnon");
+    if (p) p.addEventListener("click", function () { pick("public"); });
+    if (a) a.addEventListener("click", function () { pick("anon"); });
+
+    const save = document.getElementById("visSave");
+    if (save) save.addEventListener("click", async function () {
+        savePrefs({ topVisibility: topVisSelected });
+        try {
+            await API.saveSettings({ top_visibility: topVisSelected });
+            toast(t("saved"), "success");
+        } catch (e) {
+            toast(t("savedLocal"), "info");
+        }
+    });
+}
+
+/* ── Документація ─────────────────────────────────────────── */
+
+function initDocsScreen() {
+    const o = document.getElementById("docsOpen");
+    const b = document.getElementById("docsBack");
+    if (o) o.addEventListener("click", function () { openScreen("docsScreen"); });
+    if (b) b.addEventListener("click", function () { closeScreen("docsScreen"); });
+}
+
+/** Застосовує стан видимості з сервера (щоб UI не розходився з БД). */
+function applyServerVisibility(value) {
+    if (value !== "public" && value !== "anon") return;
+    topVisSelected = value;
+    const p = document.getElementById("visPublic");
+    const a = document.getElementById("visAnon");
+    if (p) p.classList.toggle("visibility-opt--active", value === "public");
+    if (a) a.classList.toggle("visibility-opt--active", value === "anon");
 }
