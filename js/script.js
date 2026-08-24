@@ -230,7 +230,14 @@ const TRANSLATIONS = {
         invEmpty: "Інвентар порожній", invEmptyDesc: "Придбай предмети у магазині",
         showcaseDesc: "Вітрина видна у твоєму публічному профілі.",
         showcaseEmpty: "Вітрина порожня", showcaseEmptyDesc: "Додай предмети з інвентарю",
-        addItem: "Додати скін",
+        addItem: "Додати скін", addItem2: "Додати предмет",
+        addItemTitle: "Додавання предмету", addItemTypeDesc: "Оберіть тип предмету.",
+        typeGift: "Подарунок", typeGiftDesc: "Предмет з фото та кількістю",
+        typePrefix: "Префікс", typePrefixDesc: "Текстовий привілей з кольором",
+        itemName: "Назва", itemDesc: "Опис", priceCoins: "Ціна (коіни)", priceDonate: "Ціна (донат)",
+        stockTotal: "Кількість", uploadPhoto: "Завантажити фото", prefixText: "Текст", prefixColor: "Колір",
+        addItemBtn: "Додати предмет", confirmTitle: "Підтвердити?", confirm: "Так, додати",
+        buyCoins: "Купити за коіни", buyDonate: "Купити за донат", deleteItem: "Видалити з магазину",
         tops: "Топи", topsDesc: "Рейтинги гравців",
         showcase: "Вітрина",
         tabShopStore: "Магазин", tabShopItems: "Мої предмети", tabShopTrade: "Обміни",
@@ -303,7 +310,14 @@ const TRANSLATIONS = {
         invEmpty: "Inventory is empty", invEmptyDesc: "Buy items in the shop",
         showcaseDesc: "Showcase is visible on your public profile.",
         showcaseEmpty: "Showcase is empty", showcaseEmptyDesc: "Add items from your inventory",
-        addItem: "Add skin",
+        addItem: "Add skin", addItem2: "Add item",
+        addItemTitle: "Add item", addItemTypeDesc: "Choose item type.",
+        typeGift: "Gift", typeGiftDesc: "Item with photo and quantity",
+        typePrefix: "Prefix", typePrefixDesc: "Text privilege with color",
+        itemName: "Name", itemDesc: "Description", priceCoins: "Price (coins)", priceDonate: "Price (donate)",
+        stockTotal: "Quantity", uploadPhoto: "Upload photo", prefixText: "Text", prefixColor: "Color",
+        addItemBtn: "Add item", confirmTitle: "Confirm?", confirm: "Yes, add",
+        buyCoins: "Buy with coins", buyDonate: "Buy with donate", deleteItem: "Remove from shop",
         tops: "Tops", topsDesc: "Player rankings",
         showcase: "Showcase",
         tabShopStore: "Shop", tabShopItems: "My items", tabShopTrade: "Trades",
@@ -416,6 +430,15 @@ async function loadFromServer() {
 
         const adminLevel = u.admin_level ?? 0;
         document.getElementById("adminLevel").textContent = adminLevel;
+        currentAdminLevel = adminLevel;
+        if (adminLevel >= 5) {
+            document.getElementById("shopAdminBar").style.display = "block";
+            document.getElementById("adminGroupLabel").classList.remove("admin-only");
+            document.getElementById("adminGroup").classList.remove("admin-only");
+        } else if (adminLevel >= 1) {
+            document.getElementById("adminGroupLabel").classList.remove("admin-only");
+            document.getElementById("adminGroup").classList.remove("admin-only");
+        }
 
         // Пункт "Адмін панель" видно тільки якщо сервер підтвердив admin_level > 0.
         // Перевірка тут — лише щоб не показувати пункт меню звичайним людям;
@@ -423,10 +446,7 @@ async function loadFromServer() {
         // достатньо. Коли додамо дії всередині — кожен запит з неї теж
         // муситиме перевірятись на сервері окремо, бо будь-хто технічний
         // може відкрити цей екран напряму через консоль браузера.
-        if (adminLevel >= 1) {
-            document.getElementById("adminGroupLabel").classList.remove("admin-only");
-            document.getElementById("adminGroup").classList.remove("admin-only");
-        }
+
 
         if (u.bio) {
             const bioText = document.getElementById("bioText");
@@ -943,3 +963,353 @@ function initRoulette() {
 }
 
 initRoulette();
+initShop();
+
+/* ---------- Shop ---------- */
+
+let currentAdminLevel = 0;
+let shopItems = [];
+let pendingItemData = null;
+let selectedItemId = null;
+
+function renderShopItems(items) {
+    const grid = document.getElementById("shopGrid");
+    const empty = document.getElementById("shopEmptyState");
+    if (!grid) return;
+
+    // прибираємо старі картки (але не empty-state)
+    Array.from(grid.children).forEach(c => {
+        if (c !== empty) c.remove();
+    });
+
+    if (!items.length) {
+        empty.style.display = "";
+        return;
+    }
+    empty.style.display = "none";
+
+    items.forEach(item => {
+        const el = document.createElement("div");
+        if (item.type === "gift") {
+            el.className = "shop-item-gift";
+            el.innerHTML = `
+                ${item.photo_url
+                    ? `<img class="shop-item-gift__img" src="${item.photo_url}" alt="${item.name}">`
+                    : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
+                <div class="shop-item-gift__body">
+                    <span class="shop-item-gift__stock">залишилось: ${item.stock_left}</span>
+                    <p class="shop-item-gift__name">${item.name}</p>
+                    <p class="shop-item-gift__type">Подарунок</p>
+                    <p class="shop-item-gift__price">${item.price_coins} коінів</p>
+                </div>`;
+        } else {
+            el.className = "shop-item-prefix";
+            el.innerHTML = `
+                <span class="shop-item-prefix__tag" style="color:${item.prefix_color}">${item.prefix_text}</span>
+                <span class="shop-item-prefix__body">
+                    <span class="shop-item-prefix__name">${item.name}</span>
+                    <span class="shop-item-prefix__price">${item.price_coins} коінів</span>
+                </span>`;
+        }
+        el.addEventListener("click", () => openItemDetail(item));
+        grid.appendChild(el);
+    });
+}
+
+function openItemDetail(item) {
+    selectedItemId = item.item_id;
+    const modal = document.getElementById("itemDetailModal");
+    const backdrop = document.getElementById("itemDetailBackdrop");
+
+    document.getElementById("itemDetailImg").style.display = "none";
+    document.getElementById("itemDetailPrefix").style.display = "none";
+
+    if (item.type === "gift" && item.photo_url) {
+        const img = document.getElementById("itemDetailImg");
+        img.src = item.photo_url;
+        img.style.display = "block";
+    } else if (item.type === "prefix") {
+        const pre = document.getElementById("itemDetailPrefix");
+        pre.textContent = item.prefix_text;
+        pre.style.color = item.prefix_color;
+        pre.style.display = "block";
+    }
+
+    document.getElementById("itemDetailName").textContent = item.name;
+    document.getElementById("itemDetailDesc").textContent = item.description || "";
+    document.getElementById("itemDetailCoins").textContent = `${item.price_coins} коінів`;
+    document.getElementById("itemDetailDonate").textContent = `${item.price_donate} донат`;
+    document.getElementById("itemDetailStock").textContent = `Залишилось: ${item.stock_left} з ${item.stock_total}`;
+
+    const deleteBtn = document.getElementById("deleteItemBtn");
+    deleteBtn.style.display = currentAdminLevel >= 5 ? "block" : "none";
+
+    modal.classList.add("item-detail-modal--open");
+    backdrop.classList.add("modal-backdrop--open");
+}
+
+function closeItemDetail() {
+    document.getElementById("itemDetailModal").classList.remove("item-detail-modal--open");
+    document.getElementById("itemDetailBackdrop").classList.remove("modal-backdrop--open");
+    selectedItemId = null;
+}
+
+function openScreen(id) {
+    document.getElementById(id).classList.add("fullscreen--open");
+}
+
+function closeScreen(id) {
+    document.getElementById(id).classList.remove("fullscreen--open");
+}
+
+function openConfirm(text, onYes) {
+    document.getElementById("confirmText").textContent = text;
+    document.getElementById("confirmBackdrop").classList.add("modal-backdrop--open");
+    document.getElementById("confirmModal").classList.add("win-modal--open");
+
+    const yesBtn = document.getElementById("confirmYes");
+    const clone = yesBtn.cloneNode(true);
+    yesBtn.parentNode.replaceChild(clone, clone.parentNode.querySelector("#confirmYes") || yesBtn);
+    document.getElementById("confirmYes").addEventListener("click", () => {
+        closeConfirm();
+        onYes();
+    }, { once: true });
+}
+
+function closeConfirm() {
+    document.getElementById("confirmBackdrop").classList.remove("modal-backdrop--open");
+    document.getElementById("confirmModal").classList.remove("win-modal--open");
+}
+
+async function submitItem(data, successScreenId) {
+    try {
+        await API.createItem(data);
+        closeScreen(successScreenId);
+        closeScreen("addItemTypeScreen");
+        const items = await API.getShopItems();
+        shopItems = items.items;
+        renderShopItems(shopItems);
+        syncShopBalances();
+    } catch (e) {
+        return e.message;
+    }
+    return null;
+}
+
+function syncShopBalances() {
+    const coins = document.getElementById("statCoins")?.textContent || "0";
+    const donate = document.getElementById("statDonate")?.textContent || "0";
+    const sc = document.getElementById("shopCoins");
+    const sd = document.getElementById("shopDonate");
+    if (sc) sc.textContent = coins;
+    if (sd) sd.textContent = donate;
+}
+
+async function loadShopItems() {
+    try {
+        const data = await API.getShopItems();
+        shopItems = data.items;
+        renderShopItems(shopItems);
+    } catch (e) {
+        console.warn("Не вдалося завантажити товари:", e.message);
+    }
+}
+
+async function loadInventory() {
+    try {
+        const data = await API.getInventory();
+        renderInventory(data.items);
+    } catch (e) {
+        console.warn("Інвентар:", e.message);
+    }
+}
+
+function renderInventory(items) {
+    const screen = document.getElementById("inventoryScreen");
+    if (!screen) return;
+    let list = screen.querySelector(".inv-list");
+    if (!list) {
+        list = document.createElement("div");
+        list.className = "inv-list shop-grid";
+        list.style.gridTemplateColumns = "1fr 1fr";
+        screen.querySelector(".fullscreen__body").appendChild(list);
+    }
+    list.innerHTML = "";
+    if (!items.length) return;
+
+    items.forEach(item => {
+        const el = document.createElement("div");
+        if (item.type === "gift") {
+            el.className = "shop-item-gift";
+            el.innerHTML = `
+                ${item.photo_url
+                    ? `<img class="shop-item-gift__img" src="${item.photo_url}">`
+                    : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
+                <div class="shop-item-gift__body">
+                    <p class="shop-item-gift__name">${item.name}</p>
+                    <p class="shop-item-gift__type">Подарунок</p>
+                </div>`;
+        } else {
+            el.className = "shop-item-prefix";
+            el.innerHTML = `
+                <span class="shop-item-prefix__tag" style="color:${item.prefix_color}">${item.prefix_text}</span>
+                <span class="shop-item-prefix__body">
+                    <span class="shop-item-prefix__name">${item.name}</span>
+                </span>`;
+        }
+        list.appendChild(el);
+    });
+}
+
+function initShop() {
+    // Таби магазину
+    document.querySelectorAll(".shop-tab").forEach((tab, i) => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".shop-tab").forEach(t => t.classList.remove("shop-tab--active"));
+            tab.classList.add("shop-tab--active");
+            if (i === 1) loadInventory();
+        });
+    });
+
+    // Закрити деталь товару
+    document.getElementById("itemDetailClose")?.addEventListener("click", closeItemDetail);
+    document.getElementById("itemDetailBackdrop")?.addEventListener("click", closeItemDetail);
+    document.getElementById("confirmBackdrop")?.addEventListener("click", closeConfirm);
+    document.getElementById("confirmNo")?.addEventListener("click", closeConfirm);
+
+    // Купівля
+    document.getElementById("buyCoinsBtn")?.addEventListener("click", async () => {
+        if (!selectedItemId) return;
+        try {
+            const r = await API.buyItem(selectedItemId, "coins");
+            closeItemDetail();
+            document.getElementById("statCoins").textContent = r.balance.coins;
+            document.getElementById("statDonate").textContent = r.balance.donate;
+            syncShopBalances();
+            await loadShopItems();
+        } catch (e) {
+            alert(e.message.includes("400") ? "Недостатньо коштів або товар закінчився" : "Помилка");
+        }
+    });
+
+    document.getElementById("buyDonateBtn")?.addEventListener("click", async () => {
+        if (!selectedItemId) return;
+        try {
+            const r = await API.buyItem(selectedItemId, "donate");
+            closeItemDetail();
+            document.getElementById("statCoins").textContent = r.balance.coins;
+            document.getElementById("statDonate").textContent = r.balance.donate;
+            syncShopBalances();
+            await loadShopItems();
+        } catch (e) {
+            alert(e.message.includes("400") ? "Недостатньо коштів або товар закінчився" : "Помилка");
+        }
+    });
+
+    // Видалення
+    document.getElementById("deleteItemBtn")?.addEventListener("click", () => {
+        openConfirm("Видалити цей предмет з магазину? Куплені екземпляри залишаться в інвентарях.", async () => {
+            await API.deleteItem(selectedItemId);
+            closeItemDetail();
+            await loadShopItems();
+        });
+    });
+
+    // Адмін: додати предмет
+    document.getElementById("addItemBtn")?.addEventListener("click", () => openScreen("addItemTypeScreen"));
+    document.getElementById("addItemTypeBack")?.addEventListener("click", () => closeScreen("addItemTypeScreen"));
+
+    // Вибір типу
+    document.getElementById("chooseGift")?.addEventListener("click", () => {
+        closeScreen("addItemTypeScreen");
+        openScreen("addGiftScreen");
+    });
+    document.getElementById("choosePrefix")?.addEventListener("click", () => {
+        closeScreen("addItemTypeScreen");
+        openScreen("addPrefixScreen");
+    });
+
+    // Форма подарунку — фото
+    document.getElementById("giftPhotoUpload")?.addEventListener("click", () => {
+        document.getElementById("giftPhotoFile").click();
+    });
+    document.getElementById("giftPhotoFile")?.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const url = ev.target.result;
+            document.getElementById("giftPhotoPreview").src = url;
+            document.getElementById("giftPhotoPreview").style.display = "block";
+            document.getElementById("giftPhotoUpload").style.display = "none";
+            document.getElementById("giftPhotoUrl").value = url;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById("addGiftBack")?.addEventListener("click", () => {
+        closeScreen("addGiftScreen");
+        openScreen("addItemTypeScreen");
+    });
+
+    document.getElementById("giftSubmit")?.addEventListener("click", () => {
+        const name = document.getElementById("giftName").value.trim();
+        if (!name) { document.getElementById("giftError").textContent = "Вкажи назву"; return; }
+        const data = {
+            type: "gift",
+            name,
+            description: document.getElementById("giftDesc").value.trim(),
+            photo_url: document.getElementById("giftPhotoUrl").value,
+            price_coins: parseInt(document.getElementById("giftPriceCoins").value) || 0,
+            price_donate: parseInt(document.getElementById("giftPriceDonate").value) || 0,
+            stock_total: parseInt(document.getElementById("giftStock").value) || 1,
+        };
+        pendingItemData = data;
+        openConfirm(`Додати «${name}» до магазину?`, async () => {
+            const err = await submitItem(pendingItemData, "addGiftScreen");
+            if (err) document.getElementById("giftError").textContent = err;
+        });
+    });
+
+    // Форма префіксу
+    document.getElementById("addPrefixBack")?.addEventListener("click", () => {
+        closeScreen("addPrefixScreen");
+        openScreen("addItemTypeScreen");
+    });
+
+    document.getElementById("prefixText")?.addEventListener("input", (e) => {
+        const t = e.target.value || "VIP";
+        document.getElementById("prefixPreviewText").textContent = t;
+    });
+
+    document.getElementById("prefixColor")?.addEventListener("input", (e) => {
+        const c = e.target.value;
+        document.getElementById("prefixColorVal").textContent = c;
+        document.getElementById("prefixPreviewText").style.color = c;
+    });
+
+    document.getElementById("prefixSubmit")?.addEventListener("click", () => {
+        const name = document.getElementById("prefixName").value.trim();
+        const text = document.getElementById("prefixText").value.trim();
+        if (!name) { document.getElementById("prefixError").textContent = "Вкажи назву"; return; }
+        if (!text) { document.getElementById("prefixError").textContent = "Вкажи текст префіксу"; return; }
+        const data = {
+            type: "prefix",
+            name,
+            description: document.getElementById("prefixDesc").value.trim(),
+            photo_url: "",
+            price_coins: parseInt(document.getElementById("prefixPriceCoins").value) || 0,
+            price_donate: parseInt(document.getElementById("prefixPriceDonate").value) || 0,
+            stock_total: parseInt(document.getElementById("prefixStock").value) || 1,
+            prefix_text: text,
+            prefix_color: document.getElementById("prefixColor").value,
+        };
+        pendingItemData = data;
+        openConfirm(`Додати префікс «${text}» до магазину?`, async () => {
+            const err = await submitItem(pendingItemData, "addPrefixScreen");
+            if (err) document.getElementById("prefixError").textContent = err;
+        });
+    });
+
+    loadShopItems();
+}
