@@ -235,6 +235,13 @@ function initShop() {
             shopGrid.style.display       = i === 0 ? "" : "none";
             invContainer.style.display   = i === 1 ? "" : "none";
             tradeContainer.style.display = i === 2 ? "" : "none";
+
+            // Кнопка додавання доречна лише на вкладці "Магазин"
+            const adminBar = document.getElementById("shopAdminBar");
+            if (adminBar && currentAdminLevel >= 5) {
+                adminBar.style.display = i === 0 ? "block" : "none";
+            }
+
             if (i === 1) loadInventory();
         });
     });
