@@ -99,8 +99,36 @@ function initTabs() {
     });
 }
 
+const PREFS_KEY = "app_prefs";
+
+function loadPrefs() {
+    try { return JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch { return {}; }
+}
+
+function savePrefs(obj) {
+    const current = loadPrefs();
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...current, ...obj }));
+}
+
+function applyPrefsOnLoad() {
+    const prefs = loadPrefs();
+    if (prefs.theme === "light") setTheme("light");
+    if (prefs.noAnim) document.body.classList.add("no-anim");
+    if (prefs.noOrbs) document.body.classList.add("orbs-off");
+    if (prefs.topVisibility) {
+        const sel = prefs.topVisibility;
+        const pub = document.getElementById("visPublic");
+        const anon = document.getElementById("visAnon");
+        if (pub && anon) {
+            pub.classList.toggle("visibility-opt--active", sel === "public");
+            anon.classList.toggle("visibility-opt--active", sel === "anon");
+        }
+    }
+}
+
 function setTheme(theme) {
     document.body.dataset.theme = theme;
+    savePrefs({ theme });
 
     const themeSwitch = document.getElementById("themeSwitch");
     const isDark = theme === "dark";
@@ -162,9 +190,11 @@ function initSwitchesAndToggles() {
             }
             if (sw.id === "orbsSwitch") {
                 document.body.classList.toggle("orbs-off", !isOn);
+                savePrefs({ noOrbs: !isOn });
             }
             if (sw.id === "animSwitch") {
                 document.body.classList.toggle("no-anim", !isOn);
+                savePrefs({ noAnim: !isOn });
             }
         });
     });
@@ -196,6 +226,11 @@ const TRANSLATIONS = {
         betAmount: "Ставка", red: "Червоне", black: "Чорне",
         payoutsTitle: "Виплати", colorGreen: "Зелене", colorWhite: "Біле",
         placeBet: "Зробити ставку", ok: "Добре!",
+        filterCase: "Кейс", filterGift: "Подарунок", filterPrefix: "Префікс", allTypes: "Всі типи",
+        invEmpty: "Інвентар порожній", invEmptyDesc: "Придбай предмети у магазині",
+        showcaseDesc: "Вітрина видна у твоєму публічному профілі.",
+        showcaseEmpty: "Вітрина порожня", showcaseEmptyDesc: "Додай предмети з інвентарю",
+        addItem: "Додати скін",
         tops: "Топи", topsDesc: "Рейтинги гравців",
         showcase: "Вітрина",
         tabShopStore: "Магазин", tabShopItems: "Мої предмети", tabShopTrade: "Обміни",
@@ -264,6 +299,11 @@ const TRANSLATIONS = {
         betAmount: "Bet", red: "Red", black: "Black",
         payoutsTitle: "Payouts", colorGreen: "Green", colorWhite: "White",
         placeBet: "Place bet", ok: "Nice!",
+        filterCase: "Case", filterGift: "Gift", filterPrefix: "Prefix", allTypes: "All types",
+        invEmpty: "Inventory is empty", invEmptyDesc: "Buy items in the shop",
+        showcaseDesc: "Showcase is visible on your public profile.",
+        showcaseEmpty: "Showcase is empty", showcaseEmptyDesc: "Add items from your inventory",
+        addItem: "Add skin",
         tops: "Tops", topsDesc: "Player rankings",
         showcase: "Showcase",
         tabShopStore: "Shop", tabShopItems: "My items", tabShopTrade: "Trades",
@@ -479,6 +519,46 @@ function initAdminPanel() {
     });
 }
 
+function initInventory() {
+    const openBtn = document.getElementById("inventoryOpen");
+    const backBtn = document.getElementById("inventoryBack");
+    const screen = document.getElementById("inventoryScreen");
+    const filterBtn = document.getElementById("invFilterBtn");
+    const filterDrop = document.getElementById("invFilterDrop");
+    if (!openBtn) return;
+    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+        snapScreensToActiveTab();
+    });
+    filterBtn.addEventListener("click", () => {
+        const isOpen = filterDrop.classList.toggle("filter-drop--open");
+        filterBtn.classList.toggle("shop-filter--open", isOpen);
+    });
+}
+
+function initShowcase() {
+    const openBtn = document.getElementById("showcaseOpen");
+    const backBtn = document.getElementById("showcaseBack");
+    const screen = document.getElementById("showcaseScreen");
+    if (!openBtn) return;
+    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+        snapScreensToActiveTab();
+    });
+}
+
+function initShopFilter() {
+    const filterBtn = document.getElementById("shopFilterBtn");
+    const filterDrop = document.getElementById("shopFilterDrop");
+    if (!filterBtn) return;
+    filterBtn.addEventListener("click", () => {
+        const isOpen = filterDrop.classList.toggle("filter-drop--open");
+        filterBtn.classList.toggle("shop-filter--open", isOpen);
+    });
+}
+
 function initDocsScreen() {
     const openBtn = document.getElementById("docsOpen");
     const backBtn = document.getElementById("docsBack");
@@ -520,13 +600,14 @@ function initTopVisibility() {
 
     saveBtn.addEventListener("click", async () => {
         resultEl.textContent = "";
+        savePrefs({ topVisibility: selected });
         try {
             await API.saveSettings({ top_visibility: selected });
             resultEl.textContent = "✓ Збережено";
             resultEl.style.color = "var(--teal)";
         } catch {
-            resultEl.textContent = "Помилка збереження";
-            resultEl.style.color = "";
+            resultEl.textContent = "✓ Збережено (локально)";
+            resultEl.style.color = "var(--teal)";
         }
     });
 }
@@ -611,6 +692,7 @@ function initProfileEditors() {
     });
 }
 
+applyPrefsOnLoad();
 initUserData();
 initProfileEditors();
 initTabs();
@@ -618,6 +700,9 @@ initTheme();
 initSettings();
 initUsersScreen();
 initAdminPanel();
+initInventory();
+initShowcase();
+initShopFilter();
 initDocsScreen();
 initTopVisibility();
 initShopTabs();
