@@ -5,6 +5,7 @@
 
 const FALLBACK_EMOJI = "🙂";
 let currentAdminLevel = 0;
+let currentUserId = null;
 
 function initUserData() {
     const tg = window.Telegram?.WebApp;
@@ -20,6 +21,7 @@ function initUserData() {
     tg.ready();
     tg.expand();
     const user = tg.initDataUnsafe.user;
+    currentUserId = user.id;
 
     const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
 
@@ -95,8 +97,7 @@ async function loadFromServer() {
     });
 
     // Bio
-    const bioEl = document.getElementById("bioText");
-    if (bioEl) bioEl.textContent = u.bio || "";
+    setBioText(u.bio || "");
 
     // Видимість у топах — з сервера, щоб UI не розходився з БД
     const serverVis = u.settings?.top_visibility;
@@ -132,29 +133,61 @@ function syncBalance(balance) {
 }
 
 function initProfileEditors() {
-    // Bio editor
-    const editBtn   = document.getElementById("editBioBtn");
+    // ВАЖЛИВО: id кнопки в HTML — bioEdit (раніше шукали editBioBtn і нічого не працювало)
+    const editBtn   = document.getElementById("bioEdit");
     const editor    = document.getElementById("bioEditor");
     const input     = document.getElementById("bioInput");
     const saveBtn   = document.getElementById("bioSave");
     const cancelBtn = document.getElementById("bioCancel");
     const bioText   = document.getElementById("bioText");
+    const counter   = document.getElementById("bioCounter");
 
-    editBtn?.addEventListener("click", () => {
-        if (input) input.value = bioText?.textContent || "";
-        editor?.classList.add("bio-editor--open");
+    if (!editBtn || !editor) return;
+
+    const updateCounter = () => {
+        if (counter && input) counter.textContent = `${input.value.length}/200`;
+    };
+
+    editBtn.addEventListener("click", () => {
+        // Якщо стоїть заглушка «Опис поки порожній» — починаємо з чистого поля
+        const current = bioText.dataset.raw || "";
+        input.value = current;
+        updateCounter();
+        editor.classList.add("bio-editor--open");
+        setTimeout(() => input.focus(), 200);
     });
-    cancelBtn?.addEventListener("click", () => editor?.classList.remove("bio-editor--open"));
+
+    input?.addEventListener("input", updateCounter);
+
+    cancelBtn?.addEventListener("click", () => editor.classList.remove("bio-editor--open"));
+
     saveBtn?.addEventListener("click", async () => {
-        const bio = input?.value?.trim() ?? "";
+        const bio = (input.value || "").trim();
         try {
             await API.saveBio(bio);
-            if (bioText) bioText.textContent = bio;
-            editor?.classList.remove("bio-editor--open");
+            setBioText(bio);
+            editor.classList.remove("bio-editor--open");
+            toast(t("saved"), "success");
         } catch (e) {
-            alert("Помилка збереження");
+            toast(t("errGeneric"), "error");
         }
     });
+}
+
+/** Показує опис або заглушку, зберігаючи «сирий» текст для редактора. */
+function setBioText(bio) {
+    const bioText = document.getElementById("bioText");
+    if (!bioText) return;
+    bioText.dataset.raw = bio || "";
+    if (bio) {
+        bioText.textContent = bio;
+        bioText.removeAttribute("data-i18n");
+        bioText.classList.remove("profile-card__text--empty");
+    } else {
+        bioText.textContent = t("bioEmpty");
+        bioText.dataset.i18n = "bioEmpty";
+        bioText.classList.add("profile-card__text--empty");
+    }
 }
 
 function initAdminPanel() {
@@ -263,8 +296,13 @@ async function loadUsers() {
             return;
         }
 
-        users.forEach((u) => {
-            const item = el("div", "user-item");
+        // Свій профіль — першим і з бейджем «ТИ»
+        const me = users.filter((u) => u.user_id === currentUserId);
+        const rest = users.filter((u) => u.user_id !== currentUserId);
+
+        [...me, ...rest].forEach((u) => {
+            const isMe = u.user_id === currentUserId;
+            const item = el("div", "user-item" + (isMe ? " user-item--me" : ""));
 
             const av = el("div", "user-item__avatar");
             const src = safeImageUrl(u.photo_url);
@@ -275,8 +313,11 @@ async function loadUsers() {
             const name = [u.first_name, u.last_name].filter(Boolean).join(" ");
             body.appendChild(el("p", "user-item__name", name || "—"));
             body.appendChild(el("p", "user-item__tag", u.username ? "@" + u.username : ""));
+            // Опис «Про мене» бачать усі
+            if (u.bio) body.appendChild(el("p", "user-item__bio", u.bio));
             item.appendChild(body);
 
+            if (isMe) item.appendChild(el("span", "user-item__me-badge", t("youBadge")));
             item.appendChild(el("span", "user-item__level", "Lv " + (u.level || 1)));
             list.appendChild(item);
         });
