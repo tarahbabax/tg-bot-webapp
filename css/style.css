@@ -2710,3 +2710,397 @@ body.no-anim *::after {
     opacity: 0.4;
     pointer-events: none;
 }
+
+/* ---------- Final UI polish / Telegram WebApp ---------- */
+
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --content-max: 620px;
+}
+
+html {
+    background: var(--bg);
+    scrollbar-gutter: stable;
+}
+
+body {
+    min-width: 280px;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+    -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg {
+    display: block;
+}
+
+img {
+    max-width: 100%;
+}
+
+.page {
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding-top: var(--safe-top);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+}
+
+.tabbar {
+    margin-bottom: calc(16px + var(--safe-bottom));
+}
+
+.screen,
+.fullscreen__body,
+.quests-scroll,
+.filter-drop {
+    scrollbar-width: thin;
+    scrollbar-color: var(--stroke-strong) transparent;
+}
+
+.screen::-webkit-scrollbar,
+.fullscreen__body::-webkit-scrollbar,
+.filter-drop::-webkit-scrollbar {
+    width: 4px;
+}
+
+.screen::-webkit-scrollbar-track,
+.fullscreen__body::-webkit-scrollbar-track,
+.filter-drop::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.screen::-webkit-scrollbar-thumb,
+.fullscreen__body::-webkit-scrollbar-thumb,
+.filter-drop::-webkit-scrollbar-thumb {
+    background: var(--stroke-strong);
+    border-radius: 999px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.icon-btn,
+.theme-btn,
+.fullscreen__back,
+.tabbar__item,
+.game-card,
+.home-card,
+.docs-card,
+.quest,
+.shop-tab,
+.shop-filter,
+.shop-item-gift,
+.shop-item-prefix,
+.btn,
+.dice-btn,
+.currency-pill {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.icon-btn,
+.theme-btn,
+.fullscreen__back,
+.tabbar__item,
+.game-card,
+.home-card,
+.docs-card,
+.quest,
+.shop-tab,
+.shop-filter,
+.shop-item-gift,
+.shop-item-prefix,
+.btn,
+.dice-btn,
+.currency-pill {
+    transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .icon-btn:hover,
+    .theme-btn:hover,
+    .fullscreen__back:hover {
+        background: var(--surface-2);
+        border-color: var(--stroke-strong);
+        transform: translateY(-1px);
+    }
+
+    .tabbar__item:hover:not(.tabbar__item--active),
+    .shop-tab:hover:not(.shop-tab--active),
+    .currency-pill:hover:not(.currency-pill--active) {
+        background: var(--surface-2);
+        color: var(--ink);
+    }
+
+    .home-card:hover,
+    .docs-card:hover,
+    .game-card:hover,
+    .shop-item-gift:hover,
+    .shop-item-prefix:hover {
+        border-color: var(--stroke-strong);
+        transform: translateY(-1px);
+    }
+
+    .quests-all:hover,
+    .btn--ghost:hover {
+        color: var(--ink);
+        border-color: var(--stroke-strong);
+        background: var(--surface-3);
+    }
+
+    .btn--accent:hover,
+    .spin-btn:hover {
+        filter: brightness(1.06);
+    }
+}
+
+@media (max-width: 360px) {
+    .home-header {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .dashboard,
+    .games,
+    .shop-balances,
+    .shop-tabs,
+    .shop-grid,
+    .screen-header,
+    .roulette {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .divider {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .section-label {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .home-cards-row {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .shop-search,
+    .shop-filter-wrap {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .shop-grid {
+        gap: 9px;
+    }
+
+    .tabbar {
+        margin-left: 10px;
+        margin-right: 10px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .tabbar__item {
+        padding-left: 2px;
+        padding-right: 2px;
+        font-size: 10px;
+    }
+
+    .tabbar__item svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .avatar {
+        width: 104px;
+        height: 104px;
+    }
+
+    .profile {
+        padding-top: 40px;
+    }
+}
+
+@media (max-width: 340px) {
+    .dashboard {
+        height: 224px;
+    }
+
+    .stats-panel {
+        width: 38%;
+    }
+
+    .stat-row__value {
+        font-size: 17px;
+    }
+
+    .quest {
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+
+    .quest__title {
+        font-size: 12px;
+    }
+
+    .quest__desc {
+        font-size: 10px;
+    }
+
+    .quest__reward {
+        font-size: 10.5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+body.no-anim *,
+body.no-anim *::before,
+body.no-anim *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+body.orbs-off .orbs {
+    display: none;
+}
+
+.fullscreen__header {
+    padding-top: calc(14px + var(--safe-top));
+    padding-left: calc(16px + var(--safe-left));
+    padding-right: calc(16px + var(--safe-right));
+}
+
+.fullscreen__body {
+    padding-left: calc(16px + var(--safe-left));
+    padding-right: calc(16px + var(--safe-right));
+    padding-bottom: calc(28px + var(--safe-bottom));
+}
+
+.modal-backdrop {
+    padding-bottom: var(--safe-bottom);
+}
+
+.item-detail-modal {
+    padding-bottom: calc(24px + var(--safe-bottom));
+    max-height: min(88dvh, 760px);
+    overflow-y: auto;
+}
+
+.home-header,
+.dashboard,
+.screen-header,
+.shop-balances,
+.shop-tabs,
+.shop-grid,
+.roulette {
+    padding-left: max(16px, calc(20px + var(--safe-left)));
+    padding-right: max(16px, calc(20px + var(--safe-right)));
+}
+
+.home-cards-row {
+    margin-left: max(16px, calc(20px + var(--safe-left)));
+    margin-right: max(16px, calc(20px + var(--safe-right)));
+}
+
+.shop-search,
+.shop-filter-wrap {
+    margin-left: max(16px, calc(20px + var(--safe-left)));
+    margin-right: max(16px, calc(20px + var(--safe-right)));
+}
+
+#inventoryScreen .fullscreen__body .shop-search,
+#inventoryScreen .fullscreen__body .shop-filter-wrap {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Prevent long Telegram names/tags from pushing controls off-screen. */
+.greeting,
+.home-header__actions,
+.settings-account > :not(.settings-account__avatar),
+.profile-head__body,
+.profile-card__text,
+.fullscreen__title,
+.shop-item-prefix__body,
+.docs-card__body,
+.home-card__title {
+    min-width: 0;
+}
+
+.greeting__name,
+.settings-account__name,
+.profile-head__name,
+.tag-row__tag {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fullscreen__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Native controls should not flash a bright white background in dark mode. */
+input,
+textarea,
+select {
+    color-scheme: dark;
+}
+
+body[data-theme="light"] input,
+body[data-theme="light"] textarea,
+body[data-theme="light"] select {
+    color-scheme: light;
+}
+
+/* Keep cards visually stable while images are loading. */
+.shop-item-gift__img,
+.item-detail-modal__img,
+.item-photo-preview {
+    display: block;
+}
+
+.shop-item-gift__img {
+    min-height: 0;
+}
