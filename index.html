@@ -101,7 +101,7 @@
                     <div class="divider"></div>
                     <p class="section-label" data-i18n="info">Інформація</p>
 
-                    <button class="docs-card" type="button">
+                    <button class="docs-card" id="docsOpen" type="button">
                         <span class="docs-card__icon">
                             <svg viewBox="0 0 24 24" fill="none">
                                 <circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.5"/>
@@ -115,6 +115,20 @@
                         <svg class="docs-card__chevron" viewBox="0 0 24 24" fill="none">
                             <path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
+                    </button>
+
+                    <button class="docs-card" type="button" style="opacity:0.55;">
+                        <span class="docs-card__icon" style="background:rgba(167,139,250,0.14);color:#A78BFA;">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                                <path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <span class="docs-card__body">
+                            <span class="docs-card__title" data-i18n="tops">Топи</span>
+                            <span class="docs-card__desc" data-i18n="topsDesc">Рейтинги гравців</span>
+                        </span>
+                        <span style="font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;" data-i18n="soon">Незабаром</span>
                     </button>
                 </section>
 
@@ -241,14 +255,14 @@
 
                     <div class="settings-group">
                         
-                        <button class="setting-link" type="button">
+                        <button class="setting-link" id="topVisibilityOpen" type="button">
                             <span class="fn-icon fn-icon--amber"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="topVisibility">Видимість у топах</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                         <button class="setting-link" type="button">
-                            <span class="fn-icon fn-icon--muted"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.6" r="3.6" stroke="currentColor" stroke-width="1.6"/><path d="M5 19.6c1.2-3.2 3.8-4.9 7-4.9s5.8 1.7 7 4.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-                            <span class="setting-row__body"><span class="setting-row__title" data-i18n="openProfile">Відкрити профіль</span></span>
+                            <span class="fn-icon fn-icon--accent"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l2.5 5.3 5.6.8-4 4 .9 5.7-5-2.7-5 2.7.9-5.7-4-4 5.6-.8L12 3.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+                            <span class="setting-row__body"><span class="setting-row__title" data-i18n="showcase">Вітрина</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                     </div>
@@ -259,6 +273,48 @@
                             <span class="setting-row__body"><span class="setting-row__title" data-i18n="otherUsers">Інші користувачі</span></span>
                             <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
+                    </div>
+                </section>
+
+                <!-- МАГАЗИН -->
+                <section class="screen" id="screen-shop">
+                    <header class="screen-header">
+                        <p class="screen-header__title" data-i18n="tabShop">Магазин</p>
+                    </header>
+
+                    <div class="shop-balances">
+                        <div class="roulette-balance">
+                            <span class="roulette-balance__value" id="shopCoins">0</span>
+                            <span class="roulette-balance__label" data-i18n="coins">Коіни</span>
+                        </div>
+                        <div class="roulette-balance">
+                            <span class="roulette-balance__value roulette-balance__value--donate" id="shopDonate">0</span>
+                            <span class="roulette-balance__label" data-i18n="donate">Донат-коіни</span>
+                        </div>
+                    </div>
+
+                    <div class="shop-tabs">
+                        <button class="shop-tab shop-tab--active" type="button" data-i18n="tabShopStore">Магазин</button>
+                        <button class="shop-tab" type="button" data-i18n="tabShopItems">Мої предмети</button>
+                        <button class="shop-tab" type="button" data-i18n="tabShopTrade">Обміни</button>
+                    </div>
+
+                    <div class="shop-search">
+                        <svg class="shop-search__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        <input class="shop-search__input" type="text" data-i18n-placeholder="shopSearch" placeholder="Пошук за назвою"/>
+                    </div>
+
+                    <button class="shop-filter" type="button">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        <span data-i18n="shopFilter">Тип предмета</span>
+                        <svg class="shop-filter__chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </button>
+
+                    <div class="shop-grid">
+                        <div class="empty-state" style="padding-top:40px;">
+                            <p class="empty-state__title" data-i18n="shopEmpty">Товарів поки немає</p>
+                            <p class="empty-state__text" data-i18n="shopEmptyDesc">Скоро тут з'являться цікаві речі</p>
+                        </div>
                     </div>
                 </section>
 
@@ -312,6 +368,115 @@
                 <div class="users-list" id="usersList">
                     <p class="users-empty" id="usersEmpty" data-i18n="usersLoading">Завантаження…</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- ДОКУМЕНТАЦІЯ -->
+        <div class="fullscreen" id="docsScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="docsBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="docs">Документація</p>
+            </header>
+            <div class="fullscreen__body docs-body">
+                <p class="docs-intro" data-i18n="docsIntro">Вітаємо у VLKManageBot — закритому просторі для своїх. Тут усе влаштовано так, щоб ти не просто перебував у каналі, а відчував, що є частиною чогось більшого. Ось що тут до чого.</p>
+
+                <div class="docs-section">
+                    <div class="docs-section__icon" style="background:rgba(110,139,255,0.13);color:var(--accent);">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M3.8 10.2L12 4l8.2 6.2V19a1.4 1.4 0 01-1.4 1.4H5.2A1.4 1.4 0 013.8 19v-8.8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="docs-section__body">
+                        <p class="docs-section__title" data-i18n="docsNavTitle">Навігація</p>
+                        <p class="docs-section__text" data-i18n="docsNavText">Внизу чотири вкладки: <b>Головна</b> — твоя стартова точка з квестами та статистикою; <b>Ігри</b> — розваги та шанс виграти монети; <b>Профіль</b> — твоя особиста сторінка; <b>Магазин</b> — місце, де монети перетворюються на реальні речі.</p>
+                    </div>
+                </div>
+
+                <div class="docs-section">
+                    <div class="docs-section__icon" style="background:rgba(63,217,199,0.13);color:var(--teal);">
+                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 8.2v7.6M9.8 10.2h3.4a1.7 1.7 0 010 3.4H9.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="docs-section__body">
+                        <p class="docs-section__title" data-i18n="docsCoinsTitle">Коіни</p>
+                        <p class="docs-section__text" data-i18n="docsCoinsText">Основна валюта каналу. Заробляєш виконуючи квести, граючи в ігри і просто взаємодіючи зі спільнотою. Витрачати можна в магазині або ставити в грі на колесі фортуни.</p>
+                    </div>
+                </div>
+
+                <div class="docs-section">
+                    <div class="docs-section__icon" style="background:rgba(167,139,250,0.13);color:var(--violet);">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l2.5 5.3 5.6.8-4 4 .9 5.7-5-2.7-5 2.7.9-5.7-4-4 5.6-.8L12 3.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="docs-section__body">
+                        <p class="docs-section__title" data-i18n="docsDonateTitle">Донат-коіни</p>
+                        <p class="docs-section__text" data-i18n="docsDonateText">Преміум-валюта з особливим статусом. Дають доступ до ексклюзивних товарів у магазині, яких не купиш за звичайні монети. Кількість обмежена — це щось особливе, не для всіх.</p>
+                    </div>
+                </div>
+
+                <div class="docs-section">
+                    <div class="docs-section__icon" style="background:rgba(240,100,120,0.13);color:#F06478;">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M7.5 4.4h9v5.2a4.5 4.5 0 11-9 0V4.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 6h-2v1.6a2.6 2.6 0 002.6 2.6M16.5 6h2v1.6a2.6 2.6 0 01-2.6 2.6M12 14.4v3.2M9 19.6h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="docs-section__body">
+                        <p class="docs-section__title" data-i18n="docsQuestsTitle">Квести</p>
+                        <p class="docs-section__text" data-i18n="docsQuestsText">Щоденні завдання, виконуючи які ти заробляєш коіни і підвищуєш рівень. Вони оновлюються регулярно — чим частіше заходиш, тим більше встигаєш зібрати. Деякі квести разові, деякі повторюються.</p>
+                    </div>
+                </div>
+
+                <div class="docs-section">
+                    <div class="docs-section__icon" style="background:rgba(240,185,90,0.13);color:#F0B95A;">
+                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 3.4v17.2M3.4 12h17.2M5.9 5.9l12.2 12.2M18.1 5.9L5.9 18.1" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2.1" fill="currentColor"/></svg>
+                    </div>
+                    <div class="docs-section__body">
+                        <p class="docs-section__title" data-i18n="docsGamesTitle">Ігри</p>
+                        <p class="docs-section__text" data-i18n="docsGamesText">Колесо фортуни вже доступне. Ставиш монети на колір — зелений дає x100, білий x10, а червоне і чорне x2. Грай розважливо: великі виграші є, але і програти можна швидко. Незабаром з'являться нові ігри.</p>
+                    </div>
+                </div>
+
+                <p class="docs-footer" data-i18n="docsFooter">Залишились питання? Зв'яжись з @vlod12k — він знає відповідь на все.</p>
+            </div>
+        </div>
+
+        <!-- ВИДИМІСТЬ У ТОПАХ -->
+        <div class="fullscreen" id="topVisibilityScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="topVisibilityBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="topVisibility">Видимість у топах</p>
+            </header>
+            <div class="fullscreen__body">
+                <p class="visibility-desc" data-i18n="visibilityDesc">Обери, як тебе бачитимуть інші у рейтингах. Налаштування зберігається і застосовується одразу.</p>
+
+                <div class="visibility-options">
+                    <button class="visibility-opt visibility-opt--active" id="visPublic" type="button">
+                        <span class="visibility-opt__icon">
+                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.6" r="3.9" stroke="currentColor" stroke-width="1.6"/><path d="M4.6 20c1.3-3.4 4-5.2 7.4-5.2s6.1 1.8 7.4 5.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="visibility-opt__body">
+                            <span class="visibility-opt__title" data-i18n="visPublicTitle">Показувати в топах</span>
+                            <span class="visibility-opt__desc" data-i18n="visPublicDesc">Твій нік, рівень і монети видно всім учасникам</span>
+                        </span>
+                        <span class="visibility-opt__check">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </button>
+
+                    <button class="visibility-opt" id="visAnon" type="button">
+                        <span class="visibility-opt__icon">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5.5C8 5.5 4.7 8.2 3.5 12c1.2 3.8 4.5 6.5 8.5 6.5s7.3-2.7 8.5-6.5C19.3 8.2 16 5.5 12 5.5z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="visibility-opt__body">
+                            <span class="visibility-opt__title" data-i18n="visAnonTitle">Анонімний режим</span>
+                            <span class="visibility-opt__desc" data-i18n="visAnonDesc">Ти не з'являєшся в рейтингах і топах</span>
+                        </span>
+                        <span class="visibility-opt__check">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                    </button>
+                </div>
+
+                <button class="spin-btn" id="visSave" type="button" style="margin-top:20px;" data-i18n="save">Зберегти</button>
+                <p class="roulette-error" id="visResult"></p>
             </div>
         </div>
 
@@ -624,8 +789,8 @@
                     </div>
                 </div>
 
-                <p class="settings-group__label" data-i18n="admin">Адміністрування</p>
-                <div class="settings-group">
+                <p class="settings-group__label admin-only" id="adminGroupLabel" data-i18n="admin">Адміністрування</p>
+                <div class="settings-group admin-only" id="adminGroup">
                     <button class="setting-link" id="adminOpen" type="button">
                         <span class="fn-icon fn-icon--rose">
                             <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.4l7 2.6v5.4c0 4.4-3 8.1-7 9.2-4-1.1-7-4.8-7-9.2V6l7-2.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
