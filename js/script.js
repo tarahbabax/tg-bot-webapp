@@ -196,6 +196,21 @@ const TRANSLATIONS = {
         betAmount: "Ставка", red: "Червоне", black: "Чорне",
         payoutsTitle: "Виплати", colorGreen: "Зелене", colorWhite: "Біле",
         placeBet: "Зробити ставку", ok: "Добре!",
+        tops: "Топи", topsDesc: "Рейтинги гравців",
+        showcase: "Вітрина",
+        tabShopStore: "Магазин", tabShopItems: "Мої предмети", tabShopTrade: "Обміни",
+        shopSearch: "Пошук за назвою", shopFilter: "Тип предмета",
+        shopEmpty: "Товарів поки немає", shopEmptyDesc: "Скоро тут з'являться цікаві речі",
+        visibilityDesc: "Обери, як тебе бачитимуть інші у рейтингах. Налаштування зберігається і застосовується одразу.",
+        visPublicTitle: "Показувати в топах", visPublicDesc: "Твій нік, рівень і монети видно всім учасникам",
+        visAnonTitle: "Анонімний режим", visAnonDesc: "Ти не з'являєшся в рейтингах і топах",
+        docsIntro: "Вітаємо у VLKManageBot.",
+        docsNavTitle: "Навігація", docsNavText: "Внизу чотири вкладки: Головна, Ігри, Профіль, Магазин.",
+        docsCoinsTitle: "Коіни", docsCoinsText: "Основна валюта каналу.",
+        docsDonateTitle: "Донат-коіни", docsDonateText: "Преміум-валюта з особливим статусом.",
+        docsQuestsTitle: "Квести", docsQuestsText: "Щоденні завдання за коіни.",
+        docsGamesTitle: "Ігри", docsGamesText: "Колесо фортуни вже доступне.",
+        docsFooter: "Залишились питання? Зв'яжись з @vlod12k.",
         admin: "Адміністрування", adminPanel: "Адмін панель",
         adminLevel: "Рівень адміністратора", adminSoon: "Функціонал у розробці",
         adminSoonDesc: "Тут з'являться інструменти керування",
@@ -249,6 +264,21 @@ const TRANSLATIONS = {
         betAmount: "Bet", red: "Red", black: "Black",
         payoutsTitle: "Payouts", colorGreen: "Green", colorWhite: "White",
         placeBet: "Place bet", ok: "Nice!",
+        tops: "Tops", topsDesc: "Player rankings",
+        showcase: "Showcase",
+        tabShopStore: "Shop", tabShopItems: "My items", tabShopTrade: "Trades",
+        shopSearch: "Search by name", shopFilter: "Item type",
+        shopEmpty: "No items yet", shopEmptyDesc: "Exciting things coming soon",
+        visibilityDesc: "Choose how others see you in rankings.",
+        visPublicTitle: "Show in rankings", visPublicDesc: "Your name, level and coins are visible to all",
+        visAnonTitle: "Anonymous mode", visAnonDesc: "You don't appear in rankings or leaderboards",
+        docsIntro: "Welcome to VLKManageBot.",
+        docsNavTitle: "Navigation", docsNavText: "Four tabs at the bottom: Home, Games, Profile, Shop.",
+        docsCoinsTitle: "Coins", docsCoinsText: "The main channel currency.",
+        docsDonateTitle: "Premium coins", docsDonateText: "Premium currency with special status.",
+        docsQuestsTitle: "Quests", docsQuestsText: "Daily tasks for coins.",
+        docsGamesTitle: "Games", docsGamesText: "Wheel of Fortune is already available.",
+        docsFooter: "Questions? Contact @vlod12k.",
         admin: "Administration", adminPanel: "Admin panel",
         adminLevel: "Admin level", adminSoon: "Coming soon",
         adminSoonDesc: "Management tools will appear here",
@@ -339,8 +369,24 @@ async function loadFromServer() {
         document.getElementById("profileBadge").textContent = u.level;
         document.getElementById("profileCoins").textContent = u.coins;
         document.getElementById("profileDonate").textContent = u.donate;
+        if (document.getElementById("shopCoins")) {
+            document.getElementById("shopCoins").textContent = u.coins;
+            document.getElementById("shopDonate").textContent = u.donate;
+        }
 
-        document.getElementById("adminLevel").textContent = u.admin_level ?? 0;
+        const adminLevel = u.admin_level ?? 0;
+        document.getElementById("adminLevel").textContent = adminLevel;
+
+        // Пункт "Адмін панель" видно тільки якщо сервер підтвердив admin_level > 0.
+        // Перевірка тут — лише щоб не показувати пункт меню звичайним людям;
+        // сама панель поки без функціоналу, тому приховування в інтерфейсі
+        // достатньо. Коли додамо дії всередині — кожен запит з неї теж
+        // муситиме перевірятись на сервері окремо, бо будь-хто технічний
+        // може відкрити цей екран напряму через консоль браузера.
+        if (adminLevel >= 1) {
+            document.getElementById("adminGroupLabel").classList.remove("admin-only");
+            document.getElementById("adminGroup").classList.remove("admin-only");
+        }
 
         if (u.bio) {
             const bioText = document.getElementById("bioText");
@@ -433,6 +479,68 @@ function initAdminPanel() {
     });
 }
 
+function initDocsScreen() {
+    const openBtn = document.getElementById("docsOpen");
+    const backBtn = document.getElementById("docsBack");
+    const screen = document.getElementById("docsScreen");
+    if (!openBtn) return;
+    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+        snapScreensToActiveTab();
+    });
+}
+
+function initTopVisibility() {
+    const openBtn = document.getElementById("topVisibilityOpen");
+    const backBtn = document.getElementById("topVisibilityBack");
+    const screen = document.getElementById("topVisibilityScreen");
+    const pubBtn = document.getElementById("visPublic");
+    const anonBtn = document.getElementById("visAnon");
+    const saveBtn = document.getElementById("visSave");
+    const resultEl = document.getElementById("visResult");
+    if (!openBtn) return;
+
+    let selected = "public";
+
+    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+        snapScreensToActiveTab();
+    });
+
+    function pick(val) {
+        selected = val;
+        pubBtn.classList.toggle("visibility-opt--active", val === "public");
+        anonBtn.classList.toggle("visibility-opt--active", val === "anon");
+    }
+
+    pubBtn.addEventListener("click", () => pick("public"));
+    anonBtn.addEventListener("click", () => pick("anon"));
+
+    saveBtn.addEventListener("click", async () => {
+        resultEl.textContent = "";
+        try {
+            await API.saveSettings({ top_visibility: selected });
+            resultEl.textContent = "✓ Збережено";
+            resultEl.style.color = "var(--teal)";
+        } catch {
+            resultEl.textContent = "Помилка збереження";
+            resultEl.style.color = "";
+        }
+    });
+}
+
+function initShopTabs() {
+    const tabs = document.querySelectorAll(".shop-tab");
+    tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            tabs.forEach((t) => t.classList.remove("shop-tab--active"));
+            tab.classList.add("shop-tab--active");
+        });
+    });
+}
+
 function initUsersScreen() {
     const openBtn = document.getElementById("usersOpen");
     const backBtn = document.getElementById("usersBack");
@@ -510,6 +618,9 @@ initTheme();
 initSettings();
 initUsersScreen();
 initAdminPanel();
+initDocsScreen();
+initTopVisibility();
+initShopTabs();
 initExpanders();
 initLanguage();
 initSwitchesAndToggles();
