@@ -531,7 +531,10 @@
                     <input type="file" id="giftPhotoFile" accept="image/*" style="display:none;">
                 </div>
                 <img class="item-photo-preview" id="giftPhotoPreview" src="" alt="" style="display:none;">
-                <input type="hidden" id="giftPhotoUrl">
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="photoUrl">або посилання на фото</label>
+                    <input class="bio-editor__input" id="giftPhotoUrl" type="url" placeholder="https://...">
+                </div>
 
                 <div class="item-form__field">
                     <label class="item-form__label" data-i18n="itemName">Назва предмету</label>
