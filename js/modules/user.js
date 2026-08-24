@@ -7,13 +7,19 @@ const FALLBACK_EMOJI = "🙂";
 let currentAdminLevel = 0;
 
 function initUserData() {
-    const tg   = window.Telegram?.WebApp;
-    if (!tg) return;
+    const tg = window.Telegram?.WebApp;
+
+    // Локальний запуск у звичайному браузері — Telegram SDK відсутній.
+    // Показуємо банер і не падаємо: інтерфейс лишається придатним для верстки.
+    if (!tg || !tg.initDataUnsafe?.user) {
+        const banner = el("div", "dev-banner", t("devMode"));
+        document.body.appendChild(banner);
+        return;
+    }
+
     tg.ready();
     tg.expand();
-
-    const user = tg.initDataUnsafe?.user;
-    if (!user) return;
+    const user = tg.initDataUnsafe.user;
 
     const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
 
@@ -91,6 +97,12 @@ async function loadFromServer() {
     // Bio
     const bioEl = document.getElementById("bioText");
     if (bioEl) bioEl.textContent = u.bio || "";
+
+    // Видимість у топах — з сервера, щоб UI не розходився з БД
+    const serverVis = u.settings?.top_visibility;
+    if (serverVis && typeof applyServerVisibility === "function") {
+        applyServerVisibility(serverVis);
+    }
 
     // Адмін-рівень
     const adminLevel = u.admin_level ?? 0;
@@ -186,25 +198,42 @@ function initUsersScreen() {
 async function loadUsers() {
     const list = document.getElementById("usersList");
     if (!list) return;
-    list.innerHTML = `<p class="users-loading" data-i18n="usersLoading">Завантаження…</p>`;
+
+    list.innerHTML = "";
+    list.appendChild(el("p", "users-loading", t("usersLoading")));
+
     try {
         const data  = await API.getUsers();
         const users = data.users || [];
+
+        // Лічильник у шапці
+        const countEl = document.getElementById("usersCount");
+        if (countEl) countEl.textContent = users.length;
+
         list.innerHTML = "";
+        if (!users.length) {
+            renderEmpty(list, "usersEmpty", "usersEmptyDesc");
+            return;
+        }
+
         users.forEach((u) => {
-            const item = document.createElement("div");
-            item.className = "user-item";
-            item.innerHTML = `
-                <div class="user-item__avatar" style="${u.photo_url ? `background-image:url(${u.photo_url})` : ""}"></div>
-                <div class="user-item__body">
-                    <p class="user-item__name">${u.first_name || ""} ${u.last_name || ""}`.trim() + `</p>
-                    <p class="user-item__tag">${u.username ? "@" + u.username : ""}</p>
-                </div>
-                <span class="user-item__level">Lv ${u.level || 1}</span>`;
+            const item = el("div", "user-item");
+
+            const av = el("div", "user-item__avatar");
+            const src = safeImageUrl(u.photo_url);
+            if (src) av.style.backgroundImage = `url("${src}")`;
+            item.appendChild(av);
+
+            const body = el("div", "user-item__body");
+            const name = [u.first_name, u.last_name].filter(Boolean).join(" ");
+            body.appendChild(el("p", "user-item__name", name || "—"));
+            body.appendChild(el("p", "user-item__tag", u.username ? "@" + u.username : ""));
+            item.appendChild(body);
+
+            item.appendChild(el("span", "user-item__level", "Lv " + (u.level || 1)));
             list.appendChild(item);
         });
-        if (!users.length) list.innerHTML = `<p style="text-align:center;color:var(--muted);padding:20px">Порожньо</p>`;
     } catch (e) {
-        list.innerHTML = `<p style="text-align:center;color:var(--muted);padding:20px">Помилка завантаження</p>`;
+        renderError(list, loadUsers);
     }
 }
