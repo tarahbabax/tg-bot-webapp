@@ -4,6 +4,24 @@
 
 const TRANSLATIONS = {
     uk: {
+        // Динамічні тексти (v2)
+        coinsShort: "коінів", donateShort: "донат",
+        stockLeft: "Залишилось", outOfStock: "Закінчився",
+        noMatch: "Нічого не знайдено", noMatchDesc: "Спробуй змінити пошук або фільтр",
+        tradeSoon: "Обміни скоро", tradeSoonDesc: "Функція в розробці",
+        errLoad: "Не вдалося завантажити", retry: "Спробувати ще раз",
+        errFunds: "Недостатньо коштів або товар закінчився",
+        errBuy: "Помилка покупки", errDelete: "Помилка видалення",
+        errRestock: "Помилка поповнення", errAmount: "Вкажи число більше 0",
+        errName: "Вкажи назву", errPrefix: "Вкажи текст префіксу",
+        errDuplicate: "Товар з такою назвою вже є", errGeneric: "Сталася помилка",
+        bought: "Куплено!", deleted: "Видалено", restocked: "Кількість оновлено",
+        itemAdded: "Предмет додано", saved: "Збережено", savedLocal: "Збережено локально",
+        deleteItemText: "Куплені екземпляри залишаться в інвентарях.",
+        deleteConfirm: "Видалити", addBtn: "Додати",
+        soonFeature: "Скоро буде доступно", showcaseNoItems: "Спочатку придбай предмети",
+        devMode: "Демо-режим — Telegram недоступний",
+        usersEmpty: "Поки порожньо", usersEmptyDesc: "Користувачі зʼявляться тут",
         hello: "Привіт,", level: "Рівень", coins: "Коіни", donate: "Донат-коіни",
         allQuests: "Усі квести", info: "Інформація",
         docs: "Документація", docsDesc: "Гайди, команди та інструкції",
@@ -96,6 +114,24 @@ const TRANSLATIONS = {
         q9t: "Поділись каналом", q9d: "Розкажи про канал другу"
     },
     en: {
+        // Dynamic texts (v2)
+        coinsShort: "coins", donateShort: "donate",
+        stockLeft: "Left", outOfStock: "Sold out",
+        noMatch: "Nothing found", noMatchDesc: "Try changing search or filter",
+        tradeSoon: "Trades coming soon", tradeSoonDesc: "Feature in development",
+        errLoad: "Failed to load", retry: "Try again",
+        errFunds: "Not enough funds or item sold out",
+        errBuy: "Purchase error", errDelete: "Delete error",
+        errRestock: "Restock error", errAmount: "Enter a number above 0",
+        errName: "Enter a name", errPrefix: "Enter prefix text",
+        errDuplicate: "An item with this name already exists", errGeneric: "An error occurred",
+        bought: "Purchased!", deleted: "Deleted", restocked: "Stock updated",
+        itemAdded: "Item added", saved: "Saved", savedLocal: "Saved locally",
+        deleteItemText: "Purchased copies stay in inventories.",
+        deleteConfirm: "Delete", addBtn: "Add",
+        soonFeature: "Coming soon", showcaseNoItems: "Buy some items first",
+        devMode: "Demo mode - Telegram unavailable",
+        usersEmpty: "Nothing here yet", usersEmptyDesc: "Users will appear here",
         hello: "Hi,", level: "Level", coins: "Coins", donate: "Premium coins",
         allQuests: "All quests", info: "Information",
         docs: "Documentation", docsDesc: "Guides, commands and instructions",
@@ -180,7 +216,15 @@ const TRANSLATIONS = {
     }
 };
 
-let currentLang = "uk";
+const LANG_KEY = "app_lang";
+
+// Мова відновлюється з localStorage — інакше вибір скидався при перезапуску
+let currentLang = (function () {
+    try {
+        const saved = localStorage.getItem(LANG_KEY);
+        return (saved === "uk" || saved === "en") ? saved : "uk";
+    } catch { return "uk"; }
+})();
 
 function t(key) {
     return (TRANSLATIONS[currentLang] || TRANSLATIONS.uk)[key] || key;
@@ -202,9 +246,15 @@ function applyTranslations() {
 }
 
 function initLanguage() {
+    // Підсвічуємо збережену мову
+    document.querySelectorAll(".lang-option").forEach((b) =>
+        b.classList.toggle("lang-option--active", b.dataset.lang === currentLang)
+    );
+
     document.querySelectorAll(".lang-option").forEach((btn) => {
         btn.addEventListener("click", () => {
             currentLang = btn.dataset.lang || "uk";
+            try { localStorage.setItem(LANG_KEY, currentLang); } catch {}
             document.querySelectorAll(".lang-option").forEach((b) =>
                 b.classList.toggle("lang-option--active", b === btn)
             );
