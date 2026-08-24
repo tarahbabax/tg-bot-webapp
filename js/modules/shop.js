@@ -76,6 +76,41 @@ function buildItemCard(item, opts) {
     return card;
 }
 
+
+/** Заповнює hero-блок предмета: фото, плейсхолдер або великий префікс. */
+function fillItemHero(heroEl, item) {
+    heroEl.innerHTML = "";
+    heroEl.classList.toggle("item-hero--prefix", item.type === "prefix");
+
+    if (item.type === "prefix") {
+        const tag = el("div", "item-hero__prefix", item.prefix_text);
+        const color = safeColor(item.prefix_color);
+        if (color) tag.style.color = color;
+        heroEl.appendChild(tag);
+        return;
+    }
+
+    const src = safeImageUrl(item.photo_url);
+    if (src) {
+        const img = el("img", "item-hero__img");
+        img.src = src;
+        img.alt = item.name || "";
+        img.addEventListener("error", function () {
+            img.remove();
+            heroEl.appendChild(buildHeroPlaceholder());
+        });
+        heroEl.appendChild(img);
+    } else {
+        heroEl.appendChild(buildHeroPlaceholder());
+    }
+}
+
+function buildHeroPlaceholder() {
+    const ph = el("div", "item-hero__placeholder");
+    ph.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7zM12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+    return ph;
+}
+
 /* ── Фільтрація ────────────────────────────────────────────── */
 
 function applyFilters(items, state) {
@@ -128,23 +163,8 @@ async function loadShopItems() {
 function openItemDetail(item) {
     selectedItem = item;
 
-    const imgEl = document.getElementById("itemDetailImg");
-    const preEl = document.getElementById("itemDetailPrefix");
-    imgEl.style.display = "none";
-    preEl.style.display = "none";
-
-    if (item.type === "gift") {
-        const src = safeImageUrl(item.photo_url);
-        if (src) {
-            imgEl.src = src;
-            imgEl.style.display = "block";
-            imgEl.onerror = function () { imgEl.style.display = "none"; };
-        }
-    } else {
-        preEl.textContent = item.prefix_text;
-        preEl.style.color = safeColor(item.prefix_color) || "";
-        preEl.style.display = "block";
-    }
+    const hero = document.getElementById("itemDetailHero");
+    if (hero) fillItemHero(hero, item);
 
     document.getElementById("itemDetailName").textContent   = item.name;
     document.getElementById("itemDetailDesc").textContent   = item.description || "";
@@ -189,7 +209,9 @@ function renderInventoryInto(container) {
         return;
     }
     visible.forEach(function (item) {
-        container.appendChild(buildItemCard(item, { hideStock: true, hidePrice: true }));
+        const card = buildItemCard(item, { hideStock: true, hidePrice: true });
+        card.addEventListener("click", function () { openInvItem(item); });
+        container.appendChild(card);
     });
 }
 
@@ -338,10 +360,12 @@ function initShop() {
     });
 
     initAddItemForms();
+    initInvItemModal();
     initInventoryScreen();
     initShowcase();
     initTopVisibility();
     loadShopItems();
+    startShopPolling();
 }
 
 /* ── Форми додавання (адмін) ──────────────────────────────── */
@@ -570,4 +594,150 @@ function applyServerVisibility(value) {
     const a = document.getElementById("visAnon");
     if (p) p.classList.toggle("visibility-opt--active", value === "public");
     if (a) a.classList.toggle("visibility-opt--active", value === "anon");
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Взаємодія з предметами в інвентарі
+   ══════════════════════════════════════════════════════════════ */
+
+let selectedInvItem = null;
+
+function openInvItem(item) {
+    selectedInvItem = item;
+
+    const hero = document.getElementById("invItemHero");
+    if (hero) fillItemHero(hero, item);
+
+    document.getElementById("invItemName").textContent = item.name;
+    document.getElementById("invItemDesc").textContent = item.description || "";
+
+    // Продаж — половина ціни, округлення вниз
+    const backCoins  = Math.floor((item.price_coins  || 0) / 2);
+    const backDonate = Math.floor((item.price_donate || 0) / 2);
+    const parts = [];
+    if (backCoins)  parts.push(backCoins  + " " + t("coinsShort"));
+    if (backDonate) parts.push(backDonate + " " + t("donateShort"));
+
+    document.getElementById("invItemSellNote").textContent =
+        parts.length ? t("sellNote") + ": " + parts.join(" + ") : t("sellNothing");
+
+    const sellBtn = document.getElementById("invSellBtn");
+    if (sellBtn) sellBtn.style.display = parts.length ? "flex" : "none";
+
+    document.getElementById("invItemModal").classList.add("item-detail-modal--open");
+    document.getElementById("invItemBackdrop").classList.add("modal-backdrop--open");
+}
+
+function closeInvItem() {
+    const m = document.getElementById("invItemModal");
+    const b = document.getElementById("invItemBackdrop");
+    if (m) m.classList.remove("item-detail-modal--open");
+    if (b) b.classList.remove("modal-backdrop--open");
+}
+
+function initInvItemModal() {
+    const close = function () { closeInvItem(); selectedInvItem = null; };
+    const c = document.getElementById("invItemClose");
+    const b = document.getElementById("invItemBackdrop");
+    if (c) c.addEventListener("click", close);
+    if (b) b.addEventListener("click", close);
+
+    const sell = document.getElementById("invSellBtn");
+    if (sell) sell.addEventListener("click", async function () {
+        const item = selectedInvItem;
+        if (!item) return;
+
+        const backCoins  = Math.floor((item.price_coins  || 0) / 2);
+        const backDonate = Math.floor((item.price_donate || 0) / 2);
+        const parts = [];
+        if (backCoins)  parts.push(backCoins  + " " + t("coinsShort"));
+        if (backDonate) parts.push(backDonate + " " + t("donateShort"));
+
+        const ok = await dialog({
+            title: t("sellItem"),
+            text:  item.name + "\n" + t("sellNote") + ": " + parts.join(" + "),
+            confirmLabel: t("sellConfirm")
+        });
+        if (!ok) return;
+
+        try {
+            const r = await API.sellInventoryItem(item.inv_id);
+            closeInvItem();
+            selectedInvItem = null;
+            syncBalance(r.balance);
+            toast(t("sold"), "success");
+            await loadInventory();
+            await loadShopItems();
+        } catch (e) {
+            toast(t("errSell"), "error");
+        }
+    });
+
+    const drop = document.getElementById("invDropBtn");
+    if (drop) drop.addEventListener("click", async function () {
+        const item = selectedInvItem;
+        if (!item) return;
+
+        const ok = await dialog({
+            title: t("dropItem"),
+            text:  item.name + "\n" + t("dropWarn"),
+            confirmLabel: t("dropConfirm")
+        });
+        if (!ok) return;
+
+        try {
+            await API.dropInventoryItem(item.inv_id);
+            closeInvItem();
+            selectedInvItem = null;
+            toast(t("dropped"), "info");
+            await loadInventory();
+            await loadShopItems();
+        } catch (e) {
+            toast(t("errGeneric"), "error");
+        }
+    });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Автооновлення магазину (легкий polling)
+   ══════════════════════════════════════════════════════════════ */
+
+let shopVersion = null;
+let pollTimer   = null;
+
+/**
+ * Раз на 8 секунд питає в сервера коротку "версію" каталогу
+ * (кількість товарів + сумарний залишок). Якщо змінилась —
+ * перезавантажує список. Так нові товари з'являються майже
+ * одразу, але трафік мінімальний.
+ */
+function startShopPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+
+    pollTimer = setInterval(async function () {
+        // Не оновлюємо коли вкладка прихована — економимо батарею
+        if (document.hidden) return;
+
+        try {
+            const data = await API.getShopVersion();
+            if (shopVersion === null) {
+                shopVersion = data.version;
+                return;
+            }
+            if (data.version !== shopVersion) {
+                shopVersion = data.version;
+                await loadShopItems();
+                const openTab = document.querySelector(".shop-tab--active");
+                const isInv = openTab && openTab.textContent.trim() === t("tabShopItems");
+                if (isInv) await loadInventory();
+            }
+        } catch (e) {
+            // тиха помилка — наступна спроба через інтервал
+        }
+    }, 8000);
+
+    // Миттєве оновлення при поверненні у вкладку
+    document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) loadShopItems();
+    });
 }
