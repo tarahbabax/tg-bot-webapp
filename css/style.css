@@ -2339,6 +2339,10 @@ body.no-anim *::after {
 .shop-admin-bar {
     padding: 10px 20px 14px;
     border-top: 1px solid var(--stroke);
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    z-index: 2;
 }
 
 .shop-admin-btn {
@@ -2696,6 +2700,8 @@ body.no-anim *::after {
     font-weight: 700;
     letter-spacing: 0.03em;
     z-index: 1;
+    pointer-events: none;
+    user-select: none;
 }
 
 .shop-item-gift { overflow: hidden; }
