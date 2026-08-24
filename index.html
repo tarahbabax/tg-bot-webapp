@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#08080D" />
     <title>Manage</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/modules/polish.css" />
 </head>
 <body data-theme="dark">
     <div class="page">
@@ -287,7 +287,7 @@
 
                     <div class="shop-search">
                         <svg class="shop-search__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                        <input class="shop-search__input" type="text" data-i18n-placeholder="shopSearch" placeholder="Пошук за назвою"/>
+                        <input class="shop-search__input" id="shopSearchInput" type="text" data-i18n-placeholder="shopSearch" placeholder="Пошук за назвою"/>
                     </div>
 
                     <div class="shop-filter-wrap">
@@ -298,9 +298,9 @@
                         </button>
                         <div class="filter-drop" id="shopFilterDrop">
                             <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
-                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterCase">Кейс</span></label>
-                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterGift">Подарунок</span></label>
-                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterPrefix">Префікс</span></label>
+                            <label class="filter-opt"><input type="checkbox" data-type="case"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterCase">Кейс</span></label>
+                            <label class="filter-opt"><input type="checkbox" data-type="gift"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterGift">Подарунок</span></label>
+                            <label class="filter-opt"><input type="checkbox" data-type="prefix"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterPrefix">Префікс</span></label>
                         </div>
                     </div>
 
@@ -659,7 +659,7 @@
             <div class="fullscreen__body">
                 <div class="shop-search">
                     <svg class="shop-search__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                    <input class="shop-search__input" type="text" placeholder="Пошук за назвою"/>
+                    <input class="shop-search__input" id="invSearchInput" type="text" data-i18n-placeholder="shopSearch" placeholder="Пошук за назвою"/>
                 </div>
                 <div class="shop-filter-wrap">
                         <button class="shop-filter" id="invFilterBtn" type="button">
@@ -669,9 +669,9 @@
                         </button>
                         <div class="filter-drop" id="invFilterDrop">
                             <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
-                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterCase">Кейс</span></label>
-                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterGift">Подарунок</span></label>
-                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterPrefix">Префікс</span></label>
+                            <label class="filter-opt"><input type="checkbox" data-type="case"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterCase">Кейс</span></label>
+                            <label class="filter-opt"><input type="checkbox" data-type="gift"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterGift">Подарунок</span></label>
+                            <label class="filter-opt"><input type="checkbox" data-type="prefix"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterPrefix">Префікс</span></label>
                         </div>
                     </div>
                 <div class="empty-state" style="padding-top:30px;">
@@ -699,8 +699,8 @@
                     </div>
                 </div>
                 <div class="showcase-footer">
-                    <button class="btn btn--ghost showcase-footer__btn" type="button" data-i18n="addItem">Додати скін</button>
-                    <button class="btn btn--accent showcase-footer__btn" type="button" data-i18n="save">Зберегти</button>
+                    <button class="btn btn--ghost showcase-footer__btn" id="showcaseAdd" type="button" data-i18n="addItem">Додати скін</button>
+                    <button class="btn btn--accent showcase-footer__btn" id="showcaseSave" type="button" data-i18n="save">Зберегти</button>
                 </div>
             </div>
         </div>
@@ -1059,6 +1059,7 @@
     </div>
 
     <script src="js/api.js"></script>
+    <script src="js/modules/ui.js"></script>
     <script src="js/modules/prefs.js"></script>
     <script src="js/modules/i18n.js"></script>
     <script src="js/modules/nav.js"></script>
