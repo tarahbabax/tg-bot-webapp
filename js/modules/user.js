@@ -109,9 +109,7 @@ async function loadFromServer() {
     const adminLevel = u.admin_level ?? 0;
     currentAdminLevel = adminLevel;
 
-    if (adminLevel >= 5) {
-        document.getElementById("shopAdminBar")?.style && (document.getElementById("shopAdminBar").style.display = "block");
-    }
+    if (typeof updateAdminBar === "function") updateAdminBar();
     if (adminLevel >= 1) {
         document.getElementById("adminGroupLabel")?.classList.remove("admin-only");
         document.getElementById("adminGroup")?.classList.remove("admin-only");
