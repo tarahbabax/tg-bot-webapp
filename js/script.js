@@ -1128,18 +1128,16 @@ async function loadInventory() {
 }
 
 function renderInventory(items) {
-    const screen = document.getElementById("inventoryScreen");
-    if (!screen) return;
-    let list = screen.querySelector(".inv-list");
-    if (!list) {
-        list = document.createElement("div");
-        list.className = "inv-list shop-grid";
-        list.style.gridTemplateColumns = "1fr 1fr";
-        screen.querySelector(".fullscreen__body").appendChild(list);
-    }
-    list.innerHTML = "";
-    if (!items.length) return;
+    const container = document.getElementById("invContainer");
+    if (!container) return;
+    container.innerHTML = "";
 
+    if (!items.length) {
+        container.innerHTML = '<div class="shop-empty"><p class="empty-state__title">Інвентар порожній</p><p class="empty-state__text">Придбай предмети у магазині</p></div>';
+        return;
+    }
+
+    // items є, рендеримо
     items.forEach(item => {
         const el = document.createElement("div");
         if (item.type === "gift") {
@@ -1160,17 +1158,34 @@ function renderInventory(items) {
                     <span class="shop-item-prefix__name">${item.name}</span>
                 </span>`;
         }
-        list.appendChild(el);
+        container.appendChild(el);
     });
 }
 
 function initShop() {
     // Таби магазину
+    const shopGrid = document.getElementById("shopGrid");
+    const invContainer = document.createElement("div");
+    invContainer.id = "invContainer";
+    invContainer.className = "shop-grid inv-grid";
+    invContainer.style.display = "none";
+    shopGrid.parentNode.insertBefore(invContainer, shopGrid.nextSibling);
+
     document.querySelectorAll(".shop-tab").forEach((tab, i) => {
         tab.addEventListener("click", () => {
             document.querySelectorAll(".shop-tab").forEach(t => t.classList.remove("shop-tab--active"));
             tab.classList.add("shop-tab--active");
-            if (i === 1) loadInventory();
+            if (i === 0) {
+                shopGrid.style.display = "";
+                invContainer.style.display = "none";
+            } else if (i === 1) {
+                shopGrid.style.display = "none";
+                invContainer.style.display = "";
+                loadInventory();
+            } else {
+                shopGrid.style.display = "none";
+                invContainer.style.display = "none";
+            }
         });
     });
 
@@ -1181,33 +1196,26 @@ function initShop() {
     document.getElementById("confirmNo")?.addEventListener("click", closeConfirm);
 
     // Купівля
-    document.getElementById("buyCoinsBtn")?.addEventListener("click", async () => {
+    async function doBuy(currency) {
         if (!selectedItemId) return;
         try {
-            const r = await API.buyItem(selectedItemId, "coins");
+            const r = await API.buyItem(selectedItemId, currency);
             closeItemDetail();
             document.getElementById("statCoins").textContent = r.balance.coins;
             document.getElementById("statDonate").textContent = r.balance.donate;
+            document.getElementById("profileCoins").textContent = r.balance.coins;
+            document.getElementById("profileDonate").textContent = r.balance.donate;
             syncShopBalances();
             await loadShopItems();
+            // Завжди оновлюємо інвентар після покупки
+            await loadInventory();
         } catch (e) {
             alert(e.message.includes("400") ? "Недостатньо коштів або товар закінчився" : "Помилка");
         }
-    });
+    }
 
-    document.getElementById("buyDonateBtn")?.addEventListener("click", async () => {
-        if (!selectedItemId) return;
-        try {
-            const r = await API.buyItem(selectedItemId, "donate");
-            closeItemDetail();
-            document.getElementById("statCoins").textContent = r.balance.coins;
-            document.getElementById("statDonate").textContent = r.balance.donate;
-            syncShopBalances();
-            await loadShopItems();
-        } catch (e) {
-            alert(e.message.includes("400") ? "Недостатньо коштів або товар закінчився" : "Помилка");
-        }
-    });
+    document.getElementById("buyCoinsBtn")?.addEventListener("click", () => doBuy("coins"));
+    document.getElementById("buyDonateBtn")?.addEventListener("click", () => doBuy("donate"));
 
     // Видалення
     document.getElementById("deleteItemBtn")?.addEventListener("click", () => {
@@ -1258,11 +1266,19 @@ function initShop() {
     document.getElementById("giftSubmit")?.addEventListener("click", () => {
         const name = document.getElementById("giftName").value.trim();
         if (!name) { document.getElementById("giftError").textContent = "Вкажи назву"; return; }
+
+        // Фото: або base64 з файлу, або url введений вручну
+        const photoFromFile = document.getElementById("giftPhotoPreview").src;
+        const photoFromUrl = document.getElementById("giftPhotoUrl").value.trim();
+        const photo_url = (photoFromFile && photoFromFile !== window.location.href)
+            ? photoFromFile
+            : photoFromUrl;
+
         const data = {
             type: "gift",
             name,
             description: document.getElementById("giftDesc").value.trim(),
-            photo_url: document.getElementById("giftPhotoUrl").value,
+            photo_url,
             price_coins: parseInt(document.getElementById("giftPriceCoins").value) || 0,
             price_donate: parseInt(document.getElementById("giftPriceDonate").value) || 0,
             stock_total: parseInt(document.getElementById("giftStock").value) || 1,
