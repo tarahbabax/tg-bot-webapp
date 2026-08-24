@@ -1853,3 +1853,42 @@ body.no-anim *::after {
 }
 
 .help-modal .win-modal__ok { margin-top: 18px; }
+
+/* ---------- Admin panel ---------- */
+
+.admin-screen { z-index: 11; }
+
+.admin-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 24px;
+}
+
+.admin-profile__avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background-color: var(--surface-2);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--stroke-strong);
+}
+
+.admin-profile__name {
+    margin: 12px 0 0;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.admin-profile__badge {
+    margin-top: 8px;
+    padding: 5px 12px;
+    border-radius: 10px;
+    background: rgba(240, 100, 120, 0.13);
+    color: #F06478;
+    font-size: 12px;
+    font-weight: 700;
+}
