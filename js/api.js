@@ -47,6 +47,22 @@ const API = {
 
     getUsers: () => request("/api/users"),
 
+    getShopItems: () => request("/api/shop/items"),
+
+    createItem: (data) => request("/api/shop/items", {
+        method: "POST",
+        body: JSON.stringify(data),
+    }),
+
+    deleteItem: (id) => request(`/api/shop/items/${id}`, { method: "DELETE" }),
+
+    buyItem: (item_id, currency) => request("/api/shop/buy", {
+        method: "POST",
+        body: JSON.stringify({ item_id, currency }),
+    }),
+
+    getInventory: () => request("/api/me/inventory"),
+
     spinRoulette: (payload) =>
         request("/api/game/roulette/spin", {
             method: "POST",
