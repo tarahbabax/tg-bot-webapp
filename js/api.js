@@ -70,6 +70,14 @@ const API = {
 
     getInventory: () => request("/api/me/inventory"),
 
+    sellInventoryItem: (invId) =>
+        request(`/api/me/inventory/${invId}/sell`, { method: "POST" }),
+
+    dropInventoryItem: (invId) =>
+        request(`/api/me/inventory/${invId}`, { method: "DELETE" }),
+
+    getShopVersion: () => request("/api/shop/version"),
+
     spinRoulette: (payload) =>
         request("/api/game/roulette/spin", {
             method: "POST",
