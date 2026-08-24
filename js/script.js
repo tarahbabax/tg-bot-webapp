@@ -523,17 +523,14 @@ function initInventory() {
     const openBtn = document.getElementById("inventoryOpen");
     const backBtn = document.getElementById("inventoryBack");
     const screen = document.getElementById("inventoryScreen");
-    const filterBtn = document.getElementById("invFilterBtn");
-    const filterDrop = document.getElementById("invFilterDrop");
     if (!openBtn) return;
-    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
+    openBtn.addEventListener("click", () => {
+        screen.classList.add("fullscreen--open");
+        makeFilter("invFilterBtn", "invFilterDrop");
+    });
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
         snapScreensToActiveTab();
-    });
-    filterBtn.addEventListener("click", () => {
-        const isOpen = filterDrop.classList.toggle("filter-drop--open");
-        filterBtn.classList.toggle("shop-filter--open", isOpen);
     });
 }
 
@@ -549,14 +546,63 @@ function initShowcase() {
     });
 }
 
-function initShopFilter() {
-    const filterBtn = document.getElementById("shopFilterBtn");
-    const filterDrop = document.getElementById("shopFilterDrop");
-    if (!filterBtn) return;
-    filterBtn.addEventListener("click", () => {
-        const isOpen = filterDrop.classList.toggle("filter-drop--open");
-        filterBtn.classList.toggle("shop-filter--open", isOpen);
+function positionDrop(btn, drop) {
+    const rect = btn.getBoundingClientRect();
+    const viewH = window.innerHeight;
+    const dropH = Math.min(320, drop.scrollHeight || 280);
+
+    drop.style.left = rect.left + "px";
+    drop.style.width = rect.width + "px";
+
+    // Падає вниз якщо місця достатньо, інакше вгору
+    if (rect.bottom + dropH + 8 < viewH) {
+        drop.style.top = (rect.bottom + 4) + "px";
+        drop.style.bottom = "auto";
+    } else {
+        drop.style.bottom = (viewH - rect.top + 4) + "px";
+        drop.style.top = "auto";
+    }
+}
+
+function makeFilter(btnId, dropId) {
+    const btn = document.getElementById(btnId);
+    const drop = document.getElementById(dropId);
+    if (!btn || !drop) return;
+
+    let open = false;
+
+    function openDrop() {
+        positionDrop(btn, drop);
+        drop.classList.add("filter-drop--open");
+        btn.classList.add("shop-filter--open");
+        open = true;
+    }
+
+    function closeDrop() {
+        drop.classList.remove("filter-drop--open");
+        btn.classList.remove("shop-filter--open");
+        open = false;
+    }
+
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        open ? closeDrop() : openDrop();
     });
+
+    // Клік поза фільтром закриває
+    document.addEventListener("click", (e) => {
+        if (open && !drop.contains(e.target) && e.target !== btn) {
+            closeDrop();
+        }
+    });
+
+    // При скролі репозиціонуємо
+    window.addEventListener("scroll", () => { if (open) positionDrop(btn, drop); }, true);
+    window.addEventListener("resize", () => { if (open) positionDrop(btn, drop); });
+}
+
+function initShopFilter() {
+    makeFilter("shopFilterBtn", "shopFilterDrop");
 }
 
 function initDocsScreen() {
