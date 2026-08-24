@@ -196,6 +196,9 @@ const TRANSLATIONS = {
         betAmount: "Ставка", red: "Червоне", black: "Чорне",
         payoutsTitle: "Виплати", colorGreen: "Зелене", colorWhite: "Біле",
         placeBet: "Зробити ставку", ok: "Добре!",
+        admin: "Адміністрування", adminPanel: "Адмін панель",
+        adminLevel: "Рівень адміністратора", adminSoon: "Функціонал у розробці",
+        adminSoonDesc: "Тут з'являться інструменти керування",
         otherUsers: "Інші користувачі", usersTitle: "Користувачі", usersLoading: "Завантаження…",
         aboutMe: "Про мене", editBio: "Редагувати", bioEmpty: "Опис поки порожній",
         save: "Зберегти", cancel: "Скасувати",
@@ -246,6 +249,9 @@ const TRANSLATIONS = {
         betAmount: "Bet", red: "Red", black: "Black",
         payoutsTitle: "Payouts", colorGreen: "Green", colorWhite: "White",
         placeBet: "Place bet", ok: "Nice!",
+        admin: "Administration", adminPanel: "Admin panel",
+        adminLevel: "Admin level", adminSoon: "Coming soon",
+        adminSoonDesc: "Management tools will appear here",
         otherUsers: "Other users", usersTitle: "Users", usersLoading: "Loading…",
         aboutMe: "About me", editBio: "Edit", bioEmpty: "No description yet",
         save: "Save", cancel: "Cancel",
@@ -334,6 +340,8 @@ async function loadFromServer() {
         document.getElementById("profileCoins").textContent = u.coins;
         document.getElementById("profileDonate").textContent = u.donate;
 
+        document.getElementById("adminLevel").textContent = u.admin_level ?? 0;
+
         if (u.bio) {
             const bioText = document.getElementById("bioText");
             const bioInput = document.getElementById("bioInput");
@@ -403,6 +411,26 @@ async function loadUsers() {
         console.warn("Не вдалося завантажити користувачів:", error.message);
         list.innerHTML = '<p class="users-empty">Сервер недоступний</p>';
     }
+}
+
+function initAdminPanel() {
+    const openBtn = document.getElementById("adminOpen");
+    const backBtn = document.getElementById("adminBack");
+    const screen = document.getElementById("adminScreen");
+
+    openBtn.addEventListener("click", () => {
+        const avatarEl = document.getElementById("avatar");
+        const nameEl = document.getElementById("profileName");
+
+        document.getElementById("adminAvatar").style.backgroundImage = avatarEl.style.backgroundImage;
+        document.getElementById("adminName").textContent = nameEl.textContent;
+
+        screen.classList.add("fullscreen--open");
+    });
+
+    backBtn.addEventListener("click", () => {
+        screen.classList.remove("fullscreen--open");
+    });
 }
 
 function initUsersScreen() {
@@ -481,6 +509,7 @@ initTabs();
 initTheme();
 initSettings();
 initUsersScreen();
+initAdminPanel();
 initExpanders();
 initLanguage();
 initSwitchesAndToggles();
