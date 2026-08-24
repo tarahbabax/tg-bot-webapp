@@ -2122,6 +2122,7 @@ body.no-anim *::after {
 }
 
 .shop-search__input:focus { color: var(--ink); }
+.shop-search { border-radius: 16px !important; padding: 13px 14px !important; }
 
 .shop-filter {
     display: flex;
