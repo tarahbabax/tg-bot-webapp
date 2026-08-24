@@ -303,11 +303,19 @@
                         </div>
                     </div>
 
-                    <div class="shop-grid">
-                        <div class="empty-state" style="padding-top:40px;">
+                    <div class="shop-grid" id="shopGrid">
+                        <div class="empty-state" style="padding-top:40px;" id="shopEmptyState">
                             <p class="empty-state__title" data-i18n="shopEmpty">Товарів поки немає</p>
                             <p class="empty-state__text" data-i18n="shopEmptyDesc">Скоро тут з'являться цікаві речі</p>
                         </div>
+                    </div>
+
+                    <!-- Кнопка адміна — видима лише якщо admin_level >= 5 -->
+                    <div class="shop-admin-bar admin-lvl5" id="shopAdminBar" style="display:none;">
+                        <button class="shop-admin-btn" id="addItemBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            <span data-i18n="addItem2">Додати предмет</span>
+                        </button>
                     </div>
                 </section>
 
@@ -470,6 +478,168 @@
 
                 <p class="roulette-error" id="visResult" style="text-align:center;margin-bottom:6px;"></p>
                 <button class="spin-btn" id="visSave" type="button" data-i18n="save">Зберегти</button>
+            </div>
+        </div>
+
+        <!-- ВИБІР ТИПУ ПРЕДМЕТУ -->
+        <div class="fullscreen" id="addItemTypeScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="addItemTypeBack" type="button">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="addItemTitle">Додавання предмету</p>
+            </header>
+            <div class="fullscreen__body">
+                <p class="visibility-desc" data-i18n="addItemTypeDesc">Оберіть тип предмету для додавання до магазину.</p>
+                <div class="visibility-options">
+                    <button class="visibility-opt" id="chooseGift" type="button">
+                        <span class="visibility-opt__icon" style="background:rgba(240,185,90,0.13);color:#F0B95A;">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7zM12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="visibility-opt__body">
+                            <span class="visibility-opt__title" data-i18n="typeGift">Подарунок</span>
+                            <span class="visibility-opt__desc" data-i18n="typeGiftDesc">Предмет з фото, назвою та кількістю</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="visibility-opt" id="choosePrefix" type="button">
+                        <span class="visibility-opt__icon" style="background:rgba(110,139,255,0.13);color:var(--accent);">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h10M4 17h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="visibility-opt__body">
+                            <span class="visibility-opt__title" data-i18n="typePrefix">Префікс</span>
+                            <span class="visibility-opt__desc" data-i18n="typePrefixDesc">Текстовий привілей з кольором</span>
+                        </span>
+                        <svg class="setting-link__chevron" viewBox="0 0 24 24" fill="none"><path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ФОРМА ПОДАРУНКУ -->
+        <div class="fullscreen" id="addGiftScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="addGiftBack" type="button">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="typeGift">Подарунок</p>
+            </header>
+            <div class="fullscreen__body item-form">
+                <div class="item-photo-upload" id="giftPhotoUpload">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span data-i18n="uploadPhoto">Завантажити фото</span>
+                    <input type="file" id="giftPhotoFile" accept="image/*" style="display:none;">
+                </div>
+                <img class="item-photo-preview" id="giftPhotoPreview" src="" alt="" style="display:none;">
+                <input type="hidden" id="giftPhotoUrl">
+
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="itemName">Назва предмету</label>
+                    <input class="bio-editor__input" id="giftName" type="text" maxlength="80" placeholder="Назва...">
+                </div>
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="itemDesc">Опис</label>
+                    <textarea class="bio-editor__input" id="giftDesc" rows="2" maxlength="300" placeholder="Опис..."></textarea>
+                </div>
+                <div class="item-form__row">
+                    <div class="item-form__field">
+                        <label class="item-form__label" data-i18n="priceCoins">Ціна (коіни)</label>
+                        <input class="bio-editor__input" id="giftPriceCoins" type="number" min="0" placeholder="0">
+                    </div>
+                    <div class="item-form__field">
+                        <label class="item-form__label" data-i18n="priceDonate">Ціна (донат)</label>
+                        <input class="bio-editor__input" id="giftPriceDonate" type="number" min="0" placeholder="0">
+                    </div>
+                </div>
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="stockTotal">Кількість (всього)</label>
+                    <input class="bio-editor__input" id="giftStock" type="number" min="1" placeholder="1">
+                </div>
+                <p class="roulette-error" id="giftError"></p>
+                <button class="spin-btn" id="giftSubmit" type="button" data-i18n="addItemBtn">Додати предмет</button>
+            </div>
+        </div>
+
+        <!-- ФОРМА ПРЕФІКСУ -->
+        <div class="fullscreen" id="addPrefixScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="addPrefixBack" type="button">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="typePrefix">Префікс</p>
+            </header>
+            <div class="fullscreen__body item-form">
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="prefixText">Текст префіксу</label>
+                    <input class="bio-editor__input" id="prefixText" type="text" maxlength="30" placeholder="VIP">
+                    <div class="prefix-preview" id="prefixPreview">
+                        <span id="prefixPreviewText" style="color:#FFFFFF;">VIP</span>
+                    </div>
+                </div>
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="prefixColor">Колір тексту</label>
+                    <div class="color-picker-row">
+                        <input class="color-picker" id="prefixColor" type="color" value="#6E8BFF">
+                        <span class="color-picker-val" id="prefixColorVal">#6E8BFF</span>
+                    </div>
+                </div>
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="itemName">Назва предмету</label>
+                    <input class="bio-editor__input" id="prefixName" type="text" maxlength="80" placeholder="Назва...">
+                </div>
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="itemDesc">Опис</label>
+                    <textarea class="bio-editor__input" id="prefixDesc" rows="2" maxlength="300" placeholder="Опис..."></textarea>
+                </div>
+                <div class="item-form__row">
+                    <div class="item-form__field">
+                        <label class="item-form__label" data-i18n="priceCoins">Ціна (коіни)</label>
+                        <input class="bio-editor__input" id="prefixPriceCoins" type="number" min="0" placeholder="0">
+                    </div>
+                    <div class="item-form__field">
+                        <label class="item-form__label" data-i18n="priceDonate">Ціна (донат)</label>
+                        <input class="bio-editor__input" id="prefixPriceDonate" type="number" min="0" placeholder="0">
+                    </div>
+                </div>
+                <div class="item-form__field">
+                    <label class="item-form__label" data-i18n="stockTotal">Кількість (всього)</label>
+                    <input class="bio-editor__input" id="prefixStock" type="number" min="1" placeholder="1">
+                </div>
+                <p class="roulette-error" id="prefixError"></p>
+                <button class="spin-btn" id="prefixSubmit" type="button" data-i18n="addItemBtn">Додати предмет</button>
+            </div>
+        </div>
+
+        <!-- ПІДТВЕРДЖЕННЯ -->
+        <div class="modal-backdrop" id="confirmBackdrop"></div>
+        <div class="win-modal" id="confirmModal" style="text-align:center;">
+            <p class="win-modal__amount" style="font-size:20px;" data-i18n="confirmTitle">Підтвердити?</p>
+            <p class="win-modal__bet" id="confirmText"></p>
+            <div style="display:flex;gap:10px;margin-top:16px;">
+                <button class="btn btn--ghost" id="confirmNo" style="flex:1;padding:12px;" data-i18n="cancel">Скасувати</button>
+                <button class="btn btn--accent" id="confirmYes" style="flex:1;padding:12px;" data-i18n="confirm">Так, додати</button>
+            </div>
+        </div>
+
+        <!-- КАРТКА ТОВАРУ (ДЕТАЛІ + ПОКУПКА + ВИДАЛЕННЯ) -->
+        <div class="modal-backdrop" id="itemDetailBackdrop"></div>
+        <div class="item-detail-modal" id="itemDetailModal">
+            <button class="item-detail-modal__close" id="itemDetailClose" type="button">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <img class="item-detail-modal__img" id="itemDetailImg" src="" alt="" style="display:none;">
+            <div class="item-detail-modal__prefix" id="itemDetailPrefix" style="display:none;"></div>
+            <p class="item-detail-modal__name" id="itemDetailName"></p>
+            <p class="item-detail-modal__desc" id="itemDetailDesc"></p>
+            <div class="item-detail-modal__prices">
+                <span class="item-detail-modal__price item-detail-modal__price--coins" id="itemDetailCoins"></span>
+                <span class="item-detail-modal__price item-detail-modal__price--donate" id="itemDetailDonate"></span>
+            </div>
+            <p class="item-detail-modal__stock" id="itemDetailStock"></p>
+            <div class="item-detail-modal__actions">
+                <button class="btn btn--accent" id="buyCoinsBtn" type="button" data-i18n="buyCoins">Купити за коіни</button>
+                <button class="btn btn--accent" id="buyDonateBtn" type="button" data-i18n="buyDonate" style="background:var(--violet);">Купити за донат</button>
+                <button class="btn btn--ghost admin-lvl5" id="deleteItemBtn" style="display:none;color:#F06478;border-color:#F06478;" type="button" data-i18n="deleteItem">Видалити з магазину</button>
             </div>
         </div>
 
