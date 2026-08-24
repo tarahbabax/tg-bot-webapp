@@ -237,7 +237,7 @@ const TRANSLATIONS = {
         itemName: "Назва", itemDesc: "Опис", priceCoins: "Ціна (коіни)", priceDonate: "Ціна (донат)",
         stockTotal: "Кількість", uploadPhoto: "Завантажити фото", prefixText: "Текст", prefixColor: "Колір",
         addItemBtn: "Додати предмет", confirmTitle: "Підтвердити?", confirm: "Так, додати",
-        buyCoins: "Купити за коіни", buyDonate: "Купити за донат", deleteItem: "Видалити з магазину",
+        buyCoins: "Купити за коіни", buyDonate: "Купити за донат", deleteItem: "Видалити з магазину", restockItem: "Додати кількість",
         tops: "Топи", topsDesc: "Рейтинги гравців",
         showcase: "Вітрина",
         tabShopStore: "Магазин", tabShopItems: "Мої предмети", tabShopTrade: "Обміни",
@@ -317,7 +317,7 @@ const TRANSLATIONS = {
         itemName: "Name", itemDesc: "Description", priceCoins: "Price (coins)", priceDonate: "Price (donate)",
         stockTotal: "Quantity", uploadPhoto: "Upload photo", prefixText: "Text", prefixColor: "Color",
         addItemBtn: "Add item", confirmTitle: "Confirm?", confirm: "Yes, add",
-        buyCoins: "Buy with coins", buyDonate: "Buy with donate", deleteItem: "Remove from shop",
+        buyCoins: "Buy with coins", buyDonate: "Buy with donate", deleteItem: "Remove from shop", restockItem: "Add stock",
         tops: "Tops", topsDesc: "Player rankings",
         showcase: "Showcase",
         tabShopStore: "Shop", tabShopItems: "My items", tabShopTrade: "Trades",
@@ -547,6 +547,7 @@ function initInventory() {
     makeFilter("invFilterBtn", "invFilterDrop");
     openBtn.addEventListener("click", () => {
         screen.classList.add("fullscreen--open");
+        loadInventoryScreen();
     });
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
@@ -990,26 +991,33 @@ function renderShopItems(items) {
 
     items.forEach(item => {
         const el = document.createElement("div");
+        const isOut = item.stock_left <= 0;
+        const outBadge = isOut ? `<span class="item-out-badge">Закінчився</span>` : "";
+
         if (item.type === "gift") {
-            el.className = "shop-item-gift";
+            el.className = "shop-item-gift" + (isOut ? " shop-item-gift--out" : "");
             el.innerHTML = `
-                ${item.photo_url
-                    ? `<img class="shop-item-gift__img" src="${item.photo_url}" alt="${item.name}">`
-                    : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
+                <div style="position:relative;">
+                    ${item.photo_url
+                        ? `<img class="shop-item-gift__img" src="${item.photo_url}" alt="${item.name}">`
+                        : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
+                    ${outBadge}
+                </div>
                 <div class="shop-item-gift__body">
-                    <span class="shop-item-gift__stock">залишилось: ${item.stock_left}</span>
+                    <span class="shop-item-gift__stock">залишилось: ${item.stock_left}/${item.stock_total}</span>
                     <p class="shop-item-gift__name">${item.name}</p>
                     <p class="shop-item-gift__type">Подарунок</p>
                     <p class="shop-item-gift__price">${item.price_coins} коінів</p>
                 </div>`;
         } else {
-            el.className = "shop-item-prefix";
+            el.className = "shop-item-prefix" + (isOut ? " shop-item-prefix--out" : "");
             el.innerHTML = `
                 <span class="shop-item-prefix__tag" style="color:${item.prefix_color}">${item.prefix_text}</span>
                 <span class="shop-item-prefix__body">
                     <span class="shop-item-prefix__name">${item.name}</span>
                     <span class="shop-item-prefix__price">${item.price_coins} коінів</span>
-                </span>`;
+                </span>
+                ${outBadge}`;
         }
         el.addEventListener("click", () => openItemDetail(item));
         grid.appendChild(el);
@@ -1041,8 +1049,23 @@ function openItemDetail(item) {
     document.getElementById("itemDetailDonate").textContent = `${item.price_donate} донат`;
     document.getElementById("itemDetailStock").textContent = `Залишилось: ${item.stock_left} з ${item.stock_total}`;
 
+    const isOut = item.stock_left <= 0;
+    const isAdmin = currentAdminLevel >= 5;
+
+    const buyCoins = document.getElementById("buyCoinsBtn");
+    const buyDonate = document.getElementById("buyDonateBtn");
     const deleteBtn = document.getElementById("deleteItemBtn");
-    deleteBtn.style.display = currentAdminLevel >= 5 ? "block" : "none";
+    const restockBtn = document.getElementById("restockItemBtn");
+
+    // Звичайний юзер не може купити закінчений товар (сервер не дасть побачити,
+    // але на всяк випадок — блокуємо і кнопки)
+    buyCoins.style.display = (!isAdmin && isOut) ? "none" : "block";
+    buyDonate.style.display = (!isAdmin && isOut) ? "none" : "block";
+    buyCoins.disabled = isOut;
+    buyDonate.disabled = isOut;
+
+    deleteBtn.style.display = isAdmin ? "block" : "none";
+    restockBtn.style.display = isAdmin ? "block" : "none";
 
     modal.classList.add("item-detail-modal--open");
     backdrop.classList.add("modal-backdrop--open");
@@ -1112,9 +1135,59 @@ async function loadShopItems() {
     try {
         const data = await API.getShopItems();
         shopItems = data.items;
+        // Сервер підтверджує рівень адміна незалежно від client-side
+        if (data.is_admin !== undefined) {
+            currentAdminLevel = data.is_admin ? 5 : currentAdminLevel;
+        }
         renderShopItems(shopItems);
     } catch (e) {
         console.warn("Не вдалося завантажити товари:", e.message);
+    }
+}
+
+async function loadInventoryScreen() {
+    // Рендерить інвентар прямо в fullscreen #inventoryScreen
+    const screen = document.getElementById("inventoryScreen");
+    if (!screen) return;
+    let grid = screen.querySelector(".inv-screen-grid");
+    if (!grid) {
+        grid = document.createElement("div");
+        grid.className = "inv-screen-grid shop-grid";
+        screen.querySelector(".fullscreen__body").appendChild(grid);
+    }
+    grid.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:var(--muted);padding:20px'>Завантаження...</p>";
+
+    try {
+        const data = await API.getInventory();
+        grid.innerHTML = "";
+        if (!data.items.length) {
+            grid.innerHTML = "<div class='shop-empty'><p class='empty-state__title'>Інвентар порожній</p><p class='empty-state__text'>Придбай предмети у магазині</p></div>";
+            return;
+        }
+        data.items.forEach(item => {
+            const el = document.createElement("div");
+            if (item.type === "gift") {
+                el.className = "shop-item-gift";
+                el.innerHTML = `
+                    ${item.photo_url
+                        ? `<img class="shop-item-gift__img" src="${item.photo_url}">`
+                        : `<div class="shop-item-gift__img-placeholder"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M22 7H2v5h20V7z" stroke="currentColor" stroke-width="1.5"/></svg></div>`}
+                    <div class="shop-item-gift__body">
+                        <p class="shop-item-gift__name">${item.name}</p>
+                        <p class="shop-item-gift__type">Подарунок</p>
+                    </div>`;
+            } else {
+                el.className = "shop-item-prefix";
+                el.innerHTML = `
+                    <span class="shop-item-prefix__tag" style="color:${item.prefix_color}">${item.prefix_text}</span>
+                    <span class="shop-item-prefix__body">
+                        <span class="shop-item-prefix__name">${item.name}</span>
+                    </span>`;
+            }
+            grid.appendChild(el);
+        });
+    } catch (e) {
+        grid.innerHTML = "<div class='shop-empty'><p class='empty-state__title'>Помилка завантаження</p></div>";
     }
 }
 
@@ -1220,9 +1293,28 @@ function initShop() {
     // Видалення
     document.getElementById("deleteItemBtn")?.addEventListener("click", () => {
         openConfirm("Видалити цей предмет з магазину? Куплені екземпляри залишаться в інвентарях.", async () => {
-            await API.deleteItem(selectedItemId);
-            closeItemDetail();
-            await loadShopItems();
+            try {
+                await API.deleteItem(selectedItemId);
+                closeItemDetail();
+                await loadShopItems();
+            } catch (e) {
+                alert("Помилка видалення: " + e.message);
+            }
+        });
+    });
+
+    // Поповнення кількості
+    document.getElementById("restockItemBtn")?.addEventListener("click", () => {
+        const amount = parseInt(prompt("Скільки одиниць додати?") || "0");
+        if (!amount || amount <= 0) return;
+        openConfirm(`Додати ${amount} одиниць товару?`, async () => {
+            try {
+                await API.restockItem(selectedItemId, amount);
+                closeItemDetail();
+                await loadShopItems();
+            } catch (e) {
+                alert("Помилка: " + e.message);
+            }
         });
     });
 
@@ -1263,6 +1355,16 @@ function initShop() {
         openScreen("addItemTypeScreen");
     });
 
+    async function submitItemSafe(data, errorElId, screenId) {
+        const err = await submitItem(data, screenId);
+        if (err) {
+            const msg = err.includes("409") || err.includes("вже існує")
+                ? `Товар з такою назвою вже є в магазині`
+                : err;
+            document.getElementById(errorElId).textContent = msg;
+        }
+    }
+
     document.getElementById("giftSubmit")?.addEventListener("click", () => {
         const name = document.getElementById("giftName").value.trim();
         if (!name) { document.getElementById("giftError").textContent = "Вкажи назву"; return; }
@@ -1285,8 +1387,7 @@ function initShop() {
         };
         pendingItemData = data;
         openConfirm(`Додати «${name}» до магазину?`, async () => {
-            const err = await submitItem(pendingItemData, "addGiftScreen");
-            if (err) document.getElementById("giftError").textContent = err;
+            await submitItemSafe(pendingItemData, "giftError", "addGiftScreen");
         });
     });
 
@@ -1325,8 +1426,7 @@ function initShop() {
         };
         pendingItemData = data;
         openConfirm(`Додати префікс «${text}» до магазину?`, async () => {
-            const err = await submitItem(pendingItemData, "addPrefixScreen");
-            if (err) document.getElementById("prefixError").textContent = err;
+            await submitItemSafe(pendingItemData, "prefixError", "addPrefixScreen");
         });
     });
 
