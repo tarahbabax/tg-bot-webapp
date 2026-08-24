@@ -289,16 +289,18 @@
                         <input class="shop-search__input" type="text" data-i18n-placeholder="shopSearch" placeholder="Пошук за назвою"/>
                     </div>
 
-                    <button class="shop-filter" id="shopFilterBtn" type="button">
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                        <span data-i18n="shopFilter">Тип предмета</span>
-                        <svg class="shop-filter__chevron" id="shopFilterChevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                    </button>
-                    <div class="filter-drop" id="shopFilterDrop">
-                        <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
-                        <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterCase">Кейс</span></label>
-                        <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterGift">Подарунок</span></label>
-                        <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterPrefix">Префікс</span></label>
+                    <div class="shop-filter-wrap">
+                        <button class="shop-filter" id="shopFilterBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                            <span data-i18n="shopFilter">Тип предмета</span>
+                            <svg class="shop-filter__chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="filter-drop" id="shopFilterDrop">
+                            <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
+                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterCase">Кейс</span></label>
+                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterGift">Подарунок</span></label>
+                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterPrefix">Префікс</span></label>
+                        </div>
                     </div>
 
                     <div class="shop-grid">
@@ -484,17 +486,19 @@
                     <svg class="shop-search__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                     <input class="shop-search__input" type="text" placeholder="Пошук за назвою"/>
                 </div>
-                <button class="shop-filter" id="invFilterBtn" type="button">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                    <span data-i18n="shopFilter">Тип предмета</span>
-                    <svg class="shop-filter__chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                </button>
-                <div class="filter-drop" id="invFilterDrop">
-                    <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
-                    <label class="filter-opt"><input type="checkbox" data-i18n-label="filterCase"> <span data-i18n="filterCase">Кейс</span></label>
-                    <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterGift">Подарунок</span></label>
-                    <label class="filter-opt"><input type="checkbox"> <span data-i18n="filterPrefix">Префікс</span></label>
-                </div>
+                <div class="shop-filter-wrap" style="margin:10px 0 0;">
+                        <button class="shop-filter" id="invFilterBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                            <span data-i18n="shopFilter">Тип предмета</span>
+                            <svg class="shop-filter__chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="filter-drop" id="invFilterDrop">
+                            <p class="filter-drop__all" data-i18n="allTypes">Всі типи</p>
+                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterCase">Кейс</span></label>
+                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterGift">Подарунок</span></label>
+                            <label class="filter-opt"><input type="checkbox"><span class="filter-opt__box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-i18n="filterPrefix">Префікс</span></label>
+                        </div>
+                    </div>
                 <div class="empty-state" style="padding-top:30px;">
                     <svg viewBox="0 0 24 24" fill="none" style="width:38px;height:38px;margin-bottom:10px;color:var(--muted)"><path d="M12 3.4l7.4 4.3v8.6L12 20.6l-7.4-4.3V7.7L12 3.4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
                     <p class="empty-state__title" data-i18n="invEmpty">Інвентар порожній</p>
