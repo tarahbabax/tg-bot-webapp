@@ -78,6 +78,13 @@ const API = {
 
     getShopVersion: () => request("/api/shop/version"),
 
+    getAdminUsers: (q) => request("/api/admin/users?q=" + encodeURIComponent(q || "")),
+    getAdminList:  () => request("/api/admin/list"),
+    setAdminLevel: (user_id, level) => request("/api/admin/set", {
+        method: "POST",
+        body: JSON.stringify({ user_id, level }),
+    }),
+
     spinRoulette: (payload) =>
         request("/api/game/roulette/spin", {
             method: "POST",
