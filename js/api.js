@@ -56,6 +56,11 @@ const API = {
 
     deleteItem: (id) => request(`/api/shop/items/${id}`, { method: "DELETE" }),
 
+    restockItem: (id, amount) => request(`/api/shop/items/${id}/restock`, {
+        method: "POST",
+        body: JSON.stringify({ amount }),
+    }),
+
     buyItem: (item_id, currency) => request("/api/shop/buy", {
         method: "POST",
         body: JSON.stringify({ item_id, currency }),
