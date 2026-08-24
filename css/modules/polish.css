@@ -173,3 +173,255 @@
 
 /* Прибираємо фокус-рамку при кліку мишею/пальцем */
 :focus:not(:focus-visible) { outline: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   v3 — виправлення візуалу
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Панель адміна: чиста кнопка без фону і рамки ─────────── */
+
+.shop-admin-bar {
+    padding: 6px 20px 18px !important;
+    border-top: none !important;
+    background: transparent !important;
+    position: static !important;
+}
+
+.shop-admin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1.5px dashed var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.shop-admin-btn svg { width: 18px; height: 18px; }
+.shop-admin-btn:active {
+    background: var(--accent-dim);
+    transform: scale(0.98);
+}
+
+/* ── Фільтр типів: нова анімація і вигляд ─────────────────── */
+
+.filter-drop {
+    /* Виїзд згори вниз із легким масштабом — м'якше за max-height */
+    transform-origin: top center;
+    transform: scaleY(0.85) translateY(-6px);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 0 0 16px 16px;
+    background: var(--surface-2);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    border: 1.5px solid var(--accent);
+    border-top: none;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+    transition:
+        max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        transform  0.34s cubic-bezier(0.34, 1.25, 0.5, 1),
+        opacity    0.22s ease;
+}
+
+.filter-drop--open {
+    max-height: 300px;
+    transform: scaleY(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    overflow-y: auto;
+}
+
+.filter-drop__all {
+    margin: 0;
+    padding: 13px 18px 9px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.filter-opt {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 18px;
+    border-top: 1px solid var(--stroke);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.18s ease, padding-left 0.2s ease;
+}
+
+.filter-opt:active,
+.filter-opt:hover {
+    background: var(--accent-dim);
+    padding-left: 22px;
+}
+
+/* Чекбокс — круглий, м'який */
+.filter-opt__box {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 7px;
+    border: 2px solid var(--stroke-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.22s ease, border-color 0.22s ease,
+                transform 0.24s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+
+.filter-opt__box svg {
+    width: 12px; height: 12px;
+    color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.16s ease, transform 0.24s cubic-bezier(0.34, 1.6, 0.5, 1);
+}
+
+.filter-opt input:checked ~ .filter-opt__box {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.08);
+}
+
+.filter-opt input:checked ~ .filter-opt__box svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ── Список користувачів ──────────────────────────────────── */
+
+#usersList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.user-item:active {
+    background: var(--surface-2);
+    transform: scale(0.99);
+}
+
+.user-item__avatar {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--surface-2);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--stroke-strong);
+}
+
+.user-item__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-item__name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-item__tag {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-item__level {
+    flex-shrink: 0;
+    padding: 5px 11px;
+    border-radius: 9px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+
+.users-loading {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 28px 0;
+}
+
+/* ── Адмін-панель: статистика ─────────────────────────────── */
+
+.admin-stats {
+    display: flex;
+    gap: 10px;
+    margin: 4px 0 24px;
+}
+
+.admin-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 15px 8px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+}
+
+.admin-stat__value {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+}
+
+.admin-stat__label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-align: center;
+}
+
+/* ── Інвентар: сітка одразу під фільтром ──────────────────── */
+
+.inv-screen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px 0 0;
+}
