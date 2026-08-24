@@ -12,7 +12,9 @@ async function request(path, options = {}) {
     // інакше якщо Telegram заповнює це поле на мить пізніше за наш скрипт,
     // усі запити до кінця сесії йдуть з порожнім значенням і сервер
     // відповідає 401 "Немає initData", хоча дані насправді вже є.
-    const initData = window.Telegram.WebApp.initData || "";
+    // Telegram може бути недоступний (локальний браузер) — тоді initData порожній,
+    // сервер поверне 401, і UI покаже демо-стан замість падіння зі скриптовою помилкою.
+    const initData = window.Telegram?.WebApp?.initData || "";
 
     const response = await fetch(API_URL + path, {
         ...options,
