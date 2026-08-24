@@ -583,7 +583,11 @@ function initTopVisibility() {
 
     let selected = "public";
 
-    openBtn.addEventListener("click", () => screen.classList.add("fullscreen--open"));
+    openBtn.addEventListener("click", () => {
+        screen.classList.add("fullscreen--open");
+        // Скидаємо повідомлення при кожному відкритті
+        document.getElementById("visResult").textContent = "";
+    });
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
         snapScreensToActiveTab();
