@@ -232,6 +232,26 @@ async function loadInventory() {
 
 /* ── Ініціалізація магазину ────────────────────────────────── */
 
+/**
+ * Кнопка «Додати предмет» видима лише коли:
+ *  — активна головна вкладка «Магазин» (індекс 3 у нижній навігації)
+ *  — і всередині магазину обрана під-вкладка «Магазин» (індекс 0)
+ */
+function updateAdminBar(shopTabIndex) {
+    const bar = document.getElementById("shopAdminBar");
+    if (!bar) return;
+
+    if (typeof shopTabIndex === "number") bar.dataset.subtab = shopTabIndex;
+
+    const sub      = parseInt(bar.dataset.subtab || "0", 10);
+    const mainTab  = document.querySelector(".tabbar__item--active");
+    const isShop   = mainTab && mainTab.dataset.index === "3";
+
+    const visible = currentAdminLevel >= 5 && isShop && sub === 0;
+    bar.classList.toggle("shop-admin-bar--visible", visible);
+    bar.style.display = "";  // керуємо класом, не інлайном
+}
+
 function initShop() {
     const shopGrid = document.getElementById("shopGrid");
     if (!shopGrid) return;
@@ -258,11 +278,7 @@ function initShop() {
             invContainer.style.display   = i === 1 ? "" : "none";
             tradeContainer.style.display = i === 2 ? "" : "none";
 
-            // Кнопка додавання доречна лише на вкладці "Магазин"
-            const adminBar = document.getElementById("shopAdminBar");
-            if (adminBar && currentAdminLevel >= 5) {
-                adminBar.style.display = i === 0 ? "block" : "none";
-            }
+            updateAdminBar(i);
 
             if (i === 1) loadInventory();
         });
@@ -364,6 +380,11 @@ function initShop() {
     initInventoryScreen();
     initShowcase();
     initTopVisibility();
+    // Ховаємо/показуємо кнопку при перемиканні головних вкладок
+    document.querySelectorAll(".tabbar__item").forEach(function (tab) {
+        tab.addEventListener("click", function () { setTimeout(updateAdminBar, 0); });
+    });
+
     loadShopItems();
     startShopPolling();
 }
@@ -438,7 +459,8 @@ function initAddItemForms() {
                 photo_url:    photo_url,
                 price_coins:  parseInt(document.getElementById("giftPriceCoins").value)  || 0,
                 price_donate: parseInt(document.getElementById("giftPriceDonate").value) || 0,
-                stock_total:  parseInt(document.getElementById("giftStock").value)       || 1
+                stock_total:  parseInt(document.getElementById("giftStock").value)       || 1,
+                sellable:     document.getElementById("giftSellable").classList.contains("switch--on")
             });
             closeScreen("addGiftScreen");
             resetForm(["giftName","giftDesc","giftPriceCoins","giftPriceDonate","giftStock","giftPhotoUrl"]);
@@ -472,7 +494,8 @@ function initAddItemForms() {
                 price_donate: parseInt(document.getElementById("prefixPriceDonate").value) || 0,
                 stock_total:  parseInt(document.getElementById("prefixStock").value)       || 1,
                 prefix_text:  text,
-                prefix_color: document.getElementById("prefixColor").value
+                prefix_color: document.getElementById("prefixColor").value,
+                sellable:     document.getElementById("prefixSellable").classList.contains("switch--on")
             });
             closeScreen("addPrefixScreen");
             resetForm(["prefixName","prefixDesc","prefixText","prefixPriceCoins","prefixPriceDonate","prefixStock"]);
@@ -621,8 +644,14 @@ function openInvItem(item) {
     document.getElementById("invItemSellNote").textContent =
         parts.length ? t("sellNote") + ": " + parts.join(" + ") : t("sellNothing");
 
+    // Предмет може бути позначений як непродаваний при створенні
+    const canSell = item.sellable !== 0 && parts.length > 0;
     const sellBtn = document.getElementById("invSellBtn");
-    if (sellBtn) sellBtn.style.display = parts.length ? "flex" : "none";
+    if (sellBtn) sellBtn.style.display = canSell ? "flex" : "none";
+
+    if (item.sellable === 0) {
+        document.getElementById("invItemSellNote").textContent = t("notSellable");
+    }
 
     document.getElementById("invItemModal").classList.add("item-detail-modal--open");
     document.getElementById("invItemBackdrop").classList.add("modal-backdrop--open");
