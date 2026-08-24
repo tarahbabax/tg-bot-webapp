@@ -524,9 +524,9 @@ function initInventory() {
     const backBtn = document.getElementById("inventoryBack");
     const screen = document.getElementById("inventoryScreen");
     if (!openBtn) return;
+    makeFilter("invFilterBtn", "invFilterDrop");
     openBtn.addEventListener("click", () => {
         screen.classList.add("fullscreen--open");
-        makeFilter("invFilterBtn", "invFilterDrop");
     });
     backBtn.addEventListener("click", () => {
         screen.classList.remove("fullscreen--open");
@@ -546,59 +546,23 @@ function initShowcase() {
     });
 }
 
-function positionDrop(btn, drop) {
-    const rect = btn.getBoundingClientRect();
-    const viewH = window.innerHeight;
-    const dropH = Math.min(320, drop.scrollHeight || 280);
-
-    drop.style.left = rect.left + "px";
-    drop.style.width = rect.width + "px";
-
-    // Падає вниз якщо місця достатньо, інакше вгору
-    if (rect.bottom + dropH + 8 < viewH) {
-        drop.style.top = (rect.bottom + 4) + "px";
-        drop.style.bottom = "auto";
-    } else {
-        drop.style.bottom = (viewH - rect.top + 4) + "px";
-        drop.style.top = "auto";
-    }
-}
-
 function makeFilter(btnId, dropId) {
     const btn = document.getElementById(btnId);
     const drop = document.getElementById(dropId);
     if (!btn || !drop) return;
 
-    let open = false;
-
-    function openDrop() {
-        positionDrop(btn, drop);
-        drop.classList.add("filter-drop--open");
-        btn.classList.add("shop-filter--open");
-        open = true;
-    }
-
-    function closeDrop() {
-        drop.classList.remove("filter-drop--open");
-        btn.classList.remove("shop-filter--open");
-        open = false;
-    }
-
     btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        open ? closeDrop() : openDrop();
+        const isOpen = drop.classList.toggle("filter-drop--open");
+        btn.classList.toggle("shop-filter--open", isOpen);
     });
 
-    // Клік поза фільтром закриває
     document.addEventListener("click", (e) => {
-        if (open && !drop.contains(e.target) && e.target !== btn) {
-            closeDrop();
+        if (!btn.contains(e.target) && !drop.contains(e.target)) {
+            drop.classList.remove("filter-drop--open");
+            btn.classList.remove("shop-filter--open");
         }
     });
-
-    // При скролі репозиціонуємо
-    window.addEventListener("scroll", () => { if (open) positionDrop(btn, drop); }, true);
-    window.addEventListener("resize", () => { if (open) positionDrop(btn, drop); });
 }
 
 function initShopFilter() {
