@@ -676,20 +676,38 @@
         </div>
         <!-- ПРЕДМЕТ В ІНВЕНТАРІ -->
         <div class="modal-backdrop" id="invItemBackdrop"></div>
-        <div class="item-detail-modal item-sheet" id="invItemModal">
+        <div class="item-detail-modal inv-sheet" id="invItemModal">
             <button class="item-detail-modal__close" id="invItemClose" type="button" aria-label="Закрити">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </button>
-            <div class="item-hero" id="invItemHero"></div>
-            <div class="item-sheet__info">
-                <p class="item-sheet__name" id="invItemName"></p>
-                <p class="item-sheet__desc" id="invItemDesc"></p>
+
+            <!-- Верх: фото зліва, назва+тип справа -->
+            <div class="inv-sheet__top">
+                <div class="inv-sheet__media" id="invItemHero"></div>
+                <div class="inv-sheet__head">
+                    <p class="inv-sheet__name" id="invItemName"></p>
+                    <span class="inv-sheet__type" id="invItemType"></span>
+                    <span class="inv-sheet__badge" id="invItemBadge"></span>
+                </div>
             </div>
-            <div class="item-sell-note" id="invItemSellNote"></div>
-            <div class="item-sheet__actions">
-                <button class="btn btn--gold" id="invSellBtn" type="button" data-i18n="sellItem">Продати</button>
-                <button class="btn btn--gold btn--gold-alt" id="invDropBtn" type="button" data-i18n="dropItem">Викинути</button>
+
+            <!-- Опис -->
+            <div class="inv-sheet__block">
+                <p class="inv-sheet__desc" id="invItemDesc"></p>
             </div>
+
+            <!-- Скільки повернеться -->
+            <div class="inv-sheet__block inv-sheet__block--note" id="invItemSellNote"></div>
+
+            <button class="inv-btn inv-btn--sell" id="invSellBtn" type="button">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5v17M8 7.5h5.5a2.5 2.5 0 010 5H10a2.5 2.5 0 000 5H16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="sellItem">Продати</span>
+            </button>
+
+            <button class="inv-btn inv-btn--drop" id="invDropBtn" type="button">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9.5 7V5.4A1.4 1.4 0 0110.9 4h2.2a1.4 1.4 0 011.4 1.4V7M6.5 7l.9 12.2a1.5 1.5 0 001.5 1.4h6.2a1.5 1.5 0 001.5-1.4L17.5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="dropItem">Викинути</span>
+            </button>
         </div>
 
         <!-- ПРИЗНАЧЕННЯ АДМІНА (макет 4) -->
