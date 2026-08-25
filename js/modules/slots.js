@@ -18,11 +18,17 @@ let slotsCurrency = "coins";
 let slotsBusy     = false;
 let slotsFree     = 0;
 let slotsPayTable = null;
+let slotsAutoRunning = false;
+let slotsBonusEarned = 0;
 
 /* ── Звуки ────────────────────────────────────────────────── */
 
 const SSOUND = {
     spin:    function () { beep(280, 0.14, "triangle", 0.045); },
+    reelStop: function (col) {
+        // Кожен наступний барабан зупиняється нижчою нотою
+        beep(340 - col * 18, 0.07, "square", 0.035);
+    },
     cascade: function (step) {
         beep(392 * Math.pow(1.09, Math.min(step, 10)), 0.11, "sine", 0.055);
     },
@@ -100,6 +106,94 @@ function burstCells(indices) {
     });
 }
 
+
+
+/** Оновлює баланс над полем; gain=true підсвічує зростання. */
+function syncSlotsBalance(balance, animate) {
+    if (!balance) return;
+    const c = document.getElementById("slotsBalCoins");
+    const d = document.getElementById("slotsBalDonate");
+    if (!c || !d) return;
+
+    const oldCoins  = parseInt(c.textContent.replace(/\s/g, ""), 10) || 0;
+    const oldDonate = parseInt(d.textContent.replace(/\s/g, ""), 10) || 0;
+
+    c.textContent = (balance.coins || 0).toLocaleString("uk");
+    d.textContent = (balance.donate || 0).toLocaleString("uk");
+
+    if (!animate) return;
+
+    if ((balance.coins || 0) > oldCoins) flashBalance(c);
+    if ((balance.donate || 0) > oldDonate) flashBalance(d);
+}
+
+function flashBalance(node) {
+    node.classList.remove("slots-balance__item--gain");
+    void node.offsetWidth;
+    node.classList.add("slots-balance__item--gain");
+}
+
+/* ── Прокручування барабанів ──────────────────────────────── */
+
+let reelTimer = null;
+
+/** Запускає швидку зміну символів — ілюзія обертання. */
+function startReels() {
+    const grid  = document.getElementById("slotsGrid");
+    const frame = document.querySelector(".slots-frame");
+    if (!grid) return;
+
+    grid.classList.add("slots-grid--spinning");
+    if (frame) frame.classList.add("slots-frame--active");
+
+    const keys = Object.keys(SLOT_EMOJI).filter(function (k) { return k !== "scatter"; });
+
+    Array.from(grid.children).forEach(function (cell) {
+        cell.className = "slot-cell slot-cell--spinning";
+        cell.style.animationDelay = "";
+    });
+
+    // Швидко міняємо символи, поки чекаємо відповідь сервера
+    reelTimer = setInterval(function () {
+        Array.from(grid.children).forEach(function (cell) {
+            cell.textContent = SLOT_EMOJI[keys[Math.floor(Math.random() * keys.length)]];
+        });
+    }, 70);
+}
+
+/**
+ * Зупиняє барабани по одному стовпчику зліва направо
+ * і виставляє фінальні символи.
+ */
+async function stopReels(symbols, mults) {
+    const grid  = document.getElementById("slotsGrid");
+    const frame = document.querySelector(".slots-frame");
+    if (!grid) return;
+
+    if (reelTimer) { clearInterval(reelTimer); reelTimer = null; }
+
+    for (let col = 0; col < SLOT_COLS; col++) {
+        for (let row = 0; row < SLOT_ROWS; row++) {
+            const i = row * SLOT_COLS + col;
+            const cell = grid.children[i];
+            if (!cell) continue;
+
+            const sym = symbols[i];
+            cell.className = "slot-cell slot-cell--stopped";
+            cell.textContent = SLOT_EMOJI[sym] || "❔";
+            if (sym === "scatter") cell.classList.add("slot-cell--scatter");
+
+            const m = mults && mults[String(i)];
+            if (m) cell.appendChild(el("div", "slot-cell__mult", "×" + m));
+        }
+        SSOUND.reelStop(col);
+        await wait(110);
+    }
+
+    grid.classList.remove("slots-grid--spinning");
+    if (frame) frame.classList.remove("slots-frame--active");
+}
+
 /* ── Множник ──────────────────────────────────────────────── */
 
 function setTotalMult(value, pop) {
@@ -145,10 +239,9 @@ async function playSpin(data) {
     hideWinBanner();
     setTotalMult(1, false);
 
-    // 1. Початкове поле падає
-    paintGrid(data.grid, data.mults, true);
-    SSOUND.spin();
-    await wait(650);
+    // 1. Барабани зупиняються по одному стовпчику
+    await stopReels(data.grid, data.mults);
+    await wait(200);
 
     let runningMult = 0;
     let currentGrid = data.grid.slice();
@@ -206,7 +299,7 @@ async function playSpin(data) {
 
 /* ── Спін ─────────────────────────────────────────────────── */
 
-async function doSlotsSpin() {
+async function doSlotsSpin(isAuto) {
     if (slotsBusy) return;
 
     const errEl = document.getElementById("slotsError");
@@ -222,15 +315,31 @@ async function doSlotsSpin() {
     btn.classList.add("slots-spin-btn--spinning");
     document.getElementById("slotsControls").classList.add("slots-controls--locked");
 
+    // Крутимо одразу, не чекаючи сервера — відгук миттєвий
+    startReels();
+    SSOUND.spin();
+
     try {
-        const data = await API.slotsSpin(bet, slotsCurrency);
+        const spinPromise = API.slotsSpin(bet, slotsCurrency);
+        // Мінімальний час обертання, щоб анімацію було видно
+        const [data] = await Promise.all([spinPromise, wait(900)]);
+
         syncBalance(data.balance);
+        syncSlotsBalance(data.balance, true);
 
         await playSpin(data);
+
+        if (data.was_free && data.win) slotsBonusEarned += data.win;
 
         slotsFree = data.free_spins || 0;
         updateFreeSpinsUI(data.bonus_total);
     } catch (e) {
+        if (reelTimer) { clearInterval(reelTimer); reelTimer = null; }
+        const grid = document.getElementById("slotsGrid");
+        const frame = document.querySelector(".slots-frame");
+        if (grid) grid.classList.remove("slots-grid--spinning");
+        if (frame) frame.classList.remove("slots-frame--active");
+
         const msg = String(e.message || "");
         errEl.textContent = msg.indexOf("400") !== -1 ? t("errFunds") : t("errGeneric");
     } finally {
@@ -265,6 +374,12 @@ function updateFreeSpinsUI(bonusTotal) {
 
 function openBonusModal(count) {
     document.getElementById("slotsBonusCount").textContent = count;
+    document.getElementById("slotsBonusTitleText").textContent = t("slotsBonusTitle");
+    document.getElementById("slotsBonusTextEl").textContent = t("slotsBonusText");
+
+    const okBtn = document.getElementById("slotsBonusOk");
+    okBtn.textContent = t("slotsBonusGo");
+    delete okBtn.dataset.summary;
     document.getElementById("slotsBonusBackdrop").classList.add("modal-backdrop--open");
     document.getElementById("slotsBonusModal").classList.add("center-modal--open");
 }
@@ -272,6 +387,51 @@ function openBonusModal(count) {
 function closeBonusModal() {
     document.getElementById("slotsBonusBackdrop").classList.remove("modal-backdrop--open");
     document.getElementById("slotsBonusModal").classList.remove("center-modal--open");
+
+    // Бонус крутиться сам — гравцю не треба тиснути 10 разів
+    if (slotsFree > 0) runFreeSpins();
+}
+
+/**
+ * Автоматично прокручує всі безкоштовні спіни підряд,
+ * з паузою між ними щоб було видно результат кожного.
+ */
+async function runFreeSpins() {
+    if (slotsAutoRunning) return;
+    slotsAutoRunning = true;
+
+    try {
+        while (slotsFree > 0) {
+            const screen = document.getElementById("slotsScreen");
+            // Гравець вийшов з гри — зупиняємось
+            if (!screen || !screen.classList.contains("fullscreen--open")) break;
+
+            await wait(700);
+            await doSlotsSpin(true);
+        }
+
+        // Підсумок бонусу
+        if (slotsBonusEarned > 0) {
+            showBonusSummary(slotsBonusEarned);
+        }
+    } finally {
+        slotsAutoRunning = false;
+        slotsBonusEarned = 0;
+    }
+}
+
+function showBonusSummary(total) {
+    document.getElementById("slotsBonusCount").textContent =
+        "+" + total.toLocaleString("uk");
+    document.getElementById("slotsBonusTitleText").textContent = t("slotsBonusEnd");
+    document.getElementById("slotsBonusTextEl").textContent = t("slotsBonusEndText");
+
+    const okBtn = document.getElementById("slotsBonusOk");
+    okBtn.textContent = t("ok");
+    okBtn.dataset.summary = "1";
+
+    document.getElementById("slotsBonusBackdrop").classList.add("modal-backdrop--open");
+    document.getElementById("slotsBonusModal").classList.add("center-modal--open");
 }
 
 /* ── Довідка ──────────────────────────────────────────────── */
@@ -327,6 +487,12 @@ async function loadSlots() {
         }
 
         updateFreeSpinsUI(s.bonus_total);
+
+        // Баланс беремо з головного екрана
+        syncSlotsBalance({
+            coins:  parseInt((document.getElementById("statCoins") || {}).textContent, 10) || 0,
+            donate: parseInt((document.getElementById("statDonate") || {}).textContent, 10) || 0,
+        }, false);
 
         // Початкове поле — випадкові символи для вигляду
         const demo = [];
@@ -397,9 +563,17 @@ function initSlots() {
 
     // Бонус
     const bonusOk = document.getElementById("slotsBonusOk");
-    if (bonusOk) bonusOk.addEventListener("click", closeBonusModal);
+    if (bonusOk) bonusOk.addEventListener("click", function () {
+        const isSummary = bonusOk.dataset.summary === "1";
+        document.getElementById("slotsBonusBackdrop").classList.remove("modal-backdrop--open");
+        document.getElementById("slotsBonusModal").classList.remove("center-modal--open");
+        if (!isSummary && slotsFree > 0) runFreeSpins();
+    });
     const bonusBd = document.getElementById("slotsBonusBackdrop");
-    if (bonusBd) bonusBd.addEventListener("click", closeBonusModal);
+    if (bonusBd) bonusBd.addEventListener("click", function () {
+        document.getElementById("slotsBonusBackdrop").classList.remove("modal-backdrop--open");
+        document.getElementById("slotsBonusModal").classList.remove("center-modal--open");
+    });
 
     // Довідка
     const help = document.getElementById("slotsHelp");
