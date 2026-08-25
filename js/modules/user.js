@@ -317,9 +317,49 @@ async function loadUsers() {
 
             if (isMe) item.appendChild(el("span", "user-item__me-badge", t("youBadge")));
             item.appendChild(el("span", "user-item__level", "Lv " + (u.level || 1)));
+
+            item.addEventListener("click", function () { openUserCard(u); });
             list.appendChild(item);
         });
     } catch (e) {
         renderError(list, loadUsers);
     }
+}
+
+
+/* ── Картка користувача ───────────────────────────────────── */
+
+function openUserCard(u) {
+    const av = document.getElementById("userCardAvatar");
+    const src = safeImageUrl(u.photo_url);
+    av.style.backgroundImage = src ? 'url("' + src + '")' : "";
+
+    const name = [u.first_name, u.last_name].filter(Boolean).join(" ");
+    document.getElementById("userCardName").textContent  = name || "—";
+    document.getElementById("userCardLevel").textContent = u.level || 1;
+    document.getElementById("userCardTag").textContent   =
+        u.username ? "@" + u.username : "ID: " + (u.user_id || "—");
+
+    // Опис показуємо лише якщо він є — інакше блок згортається
+    document.getElementById("userCardBio").textContent = u.bio || "";
+
+    document.getElementById("userCardBackdrop").classList.add("modal-backdrop--open");
+    document.getElementById("userCardModal").classList.add("center-modal--open");
+}
+
+function closeUserCard() {
+    document.getElementById("userCardBackdrop").classList.remove("modal-backdrop--open");
+    document.getElementById("userCardModal").classList.remove("center-modal--open");
+}
+
+function initUserCard() {
+    ["userCardClose", "userCardBackdrop"].forEach(function (id) {
+        const n = document.getElementById(id);
+        if (n) n.addEventListener("click", closeUserCard);
+    });
+
+    const friend = document.getElementById("userCardFriend");
+    if (friend) friend.addEventListener("click", function () {
+        toast(t("soonFeature"), "info");
+    });
 }
