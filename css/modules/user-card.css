@@ -1,0 +1,200 @@
+/* ══════════════════════════════════════════════════════════════
+   user-card.css — картка користувача з вкладки «Інші користувачі»
+   ══════════════════════════════════════════════════════════════ */
+
+.user-card {
+    width: min(348px, 92vw);
+    padding: 22px 18px 20px;
+    text-align: left;
+}
+
+/* ── Шапка: аватар + плашка ───────────────────────────────── */
+
+.user-card__top {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.user-card__avatar {
+    width: 104px;
+    height: 104px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--surface-2);
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--stroke-strong);
+}
+
+.user-card__ident {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    /* Зелений відтінок — як на макеті, але в нашій палітрі */
+    background: linear-gradient(140deg,
+                rgba(46, 196, 182, 0.16),
+                rgba(46, 196, 182, 0.05));
+    border: 1px solid rgba(46, 196, 182, 0.32);
+}
+
+.user-card__name {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card__level {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal);
+}
+
+.user-card__level svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.user-card__tag {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Опис ─────────────────────────────────────────────────── */
+
+.user-card__bio {
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    border-radius: 15px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-2, var(--muted));
+}
+
+.user-card__bio:empty { display: none; }
+
+/* ── Секції-заглушки ──────────────────────────────────────── */
+
+.slot-box {
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    border: 1px solid;
+}
+
+.slot-box--prefix {
+    background: linear-gradient(140deg,
+                rgba(139, 158, 255, 0.1),
+                rgba(139, 158, 255, 0.03));
+    border-color: rgba(139, 158, 255, 0.35);
+}
+
+.slot-box--gift {
+    background: linear-gradient(140deg,
+                rgba(240, 100, 150, 0.1),
+                rgba(240, 100, 150, 0.03));
+    border-color: rgba(240, 100, 150, 0.32);
+}
+
+.slot-box__title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.slot-box__title svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+.slot-box--prefix .slot-box__title { color: var(--accent); }
+.slot-box--gift   .slot-box__title { color: #F06496; }
+
+/* Порожній слот — пунктирна рамка */
+.slot-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 62px;
+    border-radius: 14px;
+    border: 1.5px dashed var(--stroke-strong);
+    color: var(--muted);
+}
+
+.slot-empty__text {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.65;
+}
+
+.slot-empty__icon {
+    width: 26px;
+    height: 26px;
+    opacity: 0.45;
+}
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.slot-grid .slot-empty { min-height: 76px; }
+
+/* ── Кнопка «Додати в друзі» ──────────────────────────────── */
+
+.user-card__friend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--stroke-strong);
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.14s ease;
+}
+
+.user-card__friend svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+.user-card__friend:active {
+    transform: scale(0.98);
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+/* Клікабельні рядки у списку користувачів */
+#usersList .user-item { cursor: pointer; }
+
+@media (max-width: 360px) {
+    .user-card__avatar { width: 86px; height: 86px; }
+    .user-card__name { font-size: 17px; }
+}
