@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 7. Рулетка
     initRoulette();
+    initFarm();
 
     // 8. Дані з сервера — останнім, вже на готовий UI
     loadFromServer();
