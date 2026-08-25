@@ -10,6 +10,20 @@ let adminsCache   = [];
 let adminsCanManage = false;
 let openedAdmin   = null;
 
+
+/** Бейдж рівня адміністратора — у стилі рівня гравця, з зіркою. */
+function buildAdminLevelPill(level) {
+    const lvl = Math.max(1, Math.min(5, level || 1));
+    const pill = el("span", "admin-lvl-pill admin-lvl-pill--" + lvl);
+
+    const star = el("span", "admin-lvl-pill__star");
+    star.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.6l2.5 5.3 5.6.8-4 4 .9 5.7-5-2.7-5 2.7.9-5.7-4-4 5.6-.8L12 3.6z"/></svg>';
+    pill.appendChild(star);
+
+    pill.appendChild(el("span", "admin-lvl-pill__num", "LVL " + lvl));
+    return pill;
+}
+
 /* ── Екран призначення (макет 4) ──────────────────────────── */
 
 function renderAssignList() {
@@ -37,9 +51,11 @@ function renderAssignList() {
         row.appendChild(body);
 
         const lvl = u.admin_level || 0;
-        row.appendChild(el("span",
-            "pick-item__lvl " + (lvl ? "pick-item__lvl--admin" : "pick-item__lvl--none"),
-            lvl ? "Lv " + lvl : t("noAdmin")));
+        if (lvl > 0) {
+            row.appendChild(buildAdminLevelPill(lvl));
+        } else {
+            row.appendChild(el("span", "pick-item__lvl pick-item__lvl--none", t("noAdmin")));
+        }
 
         row.addEventListener("click", function () {
             assignPicked = u;
@@ -116,6 +132,7 @@ function initAssignScreen() {
         try {
             await API.setAdminLevel(assignPicked.user_id, assignLevel);
             toast(t("assigned"), "success");
+            if (typeof syncRevisions === "function") syncRevisions();
             assignPicked = null;
             assignLevel  = null;
             document.querySelectorAll(".level-btn").forEach(function (b) {
@@ -156,10 +173,7 @@ function renderAdminsList() {
             a.admin_by_name ? t("assignedBy") + ": " + a.admin_by_name : "—"));
         row.appendChild(body);
 
-        // Кружок рівня — що вищий рівень, то більший
-        row.appendChild(el("span",
-            "admin-row__lvl admin-row__lvl--" + (a.admin_level || 1),
-            String(a.admin_level || 0)));
+        row.appendChild(buildAdminLevelPill(a.admin_level));
 
         // Картку відкриває лише рівень 5
         if (adminsCanManage) {
@@ -212,7 +226,9 @@ function openAdminCard(admin) {
     const name = [admin.first_name, admin.last_name].filter(Boolean).join(" ");
     document.getElementById("adminCardName").textContent = name || "—";
     document.getElementById("adminCardTag").textContent  = admin.username ? "@" + admin.username : "";
-    document.getElementById("adminCardLvl").textContent  = t("levelShort") + " " + (admin.admin_level || 0);
+    const lvlBox = document.getElementById("adminCardLvl");
+    lvlBox.innerHTML = "";
+    lvlBox.appendChild(buildAdminLevelPill(admin.admin_level));
     document.getElementById("adminCardBy").textContent   = admin.admin_by_name || "—";
 
     // Межі рівня: 1 — нижче нікуди, 5 — вище нікуди
@@ -246,7 +262,10 @@ async function changeAdminLevel(newLevel, titleKey, textKey) {
         closeAdminCard();
         openedAdmin = null;
         toast(t("adminUpdated"), "success");
-        await loadAdmins();
+        await Promise.all([
+            loadAdmins(),
+            typeof syncRevisions === "function" ? syncRevisions() : Promise.resolve()
+        ]);
     } catch (e) {
         const msg = String(e.message || "");
         toast(msg.indexOf("400") !== -1 ? t("errSelfChange") : t("errGeneric"), "error");
