@@ -86,6 +86,11 @@ const API = {
     farmUpgrade: (currency) => request("/api/game/farm/upgrade", {
         method: "POST", body: JSON.stringify({ currency }),
     }),
+    slotsState: () => request("/api/game/slots"),
+    slotsSpin:  (bet, currency) => request("/api/game/slots/spin", {
+        method: "POST", body: JSON.stringify({ bet, currency }),
+    }),
+
     minesState:   () => request("/api/game/mines"),
     minesStart:   (bet, currency, mines_count) => request("/api/game/mines/start", {
         method: "POST", body: JSON.stringify({ bet, currency, mines_count }),
