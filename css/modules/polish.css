@@ -1274,3 +1274,113 @@ body[data-theme="light"] .inv-sheet { background: #FFFFFF; }
     color: #F0B93A;
 }
 .inv-btn--drop:active { background: rgba(240,185,58,0.12); }
+
+/* ══════════════════════════════════════════════════════════════
+   v8 — нашарування екранів, рівні адмінів, кнопки магазину
+   ══════════════════════════════════════════════════════════════ */
+
+/*
+ * Нашарування: адмін-панель лежить поверх налаштувань (z-index 11),
+ * тому екрани, які відкриваються З НЕЇ, мають бути ще вище —
+ * інакше вони з'являлись позаду, і здавалося що клік не спрацював.
+ */
+#assignAdminScreen,
+#adminListScreen {
+    z-index: 13;
+}
+
+/* Модалка картки адміна — над усіма екранами */
+#adminCardBackdrop { z-index: 24; }
+#adminCardModal    { z-index: 25; }
+
+/* Модалки предметів — над магазином, але під адмінськими */
+#itemDetailBackdrop, #invItemBackdrop { z-index: 20; }
+#itemDetailModal,   #invItemModal     { z-index: 21; }
+
+/* ── Кнопки в картці магазину ─────────────────────────────── */
+
+.inv-btn--donate {
+    border-color: var(--violet);
+    color: var(--violet);
+}
+.inv-btn--donate:active { background: var(--violet-dim); }
+
+.inv-btn--restock {
+    border-color: var(--teal);
+    color: var(--teal);
+}
+.inv-btn--restock:active { background: var(--teal-dim); }
+
+.inv-btn--danger {
+    border-color: var(--red);
+    color: var(--red);
+}
+.inv-btn--danger:active { background: var(--red-dim); }
+
+/* Ціни в картці магазину */
+.inv-sheet__prices {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+/* Бейдж залишку */
+.inv-sheet__badge--stock {
+    background: var(--surface-3);
+    color: var(--muted);
+}
+
+/* ── Рівень адміністратора: як рівень гравця ──────────────── */
+
+.admin-lvl-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 6px 12px 6px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    border: 1px solid;
+}
+
+.admin-lvl-pill__star {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.admin-lvl-pill__star svg { width: 14px; height: 14px; }
+
+.admin-lvl-pill__num { line-height: 1; }
+
+/* Кольори за рівнем — від спокійного до вогняного */
+.admin-lvl-pill--1 {
+    background: rgba(122,122,138,0.14);
+    border-color: rgba(122,122,138,0.4);
+    color: var(--muted);
+}
+.admin-lvl-pill--2 {
+    background: var(--teal-dim);
+    border-color: rgba(61,217,200,0.45);
+    color: var(--teal);
+}
+.admin-lvl-pill--3 {
+    background: var(--accent-dim);
+    border-color: rgba(139,158,255,0.45);
+    color: var(--accent);
+}
+.admin-lvl-pill--4 {
+    background: var(--violet-dim);
+    border-color: rgba(176,141,255,0.5);
+    color: var(--violet);
+}
+.admin-lvl-pill--5 {
+    background: linear-gradient(135deg, rgba(255,179,64,0.2), rgba(255,112,112,0.2));
+    border-color: rgba(255,179,64,0.6);
+    color: #FFB340;
+    box-shadow: 0 0 14px rgba(255,179,64,0.22);
+}
+
+/* Прибираємо старий кружок */
+.admin-row__lvl { display: none; }
