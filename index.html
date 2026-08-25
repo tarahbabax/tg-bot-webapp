@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/modules/polish.css" />
     <link rel="stylesheet" href="css/modules/farm.css" />
     <link rel="stylesheet" href="css/modules/user-card.css" />
+    <link rel="stylesheet" href="css/modules/mines.css" />
 </head>
 <body data-theme="dark">
     <div class="page">
@@ -160,12 +161,21 @@
                             </svg>
                         </button>
 
-                        <div class="game-card game-card--locked">
-                            <span class="game-card__icon"></span>
-                            <span class="game-card__body">
-                                <span class="game-card__title" data-i18n="soon">Незабаром</span>
+                        <button class="game-card game-card--featured game-card--mines" id="openMines" type="button">
+                            <span class="game-card__icon">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="13" r="6" stroke="currentColor" stroke-width="1.7"/>
+                                    <path d="M12 7V4M12 4l2-1.4M18.4 6.6l1.8-1.8M5.6 6.6L3.8 4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                </svg>
                             </span>
-                        </div>
+                            <span class="game-card__body">
+                                <span class="game-card__title" data-i18n="minesTitle">Міни</span>
+                                <span class="game-card__desc" data-i18n="minesDesc">Відкривай клітинки і множ ставку</span>
+                            </span>
+                            <svg class="game-card__chevron" viewBox="0 0 24 24" fill="none">
+                                <path d="M9.5 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
 
                         <div class="game-card game-card--locked">
                             <span class="game-card__icon"></span>
@@ -870,6 +880,102 @@
             </button>
         </div>
 
+
+        <!-- МІНИ -->
+        <div class="fullscreen" id="minesScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="minesBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="minesTitle">Міни</p>
+                <button class="fullscreen__back" id="minesHelp" type="button" aria-label="Довідка">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.6"/><path d="M9.6 9.3a2.4 2.4 0 114.15 1.65c-.75.7-1.35 1.05-1.35 2.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor"/></svg>
+                </button>
+            </header>
+
+            <div class="fullscreen__body mines-body">
+
+                <!-- Табло множника -->
+                <div class="mines-hud">
+                    <div class="mines-hud__mult" id="minesMultBox">
+                        <span class="mines-hud__mult-val" id="minesMult">1.00×</span>
+                        <span class="mines-hud__mult-label" id="minesPayout">—</span>
+                    </div>
+                    <div class="mines-hud__next" id="minesNextBox">
+                        <span class="mines-hud__next-label" data-i18n="minesNext">Наступна</span>
+                        <span class="mines-hud__next-val" id="minesNext">—</span>
+                    </div>
+                </div>
+
+                <!-- Поле -->
+                <div class="mines-field" id="minesField"></div>
+
+                <!-- Налаштування (до старту) -->
+                <div class="mines-setup" id="minesSetup">
+                    <div class="currency-select">
+                        <button class="currency-pill currency-pill--active" id="minesCurCoins" type="button">
+                            <span data-i18n="coins">Коіни</span>
+                        </button>
+                        <button class="currency-pill" id="minesCurDonate" type="button">
+                            <span data-i18n="donate">Донат-коіни</span>
+                        </button>
+                    </div>
+
+                    <div class="bet-box mines-bet">
+                        <span class="bet-box__label" data-i18n="betAmount">Ставка</span>
+                        <input class="bet-box__input" id="minesBet" type="number" min="1" placeholder="0" />
+                    </div>
+
+                    <div class="mines-count">
+                        <div class="mines-count__head">
+                            <span class="mines-count__label" data-i18n="minesCount">Кількість мін</span>
+                            <span class="mines-count__val" id="minesCountVal">3</span>
+                        </div>
+                        <input class="mines-slider" id="minesSlider" type="range" min="1" max="20" value="3" />
+                        <div class="mines-presets">
+                            <button class="mines-preset" type="button" data-mines="1">1</button>
+                            <button class="mines-preset mines-preset--active" type="button" data-mines="3">3</button>
+                            <button class="mines-preset" type="button" data-mines="5">5</button>
+                            <button class="mines-preset" type="button" data-mines="10">10</button>
+                            <button class="mines-preset" type="button" data-mines="20">20</button>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="roulette-error" id="minesError"></p>
+
+                <button class="mines-action mines-action--start" id="minesStartBtn" type="button">
+                    <span data-i18n="minesStart">Почати гру</span>
+                </button>
+
+                <button class="mines-action mines-action--cash" id="minesCashBtn" type="button" style="display:none">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span id="minesCashLabel">Забрати</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- РЕЗУЛЬТАТ МІН -->
+        <div class="modal-backdrop" id="minesResBackdrop"></div>
+        <div class="center-modal" id="minesResModal">
+            <div class="mines-res__icon" id="minesResIcon"></div>
+            <p class="mines-res__title" id="minesResTitle"></p>
+            <p class="mines-res__amount" id="minesResAmount"></p>
+            <p class="center-modal__text" id="minesResText"></p>
+            <button class="btn btn--accent" id="minesResOk" type="button" data-i18n="ok">Добре!</button>
+        </div>
+
+        <!-- ДОВІДКА МІН -->
+        <div class="modal-backdrop" id="minesHelpBackdrop"></div>
+        <div class="center-modal" id="minesHelpModal">
+            <button class="center-modal__close" id="minesHelpClose" type="button" aria-label="Закрити">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <p class="center-modal__title" data-i18n="minesHelpTitle">Як грати</p>
+            <div class="mines-help" id="minesHelpBody"></div>
+            <button class="btn btn--accent" id="minesHelpOk" type="button" data-i18n="ok">Добре!</button>
+        </div>
+
         <!-- ФЕРМА -->
         <div class="fullscreen" id="farmScreen">
             <header class="fullscreen__header">
@@ -1448,6 +1554,7 @@
     <script src="js/modules/admin.js"></script>
     <script src="js/modules/roulette.js"></script>
     <script src="js/modules/farm.js"></script>
+    <script src="js/modules/mines.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
