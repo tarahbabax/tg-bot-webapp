@@ -139,20 +139,35 @@ function renderShopItems() {
             hasItems ? "noMatchDesc" : "shopEmptyDesc");
         return;
     }
+    // Збираємо у фрагмент — браузер робить один перерахунок макета,
+    // а не по одному на кожну картку.
+    const frag = document.createDocumentFragment();
     visible.forEach(function (item) {
         const card = buildItemCard(item);
         card.addEventListener("click", function () { openItemDetail(item); });
-        grid.appendChild(card);
+        frag.appendChild(card);
     });
+    grid.appendChild(frag);
 }
+
+let lastShopHash = "";
 
 async function loadShopItems() {
     const grid = document.getElementById("shopGrid");
     try {
         const data = await API.getShopItems();
-        shopItems = data.items || [];
+        const items = data.items || [];
+
+        // Пропускаємо перемальовку якщо каталог не змінився
+        const hash = items.map(function (i) {
+            return i.item_id + ":" + i.stock_left;
+        }).join(",");
+        const changed = hash !== lastShopHash;
+        lastShopHash = hash;
+
+        shopItems = items;
         if (data.is_admin) currentAdminLevel = 5;
-        renderShopItems();
+        if (changed || !grid.children.length) renderShopItems();
     } catch (e) {
         if (grid) renderError(grid, loadShopItems);
     }
@@ -208,11 +223,13 @@ function renderInventoryInto(container) {
             hasItems ? "noMatchDesc" : "invEmptyDesc");
         return;
     }
+    const frag = document.createDocumentFragment();
     visible.forEach(function (item) {
         const card = buildItemCard(item, { hideStock: true, hidePrice: true });
         card.addEventListener("click", function () { openInvItem(item); });
-        container.appendChild(card);
+        frag.appendChild(card);
     });
+    container.appendChild(frag);
 }
 
 async function loadInventory() {
@@ -318,8 +335,7 @@ function initShop() {
             selectedItem = null;
             syncBalance(r.balance);
             toast(t("bought"), "success");
-            await loadShopItems();
-            await loadInventory();
+            await Promise.all([loadShopItems(), loadInventory(), syncRevisions()]);
         } catch (e) {
             const msg = String(e.message || "");
             toast(msg.indexOf("400") !== -1 ? t("errFunds") : t("errBuy"), "error");
@@ -345,7 +361,7 @@ function initShop() {
             closeItemDetail();
             selectedItem = null;
             toast(t("deleted"), "success");
-            await loadShopItems();
+            await Promise.all([loadShopItems(), syncRevisions()]);
         } catch (e) {
             toast(t("errDelete"), "error");
         }
@@ -369,7 +385,7 @@ function initShop() {
             closeItemDetail();
             selectedItem = null;
             toast(t("restocked"), "success");
-            await loadShopItems();
+            await Promise.all([loadShopItems(), syncRevisions()]);
         } catch (e) {
             toast(t("errRestock"), "error");
         }
@@ -398,6 +414,48 @@ function resetForm(ids) {
     });
 }
 
+
+/**
+ * Скидає тумблер у стан "увімкнено".
+ * Форма додавання одноразова — якщо не скидати, наступного разу
+ * вона відкриється з попереднім вибором, і адмін створить товар
+ * із налаштуванням, якого не очікував.
+ */
+function resetSwitch(id, on) {
+    const sw = document.getElementById(id);
+    if (!sw) return;
+    sw.classList.toggle("switch--on", on !== false);
+    sw.setAttribute("aria-checked", String(on !== false));
+}
+
+/** Повне скидання форми подарунка. */
+function resetGiftForm() {
+    resetForm(["giftName","giftDesc","giftPriceCoins","giftPriceDonate","giftStock","giftPhotoUrl"]);
+    resetSwitch("giftSellable", true);
+    const preview = document.getElementById("giftPhotoPreview");
+    const upload  = document.getElementById("giftPhotoUpload");
+    const file    = document.getElementById("giftPhotoFile");
+    if (preview) { preview.style.display = "none"; preview.src = ""; }
+    if (upload)  upload.style.display = "";
+    if (file)    file.value = "";
+    const err = document.getElementById("giftError");
+    if (err) err.textContent = "";
+}
+
+/** Повне скидання форми префікса. */
+function resetPrefixForm() {
+    resetForm(["prefixName","prefixDesc","prefixText","prefixPriceCoins","prefixPriceDonate","prefixStock"]);
+    resetSwitch("prefixSellable", true);
+    const color = document.getElementById("prefixColor");
+    if (color) color.value = "#6E8BFF";
+    const val = document.getElementById("prefixColorVal");
+    if (val) val.textContent = "#6E8BFF";
+    const prev = document.getElementById("prefixPreviewText");
+    if (prev) { prev.textContent = "VIP"; prev.style.color = "#6E8BFF"; }
+    const err = document.getElementById("prefixError");
+    if (err) err.textContent = "";
+}
+
 function initAddItemForms() {
     const on = function (id, ev, fn) {
         const n = document.getElementById(id);
@@ -406,8 +464,8 @@ function initAddItemForms() {
 
     on("addItemBtn",      "click", function () { openScreen("addItemTypeScreen"); });
     on("addItemTypeBack", "click", function () { closeScreen("addItemTypeScreen"); });
-    on("chooseGift",      "click", function () { closeScreen("addItemTypeScreen"); openScreen("addGiftScreen"); });
-    on("choosePrefix",    "click", function () { closeScreen("addItemTypeScreen"); openScreen("addPrefixScreen"); });
+    on("chooseGift",      "click", function () { resetGiftForm();   closeScreen("addItemTypeScreen"); openScreen("addGiftScreen"); });
+    on("choosePrefix",    "click", function () { resetPrefixForm(); closeScreen("addItemTypeScreen"); openScreen("addPrefixScreen"); });
     on("addGiftBack",     "click", function () { closeScreen("addGiftScreen");   openScreen("addItemTypeScreen"); });
     on("addPrefixBack",   "click", function () { closeScreen("addPrefixScreen"); openScreen("addItemTypeScreen"); });
 
@@ -463,11 +521,9 @@ function initAddItemForms() {
                 sellable:     document.getElementById("giftSellable").classList.contains("switch--on")
             });
             closeScreen("addGiftScreen");
-            resetForm(["giftName","giftDesc","giftPriceCoins","giftPriceDonate","giftStock","giftPhotoUrl"]);
-            preview.style.display = "none";
-            document.getElementById("giftPhotoUpload").style.display = "";
+            resetGiftForm();
             toast(t("itemAdded"), "success");
-            await loadShopItems();
+            await Promise.all([loadShopItems(), syncRevisions()]);
         } catch (e) {
             const msg = String(e.message || "");
             errEl.textContent = msg.indexOf("409") !== -1 ? t("errDuplicate") : t("errGeneric");
@@ -498,7 +554,7 @@ function initAddItemForms() {
                 sellable:     document.getElementById("prefixSellable").classList.contains("switch--on")
             });
             closeScreen("addPrefixScreen");
-            resetForm(["prefixName","prefixDesc","prefixText","prefixPriceCoins","prefixPriceDonate","prefixStock"]);
+            resetPrefixForm();
             toast(t("itemAdded"), "success");
             await loadShopItems();
         } catch (e) {
@@ -628,29 +684,41 @@ let selectedInvItem = null;
 function openInvItem(item) {
     selectedInvItem = item;
 
-    const hero = document.getElementById("invItemHero");
-    if (hero) fillItemHero(hero, item);
+    // Медіа: фото, плейсхолдер або префікс — одна логіка для обох типів
+    const media = document.getElementById("invItemHero");
+    if (media) fillItemHero(media, item);
 
     document.getElementById("invItemName").textContent = item.name;
+    document.getElementById("invItemType").textContent =
+        item.type === "prefix" ? t("typePrefix") : t("typeGift");
     document.getElementById("invItemDesc").textContent = item.description || "";
 
-    // Продаж — половина ціни, округлення вниз
+    // Строге порівняння: SQLite віддає 0/1, і будь-яка нестрога
+    // перевірка тут дала б хибний результат для 0.
+    const sellableFlag = Number(item.sellable) === 1;
+
     const backCoins  = Math.floor((item.price_coins  || 0) / 2);
     const backDonate = Math.floor((item.price_donate || 0) / 2);
     const parts = [];
     if (backCoins)  parts.push(backCoins  + " " + t("coinsShort"));
     if (backDonate) parts.push(backDonate + " " + t("donateShort"));
 
-    document.getElementById("invItemSellNote").textContent =
-        parts.length ? t("sellNote") + ": " + parts.join(" + ") : t("sellNothing");
+    const canSell = sellableFlag && parts.length > 0;
 
-    // Предмет може бути позначений як непродаваний при створенні
-    const canSell = item.sellable !== 0 && parts.length > 0;
+    const note  = document.getElementById("invItemSellNote");
+    const badge = document.getElementById("invItemBadge");
     const sellBtn = document.getElementById("invSellBtn");
-    if (sellBtn) sellBtn.style.display = canSell ? "flex" : "none";
 
-    if (item.sellable === 0) {
-        document.getElementById("invItemSellNote").textContent = t("notSellable");
+    if (canSell) {
+        note.textContent  = t("sellNote") + ": " + parts.join(" + ");
+        badge.textContent = "";
+        badge.className   = "inv-sheet__badge";
+        sellBtn.style.display = "flex";
+    } else {
+        note.textContent  = "";
+        badge.textContent = t("notSellable");
+        badge.className   = "inv-sheet__badge inv-sheet__badge--locked";
+        sellBtn.style.display = "none";
     }
 
     document.getElementById("invItemModal").classList.add("item-detail-modal--open");
@@ -695,8 +763,7 @@ function initInvItemModal() {
             selectedInvItem = null;
             syncBalance(r.balance);
             toast(t("sold"), "success");
-            await loadInventory();
-            await loadShopItems();
+            await Promise.all([loadInventory(), loadShopItems(), syncRevisions()]);
         } catch (e) {
             toast(t("errSell"), "error");
         }
@@ -719,8 +786,7 @@ function initInvItemModal() {
             closeInvItem();
             selectedInvItem = null;
             toast(t("dropped"), "info");
-            await loadInventory();
-            await loadShopItems();
+            await Promise.all([loadInventory(), loadShopItems(), syncRevisions()]);
         } catch (e) {
             toast(t("errGeneric"), "error");
         }
@@ -731,42 +797,64 @@ function initInvItemModal() {
    Автооновлення магазину (легкий polling)
    ══════════════════════════════════════════════════════════════ */
 
-let shopVersion = null;
-let pollTimer   = null;
+let revShop  = null;
+let revAdmin = null;
+let pollTimer = null;
 
 /**
- * Раз на 8 секунд питає в сервера коротку "версію" каталогу
- * (кількість товарів + сумарний залишок). Якщо змінилась —
- * перезавантажує список. Так нові товари з'являються майже
- * одразу, але трафік мінімальний.
+ * Легкий polling: сервер повертає лише два лічильники.
+ * Порівнюємо — якщо змінились, перезавантажуємо саме те, що змінилось.
+ * Свої власні дії оновлюють екран одразу (не чекаючи наступного тику),
+ * а лічильники синхронізуються, щоб не було подвійного перезавантаження.
  */
+async function pollRevisions() {
+    if (document.hidden) return;
+    try {
+        const d = await API.getShopVersion();
+
+        if (revShop === null) { revShop = d.shop; revAdmin = d.admin; return; }
+
+        if (d.shop !== revShop) {
+            revShop = d.shop;
+            await loadShopItems();
+            // Інвентар оновлюємо лише якщо він зараз на екрані
+            const invOpen = document.getElementById("invContainer");
+            const invVisible = invOpen && invOpen.style.display !== "none";
+            const screenOpen = document.getElementById("inventoryScreen");
+            if (invVisible || (screenOpen && screenOpen.classList.contains("fullscreen--open"))) {
+                await loadInventory();
+            }
+        }
+
+        if (d.admin !== revAdmin) {
+            revAdmin = d.admin;
+            // Права могли змінитись — перечитуємо профіль,
+            // щоб панель адміна з'явилась/зникла без перезаходу
+            await loadFromServer();
+            const listOpen = document.getElementById("adminListScreen");
+            if (listOpen && listOpen.classList.contains("fullscreen--open")
+                && typeof loadAdmins === "function") {
+                await loadAdmins();
+            }
+        }
+    } catch (e) { /* тихо — наступна спроба за 3с */ }
+}
+
+/** Після власної дії — синхронізуємо лічильники, щоб не тягнути дані двічі. */
+async function syncRevisions() {
+    try {
+        const d = await API.getShopVersion();
+        revShop = d.shop;
+        revAdmin = d.admin;
+    } catch (e) { /* ігноруємо */ }
+}
+
 function startShopPolling() {
     if (pollTimer) clearInterval(pollTimer);
+    // 3 секунди — запит тепер майже безкоштовний (два числа з пам'яті)
+    pollTimer = setInterval(pollRevisions, 3000);
 
-    pollTimer = setInterval(async function () {
-        // Не оновлюємо коли вкладка прихована — економимо батарею
-        if (document.hidden) return;
-
-        try {
-            const data = await API.getShopVersion();
-            if (shopVersion === null) {
-                shopVersion = data.version;
-                return;
-            }
-            if (data.version !== shopVersion) {
-                shopVersion = data.version;
-                await loadShopItems();
-                const openTab = document.querySelector(".shop-tab--active");
-                const isInv = openTab && openTab.textContent.trim() === t("tabShopItems");
-                if (isInv) await loadInventory();
-            }
-        } catch (e) {
-            // тиха помилка — наступна спроба через інтервал
-        }
-    }, 8000);
-
-    // Миттєве оновлення при поверненні у вкладку
     document.addEventListener("visibilitychange", function () {
-        if (!document.hidden) loadShopItems();
+        if (!document.hidden) pollRevisions();
     });
 }
