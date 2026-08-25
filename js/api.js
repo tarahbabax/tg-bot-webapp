@@ -78,6 +78,16 @@ const API = {
 
     getShopVersion: () => request("/api/shop/version"),
 
+    farmState:   () => request("/api/game/farm"),
+    farmPlant:   (plots) => request("/api/game/farm/plant", {
+        method: "POST", body: JSON.stringify({ plots }),
+    }),
+    farmHarvest: () => request("/api/game/farm/harvest", { method: "POST" }),
+    farmUpgrade: (currency) => request("/api/game/farm/upgrade", {
+        method: "POST", body: JSON.stringify({ currency }),
+    }),
+    myProgress:  () => request("/api/me/progress"),
+
     getAdminUsers: (q) => request("/api/admin/users?q=" + encodeURIComponent(q || "")),
     getAdminList:  () => request("/api/admin/list"),
     setAdminLevel: (user_id, level) => request("/api/admin/set", {
