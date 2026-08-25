@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/modules/polish.css" />
     <link rel="stylesheet" href="css/modules/farm.css" />
+    <link rel="stylesheet" href="css/modules/user-card.css" />
 </head>
 <body data-theme="dark">
     <div class="page">
@@ -810,6 +811,64 @@
             <button class="btn btn--gold admin-card__fire" id="adminFire" type="button" data-i18n="fireAdmin">Звільнити</button>
         </div>
 
+
+
+        <!-- КАРТКА КОРИСТУВАЧА -->
+        <div class="modal-backdrop" id="userCardBackdrop"></div>
+        <div class="center-modal user-card" id="userCardModal">
+            <button class="center-modal__close" id="userCardClose" type="button" aria-label="Закрити">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+
+            <!-- Шапка: аватар + плашка з іменем -->
+            <div class="user-card__top">
+                <div class="user-card__avatar" id="userCardAvatar"></div>
+                <div class="user-card__ident">
+                    <p class="user-card__name" id="userCardName"></p>
+                    <p class="user-card__level">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 20.5h16M12 16.5V7M12 7L8 11M12 7l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span data-i18n="levelShort">Рівень</span>&nbsp;<span id="userCardLevel">1</span>
+                    </p>
+                    <p class="user-card__tag" id="userCardTag"></p>
+                </div>
+            </div>
+
+            <!-- Опис «Про мене», якщо є -->
+            <div class="user-card__bio" id="userCardBio"></div>
+
+            <!-- Привілегії -->
+            <div class="slot-box slot-box--prefix" id="userCardPrefixes">
+                <p class="slot-box__title">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 17.5h16M4.5 7l4 3.2L12 5.5l3.5 4.7 4-3.2-1.4 8.5H5.9L4.5 7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    <span data-i18n="privileges">Привілегії</span>
+                </p>
+                <div class="slot-empty" id="userCardPrefixSlot">
+                    <span class="slot-empty__text" data-i18n="privilegesEmpty">Привілегії</span>
+                </div>
+            </div>
+
+            <!-- Подарунки -->
+            <div class="slot-box slot-box--gift">
+                <p class="slot-box__title">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 12v8.5H4V12M21.5 7.5h-19V12h19V7.5zM12 7.5V21M12 7.5H7.9a2.2 2.2 0 010-4.4C10.9 3.1 12 7.5 12 7.5zM12 7.5h4.1a2.2 2.2 0 000-4.4C13.1 3.1 12 7.5 12 7.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    <span data-i18n="gifts">Подарунки</span>
+                </p>
+                <div class="slot-grid">
+                    <div class="slot-empty">
+                        <svg class="slot-empty__icon" viewBox="0 0 24 24" fill="none"><path d="M20 12v8.5H4V12M21.5 7.5h-19V12h19V7.5zM12 7.5V21M12 7.5H7.9a2.2 2.2 0 010-4.4C10.9 3.1 12 7.5 12 7.5zM12 7.5h4.1a2.2 2.2 0 000-4.4C13.1 3.1 12 7.5 12 7.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="slot-empty">
+                        <svg class="slot-empty__icon" viewBox="0 0 24 24" fill="none"><path d="M20 12v8.5H4V12M21.5 7.5h-19V12h19V7.5zM12 7.5V21M12 7.5H7.9a2.2 2.2 0 010-4.4C10.9 3.1 12 7.5 12 7.5zM12 7.5h4.1a2.2 2.2 0 000-4.4C13.1 3.1 12 7.5 12 7.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Додати в друзі -->
+            <button class="user-card__friend" id="userCardFriend" type="button">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="9.5" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M3 19.4c1.2-3 3.5-4.6 6.5-4.6 1 0 2 .2 2.8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17.5 13.5v6M14.5 16.5h6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+                <span data-i18n="addFriend">Додати в друзі</span>
+            </button>
+        </div>
 
         <!-- ФЕРМА -->
         <div class="fullscreen" id="farmScreen">
