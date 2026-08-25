@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initProfileEditors();
     initAdminPanel();
     initUsersScreen();
+    initUserCard();
 
     // 6. Магазин (всередині: інвентар, вітрина, топи, форми)
     initShop();
