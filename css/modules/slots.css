@@ -1,0 +1,335 @@
+/* ══════════════════════════════════════════════════════════════
+   slots.css — каскадні слоти з множниками
+   ══════════════════════════════════════════════════════════════ */
+
+.slots-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Банер фріспінів ──────────────────────────────────────── */
+
+.slots-bonus {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 15px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, rgba(255,179,64,0.2), rgba(255,112,112,0.14));
+    border: 1.5px solid rgba(255,179,64,0.5);
+}
+
+.slots-bonus--active { display: flex; }
+
+.slots-bonus__icon { font-size: 20px; }
+
+.slots-bonus__text {
+    flex: 1;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #FFB340;
+}
+.slots-bonus__text b { font-size: 16px; margin-left: 5px; }
+
+.slots-bonus__total {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--teal);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Смуга множника ───────────────────────────────────────── */
+
+.slots-mult {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    background: var(--surface);
+    border: 1.5px solid var(--stroke);
+    transition: all 0.35s ease;
+}
+
+.slots-mult--hot {
+    background: linear-gradient(135deg, rgba(176,141,255,0.22), rgba(139,158,255,0.14));
+    border-color: var(--violet);
+    box-shadow: 0 0 26px rgba(176,141,255,0.3);
+}
+
+.slots-mult__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.slots-mult__val {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+}
+
+.slots-mult--hot .slots-mult__val { color: var(--violet); }
+
+@keyframes mult-pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+.slots-mult__val--pop { animation: mult-pop 0.44s cubic-bezier(0.34,1.5,0.5,1); }
+
+/* ── Барабани ─────────────────────────────────────────────── */
+
+.slots-frame {
+    position: relative;
+    padding: 10px;
+    border-radius: 20px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(0,0,0,0.15));
+    border: 1.5px solid var(--stroke-strong);
+    box-shadow: inset 0 2px 20px rgba(0,0,0,0.35);
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+}
+
+.slot-cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
+    overflow: hidden;
+}
+
+body[data-theme="dark"] .slot-cell { background: rgba(255,255,255,0.045); }
+
+/* Падіння символу */
+@keyframes cell-drop {
+    from { transform: translateY(-120%); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+.slot-cell--drop { animation: cell-drop 0.32s cubic-bezier(0.3, 1.3, 0.5, 1) backwards; }
+
+/* Виграшна — спалах і зникнення */
+@keyframes cell-burst {
+    0%   { transform: scale(1); filter: brightness(1); }
+    35%  { transform: scale(1.25); filter: brightness(2.2); }
+    100% { transform: scale(0); opacity: 0; }
+}
+.slot-cell--burst { animation: cell-burst 0.42s ease forwards; }
+
+/* Скатер — світиться */
+.slot-cell--scatter {
+    background: rgba(255,179,64,0.18);
+    box-shadow: inset 0 0 14px rgba(255,179,64,0.4);
+}
+
+@keyframes scatter-glow {
+    0%, 100% { box-shadow: inset 0 0 14px rgba(255,179,64,0.4); }
+    50%      { box-shadow: inset 0 0 24px rgba(255,179,64,0.75); }
+}
+.slot-cell--scatter { animation: scatter-glow 1.6s ease-in-out infinite; }
+
+/* Множник на клітинці */
+.slot-cell__mult {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: linear-gradient(140deg, rgba(176,141,255,0.9), rgba(123,92,246,0.85));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    box-shadow: 0 0 18px rgba(176,141,255,0.7);
+    animation: mult-land 0.42s cubic-bezier(0.34,1.5,0.5,1);
+}
+
+@keyframes mult-land {
+    0%   { transform: scale(0) rotate(-90deg); opacity: 0; }
+    60%  { transform: scale(1.2) rotate(10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); }
+}
+
+/* Банер виграшу поверх поля */
+.slots-winline {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.7);
+    padding: 12px 26px;
+    border-radius: 16px;
+    background: rgba(10, 12, 20, 0.9);
+    border: 2px solid var(--teal);
+    color: var(--teal);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.42s cubic-bezier(0.34,1.5,0.5,1);
+    white-space: nowrap;
+    z-index: 3;
+}
+
+.slots-winline--show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.slots-winline--big {
+    border-color: #FFB340;
+    color: #FFB340;
+    box-shadow: 0 0 40px rgba(255,179,64,0.5);
+}
+
+/* ── Керування ────────────────────────────────────────────── */
+
+.slots-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.slots-controls--locked { opacity: 0.4; pointer-events: none; }
+
+.slots-bet-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.slots-bet { flex: 1; }
+
+.slots-bet-btn {
+    width: 48px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 1px solid var(--stroke);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+    transition: background-color 0.2s ease, transform 0.14s ease;
+}
+
+.slots-bet-btn:active { background: var(--surface-2); transform: scale(0.94); }
+
+/* ── Кнопка спіну ─────────────────────────────────────────── */
+
+.slots-spin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 17px;
+    border-radius: 18px;
+    border: none;
+    background: linear-gradient(135deg, #B08DFF, #7B5CF6);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    box-shadow: 0 8px 24px rgba(155,114,240,0.35);
+    transition: transform 0.14s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+}
+
+.slots-spin-btn svg { width: 21px; height: 21px; transition: transform 0.4s ease; }
+.slots-spin-btn:active { transform: scale(0.98); }
+.slots-spin-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+.slots-spin-btn--spinning svg { animation: spin-rotate 0.9s linear infinite; }
+
+@keyframes spin-rotate {
+    to { transform: rotate(360deg); }
+}
+
+/* У бонусі кнопка золота */
+.slots-spin-btn--free {
+    background: linear-gradient(135deg, #FFC760, #F4901F);
+    box-shadow: 0 8px 24px rgba(244,144,31,0.4);
+}
+
+/* ── Модалка бонусу ───────────────────────────────────────── */
+
+.slots-bonus-modal__burst {
+    font-size: 54px;
+    margin-bottom: 8px;
+    animation: burst-in 0.6s cubic-bezier(0.34,1.6,0.5,1);
+}
+
+@keyframes burst-in {
+    0%   { transform: scale(0) rotate(-40deg); opacity: 0; }
+    60%  { transform: scale(1.3) rotate(12deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.slots-bonus-modal__count {
+    margin: 0 0 10px;
+    font-size: 46px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: #FFB340;
+    line-height: 1;
+}
+
+/* ── Довідка ──────────────────────────────────────────────── */
+
+.slots-help { text-align: left; margin-bottom: 16px; }
+
+.slots-pay-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid var(--stroke);
+}
+.slots-pay-row:first-child { border-top: none; }
+
+.slots-pay-row__sym { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+.slots-pay-row__vals {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    font-size: 11.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.slots-pay-row__vals b { color: var(--ink); font-weight: 700; }
+
+.slots-help__note {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--stroke);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+}
+
+@media (max-width: 380px) {
+    .slots-grid { gap: 4px; }
+    .slot-cell { border-radius: 8px; font-size: 18px; }
+    .slot-cell__mult { font-size: 12px; }
+    .slots-winline { font-size: 21px; padding: 10px 20px; }
+}
