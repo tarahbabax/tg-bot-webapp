@@ -333,3 +333,72 @@ body[data-theme="dark"] .slot-cell { background: rgba(255,255,255,0.045); }
     .slot-cell__mult { font-size: 12px; }
     .slots-winline { font-size: 21px; padding: 10px 20px; }
 }
+
+/* ── Баланс над полем ─────────────────────────────────────── */
+
+.slots-balance {
+    display: flex;
+    gap: 8px;
+}
+
+.slots-balance__item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border-radius: 13px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    color: var(--teal);
+    font-size: 15px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.slots-balance__item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.slots-balance__item--donate { color: var(--violet); }
+
+/* Спалах при зміні балансу */
+@keyframes bal-flash-up {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.12); background: var(--teal-dim); }
+    100% { transform: scale(1); }
+}
+.slots-balance__item--gain { animation: bal-flash-up 0.55s ease; }
+
+/* ── Анімація прокручування барабанів ─────────────────────── */
+
+/*
+ * Під час спіну символи швидко змінюються з розмиттям —
+ * створює відчуття, що барабан реально крутиться.
+ */
+@keyframes reel-blur {
+    0%   { transform: translateY(0);     filter: blur(0); }
+    50%  { transform: translateY(-14px); filter: blur(3px); }
+    100% { transform: translateY(0);     filter: blur(0); }
+}
+
+.slot-cell--spinning {
+    animation: reel-blur 0.14s linear infinite;
+}
+
+/* Стовпчики зупиняються послідовно — як у справжньому автоматі */
+.slots-grid--spinning .slot-cell { will-change: transform, filter; }
+
+/* Поштовх при зупинці стовпчика */
+@keyframes reel-stop {
+    0%   { transform: translateY(-10px); }
+    55%  { transform: translateY(4px); }
+    100% { transform: translateY(0); }
+}
+.slot-cell--stopped { animation: reel-stop 0.26s cubic-bezier(0.34, 1.5, 0.5, 1); }
+
+/* Рамка світиться під час спіну */
+.slots-frame--active {
+    border-color: var(--violet);
+    box-shadow: inset 0 2px 20px rgba(0,0,0,0.35),
+                0 0 26px rgba(176,141,255,0.28);
+}
