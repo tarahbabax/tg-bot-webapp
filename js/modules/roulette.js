@@ -27,6 +27,61 @@ function angleForIndex(index) {
     return index * seg + seg / 2;
 }
 
+
+/* ── Звуки ────────────────────────────────────────────────── */
+
+const RSOUND = {
+    /** Клац при виборі кольору чи валюти. */
+    pick: function () { beep(560, 0.06, "triangle", 0.04); },
+
+    /** Запуск обертання — низький розгін. */
+    launch: function () {
+        beep(180, 0.18, "sawtooth", 0.05);
+        setTimeout(function () { beep(260, 0.14, "triangle", 0.04); }, 120);
+    },
+
+    /**
+     * Стукіт кульки об роздільники. Інтервал зростає —
+     * так само як сповільнюється саме колесо.
+     */
+    ticks: function (duration) {
+        let elapsed = 0;
+        let gap = 55;
+        const timers = [];
+
+        while (elapsed < duration) {
+            const at = elapsed;
+            timers.push(setTimeout(function () {
+                beep(1200 + Math.random() * 220, 0.03, "square", 0.022);
+            }, at));
+            // Що ближче до кінця — то рідші удари
+            gap *= 1.055;
+            elapsed += gap;
+        }
+        return timers;
+    },
+
+    /** Кулька впала в сектор. */
+    land: function () { beep(420, 0.16, "sine", 0.06); },
+
+    win: function () {
+        [523, 659, 784, 1047].forEach(function (f, i) {
+            setTimeout(function () { beep(f, 0.14, "sine", 0.06); }, i * 90);
+        });
+    },
+
+    bigWin: function () {
+        [523, 659, 784, 1047, 1319, 1568].forEach(function (f, i) {
+            setTimeout(function () { beep(f, 0.16, "sine", 0.07); }, i * 95);
+        });
+    },
+
+    lose: function () {
+        beep(220, 0.2, "sine", 0.035);
+        setTimeout(function () { beep(165, 0.28, "sine", 0.03); }, 160);
+    },
+};
+
 function initRoulette() {
     const openBtn  = document.getElementById("openRoulette");
     const backBtn  = document.getElementById("rouletteBack");
@@ -96,11 +151,13 @@ function initRoulette() {
 
     // Валюта
     curCoinsBtn?.addEventListener("click", () => {
+        RSOUND.pick();
         selectedCurrency = "coins";
         curCoinsBtn.classList.add("currency-pill--active");
         curDonateBtn.classList.remove("currency-pill--active");
     });
     curDonateBtn?.addEventListener("click", () => {
+        RSOUND.pick();
         selectedCurrency = "donate";
         curDonateBtn.classList.add("currency-pill--active");
         curCoinsBtn.classList.remove("currency-pill--active");
@@ -109,6 +166,7 @@ function initRoulette() {
     // Колір
     Object.entries(diceButtons).forEach(([color, btn]) => {
         btn?.addEventListener("click", () => {
+            RSOUND.pick();
             selectedColor = selectedColor === color ? null : color;
             Object.entries(diceButtons).forEach(([c, b]) =>
                 b?.classList.toggle("dice-btn--selected", c === selectedColor)
@@ -134,6 +192,10 @@ function initRoulette() {
     // Анімація
     function spinWheelAndBall(segmentIndex) {
         return new Promise((resolve) => {
+            RSOUND.launch();
+            // Стукіт триває майже весь час обертання
+            RSOUND.ticks(4000);
+
             const target = angleForIndex(segmentIndex);
             const wheelSpins = 3 + Math.floor(Math.random() * 2);
             currentWheelAngle += wheelSpins * 360;
@@ -146,6 +208,8 @@ function initRoulette() {
             ballPivot.style.transform  = `rotate(${finalBall}deg)`;
             currentBallAngle = finalBall;
 
+            // Кулька зупинилась
+            setTimeout(function () { RSOUND.land(); }, 4250);
             setTimeout(resolve, 4700);
         });
     }
@@ -168,6 +232,15 @@ function initRoulette() {
             await spinWheelAndBall(data.segment_index);
             syncBalance(data.balance);
             syncBalances();
+
+            if (data.won) {
+                // Зелений і білий — рідкісні, тому окремий фанфар
+                const big = data.payout >= amount * 10;
+                big ? RSOUND.bigWin() : RSOUND.win();
+            } else {
+                RSOUND.lose();
+            }
+
             openWinModal(data.won, data.payout, `Ставка: ${amount} на ${COLOR_LABELS[selectedColor]}`);
         } catch (e) {
             errorEl.textContent = "Помилка з'єднання";
