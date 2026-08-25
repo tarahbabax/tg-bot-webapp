@@ -428,6 +428,46 @@ function resetForm(ids) {
  * вона відкриється з попереднім вибором, і адмін створить товар
  * із налаштуванням, якого не очікував.
  */
+
+/**
+ * Стискає зображення перед відправкою.
+ * Фото з камери телефона — це 3-8 МБ, у base64 стає ще на третину більше.
+ * Такий запит або відхиляється сервером, або обривається по таймауту —
+ * саме тому створення товару падало на телефоні, а на ПК працювало.
+ * Зменшуємо до 800px і 75% якості: візуально те саме, розмір у рази менший.
+ */
+function compressImage(file, maxSize, quality) {
+    maxSize = maxSize || 800;
+    quality = quality || 0.75;
+
+    return new Promise(function (resolve, reject) {
+        const reader = new FileReader();
+        reader.onerror = function () { reject(new Error("read")); };
+        reader.onload = function (ev) {
+            const img = new Image();
+            img.onerror = function () { reject(new Error("decode")); };
+            img.onload = function () {
+                let w = img.width, h = img.height;
+                if (w > h && w > maxSize)      { h = Math.round(h * maxSize / w); w = maxSize; }
+                else if (h > maxSize)          { w = Math.round(w * maxSize / h); h = maxSize; }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+
+                try {
+                    resolve(canvas.toDataURL("image/jpeg", quality));
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 function resetSwitch(id, on) {
     const sw = document.getElementById(id);
     if (!sw) return;
@@ -481,17 +521,27 @@ function initAddItemForms() {
         if (f) f.click();
     });
 
-    on("giftPhotoFile", "change", function (e) {
+    on("giftPhotoFile", "change", async function (e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (ev) {
-            const preview = document.getElementById("giftPhotoPreview");
-            preview.src = ev.target.result;
+
+        const upload  = document.getElementById("giftPhotoUpload");
+        const preview = document.getElementById("giftPhotoPreview");
+        const errEl   = document.getElementById("giftError");
+
+        if (errEl) errEl.textContent = "";
+        if (upload) upload.style.opacity = "0.5";
+
+        try {
+            const dataUrl = await compressImage(file, 800, 0.75);
+            preview.src = dataUrl;
             preview.style.display = "block";
-            document.getElementById("giftPhotoUpload").style.display = "none";
-        };
-        reader.readAsDataURL(file);
+            upload.style.display = "none";
+        } catch (err) {
+            if (errEl) errEl.textContent = t("errPhoto");
+        } finally {
+            if (upload) upload.style.opacity = "";
+        }
     });
 
     on("prefixText", "input", function (e) {
@@ -705,11 +755,14 @@ function openInvItem(item) {
     // вважаємо предмет продаваним, інакше кнопка зникала б у всіх.
     const sellableFlag = !(item.sellable === 0 || item.sellable === "0" || item.sellable === false);
 
-    const backCoins  = Math.floor((item.price_coins  || 0) / 2);
-    const backDonate = Math.floor((item.price_donate || 0) / 2);
-    const parts = [];
-    if (backCoins)  parts.push(backCoins  + " " + t("coinsShort"));
-    if (backDonate) parts.push(backDonate + " " + t("donateShort"));
+    // Повертається саме та валюта, якою платили
+    const paidCur = item.paid_currency || "coins";
+    const paid = item.paid_amount
+        || (paidCur === "coins" ? item.price_coins : item.price_donate) || 0;
+    const refund = Math.floor(paid / 2);
+    const parts = refund
+        ? [refund + " " + (paidCur === "coins" ? t("coinsShort") : t("donateShort"))]
+        : [];
 
     // Навіть якщо повернення 0 (дешевий предмет) — продати можна,
     // просто без нотатки про суму.
@@ -754,15 +807,17 @@ function initInvItemModal() {
         const item = selectedInvItem;
         if (!item) return;
 
-        const backCoins  = Math.floor((item.price_coins  || 0) / 2);
-        const backDonate = Math.floor((item.price_donate || 0) / 2);
-        const parts = [];
-        if (backCoins)  parts.push(backCoins  + " " + t("coinsShort"));
-        if (backDonate) parts.push(backDonate + " " + t("donateShort"));
+        const pc = item.paid_currency || "coins";
+        const pa = item.paid_amount
+            || (pc === "coins" ? item.price_coins : item.price_donate) || 0;
+        const back = Math.floor(pa / 2);
+        const label = back
+            ? t("sellNote") + ": " + back + " " + (pc === "coins" ? t("coinsShort") : t("donateShort"))
+            : "";
 
         const ok = await dialog({
             title: t("sellItem"),
-            text:  item.name + "\n" + t("sellNote") + ": " + parts.join(" + "),
+            text:  item.name + (label ? "\n" + label : ""),
             confirmLabel: t("sellConfirm")
         });
         if (!ok) return;
@@ -771,8 +826,15 @@ function initInvItemModal() {
             const r = await API.sellInventoryItem(item.inv_id);
             closeInvItem();
             selectedInvItem = null;
-            syncBalance(r.balance);
-            toast(t("sold"), "success");
+
+            // Сервер повертає актуальний баланс — беремо саме його,
+            // щоб цифри на всіх екранах одразу збіглися.
+            if (r && r.balance) syncBalance(r.balance);
+
+            const gained = r && r.refund
+                ? " +" + r.refund + " " + (r.currency === "donate" ? t("donateShort") : t("coinsShort"))
+                : "";
+            toast(t("sold") + gained, "success");
             await Promise.all([loadInventory(), loadShopItems(), syncRevisions()]);
         } catch (e) {
             toast(t("errSell"), "error");
