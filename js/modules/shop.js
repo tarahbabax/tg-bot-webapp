@@ -181,18 +181,25 @@ function openItemDetail(item) {
     const hero = document.getElementById("itemDetailHero");
     if (hero) fillItemHero(hero, item);
 
-    document.getElementById("itemDetailName").textContent   = item.name;
+    document.getElementById("itemDetailName").textContent = item.name;
+    document.getElementById("itemDetailType").textContent =
+        item.type === "prefix" ? t("typePrefix") : t("typeGift");
     document.getElementById("itemDetailDesc").textContent   = item.description || "";
-    document.getElementById("itemDetailCoins").textContent  = item.price_coins + " " + t("coinsShort");
-    document.getElementById("itemDetailDonate").textContent = item.price_donate + " " + t("donateShort");
-    document.getElementById("itemDetailStock").textContent  =
-        t("stockLeft") + ": " + item.stock_left + " / " + item.stock_total;
+    document.getElementById("itemDetailCoins").textContent  = item.price_coins;
+    document.getElementById("itemDetailDonate").textContent = item.price_donate;
 
     const isOut   = item.stock_left <= 0;
     const isAdmin = currentAdminLevel >= 5;
 
-    document.getElementById("buyCoinsBtn").style.display   = isOut ? "none" : "flex";
-    document.getElementById("buyDonateBtn").style.display  = isOut ? "none" : "flex";
+    // Залишок як бейдж біля назви
+    const stockEl = document.getElementById("itemDetailStock");
+    stockEl.textContent = isOut
+        ? t("outOfStock")
+        : t("stockLeft") + ": " + item.stock_left + "/" + item.stock_total;
+    stockEl.className = "inv-sheet__badge" + (isOut ? " inv-sheet__badge--locked" : " inv-sheet__badge--stock");
+
+    document.getElementById("buyCoinsBtn").style.display    = isOut ? "none" : "flex";
+    document.getElementById("buyDonateBtn").style.display   = isOut ? "none" : "flex";
     document.getElementById("restockItemBtn").style.display = isAdmin ? "flex" : "none";
     document.getElementById("deleteItemBtn").style.display  = isAdmin ? "flex" : "none";
 
@@ -693,9 +700,10 @@ function openInvItem(item) {
         item.type === "prefix" ? t("typePrefix") : t("typeGift");
     document.getElementById("invItemDesc").textContent = item.description || "";
 
-    // Строге порівняння: SQLite віддає 0/1, і будь-яка нестрога
-    // перевірка тут дала б хибний результат для 0.
-    const sellableFlag = Number(item.sellable) === 1;
+    // Заборона діє ТІЛЬКИ коли сервер явно сказав 0.
+    // Якщо поля немає взагалі (старіший бекенд ще не оновлено) —
+    // вважаємо предмет продаваним, інакше кнопка зникала б у всіх.
+    const sellableFlag = !(item.sellable === 0 || item.sellable === "0" || item.sellable === false);
 
     const backCoins  = Math.floor((item.price_coins  || 0) / 2);
     const backDonate = Math.floor((item.price_donate || 0) / 2);
@@ -703,14 +711,16 @@ function openInvItem(item) {
     if (backCoins)  parts.push(backCoins  + " " + t("coinsShort"));
     if (backDonate) parts.push(backDonate + " " + t("donateShort"));
 
-    const canSell = sellableFlag && parts.length > 0;
+    // Навіть якщо повернення 0 (дешевий предмет) — продати можна,
+    // просто без нотатки про суму.
+    const canSell = sellableFlag;
 
     const note  = document.getElementById("invItemSellNote");
     const badge = document.getElementById("invItemBadge");
     const sellBtn = document.getElementById("invSellBtn");
 
     if (canSell) {
-        note.textContent  = t("sellNote") + ": " + parts.join(" + ");
+        note.textContent  = parts.length ? t("sellNote") + ": " + parts.join(" + ") : "";
         badge.textContent = "";
         badge.className   = "inv-sheet__badge";
         sellBtn.style.display = "flex";
