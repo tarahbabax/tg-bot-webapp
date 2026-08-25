@@ -16,38 +16,6 @@ let selectedCrop = null;
 let farmTicker  = null;
 let localPlots  = [];
 
-/* ── Звук ─────────────────────────────────────────────────── */
-
-let audioCtx = null;
-
-/** Короткий синтезований звук — без зовнішніх файлів. */
-function beep(freq, duration, type, gainValue) {
-    try {
-        if (!audioCtx) {
-            const AC = window.AudioContext || window.webkitAudioContext;
-            if (!AC) return;
-            audioCtx = new AC();
-        }
-        if (audioCtx.state === "suspended") audioCtx.resume();
-
-        const osc  = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type || "sine";
-        osc.frequency.value = freq;
-        gain.gain.value = gainValue || 0.06;
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        const now = audioCtx.currentTime;
-        gain.gain.setValueAtTime(gain.gain.value, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + (duration || 0.12));
-
-        osc.start(now);
-        osc.stop(now + (duration || 0.12));
-    } catch (e) { /* звук не критичний */ }
-}
-
 const SOUND = {
     plant:   function () { beep(420, 0.09, "sine", 0.05); },
     select:  function () { beep(620, 0.06, "triangle", 0.04); },
