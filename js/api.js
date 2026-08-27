@@ -86,6 +86,22 @@ const API = {
     farmUpgrade: (currency) => request("/api/game/farm/upgrade", {
         method: "POST", body: JSON.stringify({ currency }),
     }),
+    durakRooms:  () => request("/api/game/durak/rooms"),
+    durakState:  () => request("/api/game/durak/state"),
+    durakCreate: (deck_size, bet, currency, max_players) =>
+        request("/api/game/durak/create", {
+            method: "POST",
+            body: JSON.stringify({ deck_size, bet, currency, max_players }),
+        }),
+    durakJoin:   (room_id) => request("/api/game/durak/join", {
+        method: "POST", body: JSON.stringify({ room_id }),
+    }),
+    durakLeave:  () => request("/api/game/durak/leave", { method: "POST" }),
+    durakStart:  () => request("/api/game/durak/start", { method: "POST" }),
+    durakMove:   (action, card) => request("/api/game/durak/move", {
+        method: "POST", body: JSON.stringify({ action, card }),
+    }),
+
     slotsState: () => request("/api/game/slots"),
     slotsSpin:  (bet, currency) => request("/api/game/slots/spin", {
         method: "POST", body: JSON.stringify({ bet, currency }),
