@@ -155,16 +155,32 @@ function renderGame(s) {
     pile.style.display = g.deck_left ? "block" : "none";
     document.getElementById("durakDeckCount").textContent = g.deck_left;
 
-    let trumpEl = document.querySelector(".durak-deck__trump");
-    if (!trumpEl && g.trump_card) {
-        trumpEl = el("div", "durak-deck__trump");
-        document.getElementById("durakDeck").appendChild(trumpEl);
+    // Козирна карта — показуємо повністю (номінал + масть),
+    // а не саму лише масть: гравцю важливо бачити, яка карта лежить.
+    const deckBox = document.getElementById("durakDeck");
+    let trumpEl = deckBox.querySelector(".durak-deck__trump");
+
+    if (g.trump_card) {
+        if (!trumpEl) {
+            trumpEl = el("div", "durak-deck__trump");
+            // Вставляємо ПЕРЕД стопкою, щоб порядок у DOM збігався з шарами
+            deckBox.insertBefore(trumpEl, deckBox.firstChild);
+        }
+
+        const rank = g.trump_card[0];
+        const suit = g.trump_card[1];
+
+        trumpEl.innerHTML = "";
+        trumpEl.appendChild(el("span", "durak-deck__trump-rank", RANK_LABEL[rank] || rank));
+        trumpEl.appendChild(el("span", "durak-deck__trump-suit", SUIT_SYMBOL[suit] || suit));
+        trumpEl.style.color = (suit === "H" || suit === "D") ? "#D62828" : "#1A1A22";
+        trumpEl.style.display = "flex";
+    } else if (trumpEl) {
+        trumpEl.style.display = "none";
     }
-    if (trumpEl) {
-        trumpEl.textContent = SUIT_SYMBOL[g.trump] || g.trump;
-        trumpEl.style.color = (g.trump === "H" || g.trump === "D") ? "#D62828" : "#111";
-        trumpEl.style.display = g.deck_left ? "flex" : "none";
-    }
+
+    // Колода скінчилась — козир випрямляється і тьмяніє
+    deckBox.classList.toggle("durak-deck--empty", !g.deck_left);
 
     // Стіл
     const table = document.getElementById("durakTable");
@@ -412,23 +428,53 @@ function initDurak() {
         if (n) n.addEventListener("click", closeCreate);
     });
 
+    /**
+     * Скільки гравців вміщує колода: кожному по 6 карт,
+     * і хоча б одна має лишитись під козир.
+     */
+    function maxPlayersFor(deckSize) {
+        return Math.max(2, Math.floor((deckSize - 1) / 6));
+    }
+
+    function refreshPlayerOptions() {
+        const limit = Math.min(6, maxPlayersFor(dkDeck));
+        document.querySelectorAll("#durakPlayerOpts .durak-opt").forEach(function (b) {
+            const n = parseInt(b.dataset.players, 10);
+            const locked = n > limit;
+            b.disabled = locked;
+            b.classList.toggle("durak-opt--locked", locked);
+            // Якщо обране число стало недоступним — відкочуємо на межу
+            if (locked && dkPlayers === n) {
+                dkPlayers = limit;
+            }
+        });
+        document.querySelectorAll("#durakPlayerOpts .durak-opt").forEach(function (b) {
+            b.classList.toggle("durak-opt--active",
+                parseInt(b.dataset.players, 10) === dkPlayers);
+        });
+    }
+
     document.querySelectorAll("#durakDeckOpts .durak-opt").forEach(function (b) {
         b.addEventListener("click", function () {
             dkDeck = parseInt(b.dataset.deck, 10);
             document.querySelectorAll("#durakDeckOpts .durak-opt").forEach(function (x) {
                 x.classList.toggle("durak-opt--active", x === b);
             });
+            refreshPlayerOptions();
         });
     });
 
     document.querySelectorAll("#durakPlayerOpts .durak-opt").forEach(function (b) {
         b.addEventListener("click", function () {
+            if (b.disabled) return;
             dkPlayers = parseInt(b.dataset.players, 10);
             document.querySelectorAll("#durakPlayerOpts .durak-opt").forEach(function (x) {
                 x.classList.toggle("durak-opt--active", x === b);
             });
         });
     });
+
+    refreshPlayerOptions();
 
     const cc = document.getElementById("durakCurCoins");
     const cd = document.getElementById("durakCurDonate");
