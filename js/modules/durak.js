@@ -1,0 +1,521 @@
+/**
+ * durak.js — карткова гра «Дурак» на кількох гравців.
+ * Стан живе на сервері; клієнт опитує його раз на 1.5с
+ * і перемальовує лише коли щось змінилося.
+ */
+
+const SUIT_SYMBOL = { S: "♠", H: "♥", D: "♦", C: "♣" };
+const RANK_LABEL  = { T: "10" };
+
+let durakState   = null;
+let durakTimer   = null;
+let durakBusy    = false;
+let durakLastHash = "";
+
+// Налаштування створення кімнати
+let dkDeck = 36, dkPlayers = 2, dkCurrency = "coins";
+
+/* ── Звуки ────────────────────────────────────────────────── */
+
+const DSOUND = {
+    play:   function () { beep(500, 0.07, "triangle", 0.045); },
+    beat:   function () { beep(660, 0.09, "sine", 0.05); },
+    take:   function () { beep(240, 0.18, "sawtooth", 0.04); },
+    pass:   function () { beep(780, 0.12, "sine", 0.05); },
+    win:    function () {
+        [523, 659, 784, 1047].forEach(function (f, i) {
+            setTimeout(function () { beep(f, 0.14, "sine", 0.06); }, i * 90);
+        });
+    },
+    lose:   function () { beep(200, 0.3, "sine", 0.035); },
+    joined: function () { beep(620, 0.1, "sine", 0.045); },
+};
+
+/* ── Карта ────────────────────────────────────────────────── */
+
+function cardEl(code, extraClass) {
+    const rank = code[0], suit = code[1];
+    const card = el("div", "card" + (extraClass ? " " + extraClass : ""));
+    if (suit === "H" || suit === "D") card.classList.add("card--red");
+
+    card.appendChild(el("span", "card__rank", RANK_LABEL[rank] || rank));
+    card.appendChild(el("span", "card__suit", SUIT_SYMBOL[suit] || suit));
+    card.dataset.card = code;
+    return card;
+}
+
+/* ── Рендер лобі ──────────────────────────────────────────── */
+
+function renderRooms(rooms) {
+    const box = document.getElementById("durakRooms");
+    if (!box) return;
+    box.innerHTML = "";
+
+    if (!rooms.length) {
+        renderEmpty(box, "durakNoRooms", "durakNoRoomsDesc");
+        return;
+    }
+
+    const frag = document.createDocumentFragment();
+    rooms.forEach(function (r) {
+        const row = el("div", "durak-room");
+        row.appendChild(el("div", "durak-room__deck", String(r.deck_size)));
+
+        const body = el("div", "durak-room__body");
+        body.appendChild(el("p", "durak-room__host", "#" + r.room_id));
+        body.appendChild(el("p", "durak-room__meta",
+            r.players + "/" + r.max_players + " " + t("durakPlayersShort")));
+        row.appendChild(body);
+
+        const bet = el("div", "durak-room__bet");
+        bet.appendChild(el("span", "durak-room__bet-val",
+            r.bet ? r.bet.toLocaleString("uk") : t("durakFree")));
+        bet.appendChild(el("span", "durak-room__slots",
+            r.currency === "donate" ? t("donateShort") : t("coinsShort")));
+        row.appendChild(bet);
+
+        row.addEventListener("click", function () { joinRoom(r.room_id); });
+        frag.appendChild(row);
+    });
+    box.appendChild(frag);
+}
+
+/* ── Рендер очікування ────────────────────────────────────── */
+
+function renderWait(s) {
+    document.getElementById("durakWaitDeck").textContent = s.deck_size;
+    document.getElementById("durakWaitBet").textContent = s.bet
+        ? s.bet.toLocaleString("uk") + " " + (s.currency === "donate" ? t("donateShort") : t("coinsShort"))
+        : t("durakFree");
+    document.getElementById("durakWaitPot").textContent = s.bet
+        ? (s.bet * s.seats.length).toLocaleString("uk")
+        : "—";
+
+    const box = document.getElementById("durakSeats");
+    box.innerHTML = "";
+
+    s.seats.forEach(function (p) {
+        const row = el("div", "durak-seat");
+        const av = el("div", "durak-seat__avatar");
+        const src = safeImageUrl(p.photo);
+        if (src) av.style.backgroundImage = 'url("' + src + '")';
+        row.appendChild(av);
+        row.appendChild(el("span", "durak-seat__name", p.name));
+        if (p.user_id === s.host_id) {
+            row.appendChild(el("span", "durak-seat__host", t("durakHost")));
+        }
+        box.appendChild(row);
+    });
+
+    for (let i = s.seats.length; i < s.max_players; i++) {
+        box.appendChild(el("div", "durak-seat durak-seat--empty", t("durakEmptySeat")));
+    }
+
+    const startBtn = document.getElementById("durakStartBtn");
+    startBtn.style.display = s.is_host ? "flex" : "none";
+    startBtn.disabled = s.seats.length < 2;
+}
+
+/* ── Рендер столу ─────────────────────────────────────────── */
+
+function renderGame(s) {
+    const g = s.game;
+    if (!g) return;
+
+    // Суперники
+    const opps = document.getElementById("durakOpponents");
+    opps.innerHTML = "";
+    g.players.forEach(function (p) {
+        if (p.is_me) return;
+        const box = el("div", "durak-opp"
+            + (p.seat === g.attacker ? " durak-opp--attacker" : "")
+            + (p.seat === g.defender ? " durak-opp--defender" : "")
+            + (p.out ? " durak-opp--out" : ""));
+
+        const av = el("div", "durak-opp__avatar");
+        const src = safeImageUrl(p.photo);
+        if (src) av.style.backgroundImage = 'url("' + src + '")';
+        box.appendChild(av);
+
+        box.appendChild(el("span", "durak-opp__name", p.name));
+
+        const cards = el("span", "durak-opp__cards");
+        cards.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="12" height="16" rx="2" stroke="currentColor" stroke-width="2"/></svg>';
+        cards.appendChild(el("span", null, String(p.cards)));
+        box.appendChild(cards);
+
+        if (p.seat === g.attacker) box.appendChild(el("span", "durak-opp__role", t("durakAtt")));
+        else if (p.seat === g.defender) box.appendChild(el("span", "durak-opp__role", t("durakDef")));
+
+        opps.appendChild(box);
+    });
+
+    // Колода і козир
+    const pile = document.getElementById("durakDeckPile");
+    pile.style.display = g.deck_left ? "block" : "none";
+    document.getElementById("durakDeckCount").textContent = g.deck_left;
+
+    let trumpEl = document.querySelector(".durak-deck__trump");
+    if (!trumpEl && g.trump_card) {
+        trumpEl = el("div", "durak-deck__trump");
+        document.getElementById("durakDeck").appendChild(trumpEl);
+    }
+    if (trumpEl) {
+        trumpEl.textContent = SUIT_SYMBOL[g.trump] || g.trump;
+        trumpEl.style.color = (g.trump === "H" || g.trump === "D") ? "#D62828" : "#111";
+        trumpEl.style.display = g.deck_left ? "flex" : "none";
+    }
+
+    // Стіл
+    const table = document.getElementById("durakTable");
+    table.innerHTML = "";
+    g.table.forEach(function (pair) {
+        const wrap = el("div", "durak-pair");
+        wrap.appendChild(cardEl(pair.a, "card--new"));
+        if (pair.d) wrap.appendChild(cardEl(pair.d, "card--defend card--new"));
+        table.appendChild(wrap);
+    });
+
+    // Моя роль
+    const isAttacker = g.my_seat === g.attacker;
+    const isDefender = g.my_seat === g.defender;
+    const undefended = g.table.filter(function (p) { return !p.d; });
+
+    // Рука
+    const hand = document.getElementById("durakHand");
+    hand.innerHTML = "";
+    g.my_hand.forEach(function (code) {
+        let playable = false;
+        if (isDefender && undefended.length) {
+            playable = canBeat(undefended[0].a, code, g.trump, g.deck_size);
+        } else if (!isDefender) {
+            playable = g.table.length === 0
+                ? isAttacker
+                : rankOnTable(g.table, code);
+        }
+
+        const c = cardEl(code, playable ? "card--playable" : "card--dim");
+        if (playable) {
+            c.addEventListener("click", function () {
+                playCard(code, isDefender ? "defend" : "attack");
+            });
+        }
+        hand.appendChild(c);
+    });
+
+    // Статус
+    const status = document.getElementById("durakStatus");
+    let text = "";
+    if (isDefender) {
+        text = undefended.length ? t("durakYouDefend") : t("durakWaitAttack");
+    } else if (isAttacker) {
+        text = g.table.length ? t("durakYouAttackMore") : t("durakYouAttack");
+    } else {
+        text = t("durakCanAdd");
+    }
+    status.textContent = text;
+    status.classList.toggle("durak-status--my-turn", isDefender || isAttacker);
+
+    // Кнопки
+    document.getElementById("durakTakeBtn").disabled = !(isDefender && g.table.length);
+    document.getElementById("durakPassBtn").disabled =
+        !(!isDefender && g.table.length && undefended.length === 0);
+}
+
+/** Локальна перевірка — щоб підсвітити карти без запиту на сервер. */
+function canBeat(attack, defend, trump, deckSize) {
+    const ranks = deckSize === 52
+        ? ["2","3","4","5","6","7","8","9","T","J","Q","K","A"]
+        : ["6","7","8","9","T","J","Q","K","A"];
+    const aS = attack[1], dS = defend[1];
+    if (aS === dS) return ranks.indexOf(defend[0]) > ranks.indexOf(attack[0]);
+    return dS === trump && aS !== trump;
+}
+
+function rankOnTable(table, card) {
+    for (let i = 0; i < table.length; i++) {
+        if (table[i].a[0] === card[0]) return true;
+        if (table[i].d && table[i].d[0] === card[0]) return true;
+    }
+    return false;
+}
+
+/* ── Дії ──────────────────────────────────────────────────── */
+
+async function playCard(code, action) {
+    if (durakBusy) return;
+    durakBusy = true;
+    try {
+        await API.durakMove(action, code);
+        action === "defend" ? DSOUND.beat() : DSOUND.play();
+        await refreshDurak(true);
+    } catch (e) {
+        toast(String(e.message || "").indexOf("400") !== -1
+            ? t("durakBadMove") : t("errGeneric"), "error");
+    } finally {
+        durakBusy = false;
+    }
+}
+
+async function durakAction(action) {
+    if (durakBusy) return;
+    durakBusy = true;
+    try {
+        await API.durakMove(action, null);
+        action === "take" ? DSOUND.take() : DSOUND.pass();
+        await refreshDurak(true);
+    } catch (e) {
+        toast(t("durakBadMove"), "error");
+    } finally {
+        durakBusy = false;
+    }
+}
+
+async function joinRoom(roomId) {
+    try {
+        await API.durakJoin(roomId);
+        DSOUND.joined();
+        await refreshDurak(true);
+    } catch (e) {
+        const msg = String(e.message || "");
+        toast(msg.indexOf("400") !== -1 ? t("durakJoinFail") : t("errGeneric"), "error");
+    }
+}
+
+/* ── Оновлення стану ──────────────────────────────────────── */
+
+function showDurakView(view) {
+    document.getElementById("durakLobby").style.display = view === "lobby" ? "" : "none";
+    document.getElementById("durakWait").style.display  = view === "wait"  ? "" : "none";
+    document.getElementById("durakGame").style.display  = view === "game"  ? "" : "none";
+}
+
+async function refreshDurak(force) {
+    try {
+        const s = await API.durakState();
+
+        // Перемальовуємо лише коли щось змінилось — інакше
+        // анімації карт смикались би щопівтори секунди.
+        const hash = JSON.stringify(s);
+        if (!force && hash === durakLastHash) return;
+        durakLastHash = hash;
+
+        const prev = durakState;
+        durakState = s;
+
+        if (!s.in_room) {
+            showDurakView("lobby");
+            const r = await API.durakRooms();
+            renderRooms(r.rooms || []);
+            return;
+        }
+
+        if (s.status === "waiting") {
+            showDurakView("wait");
+            renderWait(s);
+            return;
+        }
+
+        showDurakView("game");
+        renderGame(s);
+
+        // Гра щойно завершилась
+        if (s.game && s.game.finished && (!prev || !prev.game || !prev.game.finished)) {
+            showDurakResult(s);
+        }
+    } catch (e) {
+        console.warn("durak:", e.message);
+    }
+}
+
+function showDurakResult(s) {
+    const g = s.game;
+    const me = g.players.find(function (p) { return p.is_me; });
+    const iLost = me && g.loser === me.id;
+
+    const icon = document.getElementById("durakResIcon");
+    icon.className = "durak-res__icon " + (iLost ? "durak-res__icon--lose" : "durak-res__icon--win");
+    icon.textContent = iLost ? "🃏" : "🏆";
+
+    document.getElementById("durakResTitle").textContent =
+        iLost ? t("durakYouLost") : t("durakYouWon");
+
+    // Банк ділиться між усіма, крім дурня
+    const winners = g.players.length - 1;
+    const share = (s.bet && winners) ? Math.floor(s.bet * g.players.length / winners) : 0;
+
+    const amt = document.getElementById("durakResAmount");
+    amt.className = "durak-res__amount " + (iLost ? "durak-res__amount--lose" : "durak-res__amount--win");
+    amt.textContent = s.bet
+        ? (iLost ? "−" + s.bet.toLocaleString("uk") : "+" + share.toLocaleString("uk"))
+          + " " + (s.currency === "donate" ? t("donateShort") : t("coinsShort"))
+        : "";
+
+    document.getElementById("durakResText").textContent =
+        iLost ? t("durakLostText") : t("durakWonText");
+
+    iLost ? DSOUND.lose() : DSOUND.win();
+
+    document.getElementById("durakResBackdrop").classList.add("modal-backdrop--open");
+    document.getElementById("durakResModal").classList.add("center-modal--open");
+}
+
+function startDurakPolling() {
+    if (durakTimer) clearInterval(durakTimer);
+    durakTimer = setInterval(function () {
+        if (document.hidden) return;
+        const screen = document.getElementById("durakScreen");
+        if (!screen || !screen.classList.contains("fullscreen--open")) return;
+        refreshDurak(false);
+    }, 1500);
+}
+
+function stopDurakPolling() {
+    if (durakTimer) { clearInterval(durakTimer); durakTimer = null; }
+}
+
+/* ── Ініціалізація ────────────────────────────────────────── */
+
+function initDurak() {
+    const openBtn = document.getElementById("openDurak");
+    const screen  = document.getElementById("durakScreen");
+    if (!openBtn || !screen) return;
+
+    openBtn.addEventListener("click", function () {
+        screen.classList.add("fullscreen--open");
+        durakLastHash = "";
+        refreshDurak(true);
+        startDurakPolling();
+    });
+
+    const back = document.getElementById("durakBack");
+    if (back) back.addEventListener("click", function () {
+        screen.classList.remove("fullscreen--open");
+        stopDurakPolling();
+        snapScreensToActiveTab();
+    });
+
+    // Створення кімнати
+    const openCreate = document.getElementById("durakCreateOpen");
+    if (openCreate) openCreate.addEventListener("click", function () {
+        document.getElementById("durakCreateError").textContent = "";
+        document.getElementById("durakCreateBackdrop").classList.add("modal-backdrop--open");
+        document.getElementById("durakCreateModal").classList.add("center-modal--open");
+    });
+
+    const closeCreate = function () {
+        document.getElementById("durakCreateBackdrop").classList.remove("modal-backdrop--open");
+        document.getElementById("durakCreateModal").classList.remove("center-modal--open");
+    };
+    ["durakCreateClose", "durakCreateBackdrop"].forEach(function (id) {
+        const n = document.getElementById(id);
+        if (n) n.addEventListener("click", closeCreate);
+    });
+
+    document.querySelectorAll("#durakDeckOpts .durak-opt").forEach(function (b) {
+        b.addEventListener("click", function () {
+            dkDeck = parseInt(b.dataset.deck, 10);
+            document.querySelectorAll("#durakDeckOpts .durak-opt").forEach(function (x) {
+                x.classList.toggle("durak-opt--active", x === b);
+            });
+        });
+    });
+
+    document.querySelectorAll("#durakPlayerOpts .durak-opt").forEach(function (b) {
+        b.addEventListener("click", function () {
+            dkPlayers = parseInt(b.dataset.players, 10);
+            document.querySelectorAll("#durakPlayerOpts .durak-opt").forEach(function (x) {
+                x.classList.toggle("durak-opt--active", x === b);
+            });
+        });
+    });
+
+    const cc = document.getElementById("durakCurCoins");
+    const cd = document.getElementById("durakCurDonate");
+    if (cc) cc.addEventListener("click", function () {
+        dkCurrency = "coins";
+        cc.classList.add("currency-pill--active");
+        cd.classList.remove("currency-pill--active");
+    });
+    if (cd) cd.addEventListener("click", function () {
+        dkCurrency = "donate";
+        cd.classList.add("currency-pill--active");
+        cc.classList.remove("currency-pill--active");
+    });
+
+    const submit = document.getElementById("durakCreateSubmit");
+    if (submit) submit.addEventListener("click", async function () {
+        const errEl = document.getElementById("durakCreateError");
+        errEl.textContent = "";
+        const bet = parseInt(document.getElementById("durakBetInput").value, 10) || 0;
+
+        try {
+            await API.durakCreate(dkDeck, bet, dkCurrency, dkPlayers);
+            closeCreate();
+            await refreshDurak(true);
+        } catch (e) {
+            const msg = String(e.message || "");
+            errEl.textContent = msg.indexOf("400") !== -1 ? t("errFunds") : t("errGeneric");
+        }
+    });
+
+    // Дії в кімнаті
+    const leave = document.getElementById("durakLeaveBtn");
+    if (leave) leave.addEventListener("click", async function () {
+        const ok = await dialog({ title: t("durakLeave"), text: t("durakLeaveText") });
+        if (!ok) return;
+        await API.durakLeave();
+        await refreshDurak(true);
+    });
+
+    const start = document.getElementById("durakStartBtn");
+    if (start) start.addEventListener("click", async function () {
+        try {
+            await API.durakStart();
+            await refreshDurak(true);
+        } catch (e) {
+            toast(t("durakNeedPlayers"), "error");
+        }
+    });
+
+    // Дії на столі
+    const take = document.getElementById("durakTakeBtn");
+    if (take) take.addEventListener("click", function () { durakAction("take"); });
+    const pass = document.getElementById("durakPassBtn");
+    if (pass) pass.addEventListener("click", function () { durakAction("pass"); });
+
+    // Результат
+    const resOk = document.getElementById("durakResOk");
+    if (resOk) resOk.addEventListener("click", async function () {
+        document.getElementById("durakResBackdrop").classList.remove("modal-backdrop--open");
+        document.getElementById("durakResModal").classList.remove("center-modal--open");
+        durakLastHash = "";
+        await refreshDurak(true);
+        loadFromServer();
+    });
+
+    // Довідка
+    const help = document.getElementById("durakHelp");
+    if (help) help.addEventListener("click", function () {
+        const body = document.getElementById("durakHelpBody");
+        body.innerHTML = "";
+        [t("durakRule1"), t("durakRule2"), t("durakRule3"), t("durakRule4"), t("durakRule5")]
+            .forEach(function (text, i) {
+                const row = el("div", "mines-help__row");
+                row.appendChild(el("span", "mines-help__num", String(i + 1)));
+                row.appendChild(el("p", "mines-help__text", text));
+                body.appendChild(row);
+            });
+        document.getElementById("durakHelpBackdrop").classList.add("modal-backdrop--open");
+        document.getElementById("durakHelpModal").classList.add("center-modal--open");
+    });
+
+    const closeHelp = function () {
+        document.getElementById("durakHelpBackdrop").classList.remove("modal-backdrop--open");
+        document.getElementById("durakHelpModal").classList.remove("center-modal--open");
+    };
+    ["durakHelpClose", "durakHelpOk", "durakHelpBackdrop"].forEach(function (id) {
+        const n = document.getElementById(id);
+        if (n) n.addEventListener("click", closeHelp);
+    });
+}
