@@ -140,7 +140,12 @@ function renderGame(s) {
         box.appendChild(el("span", "durak-opp__name", p.name));
 
         const cards = el("span", "durak-opp__cards");
-        cards.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="12" height="16" rx="2" stroke="currentColor" stroke-width="2"/></svg>';
+        // Стопка карт — дві зміщені рамки, читається краще за одну
+        cards.innerHTML =
+            '<svg viewBox="0 0 24 24" fill="none">' +
+            '<rect x="7" y="4" width="11" height="15" rx="1.8" stroke="currentColor" stroke-width="1.8"/>' +
+            '<path d="M14.5 4V3.2A1.2 1.2 0 0013.3 2H6.2A1.2 1.2 0 005 3.2v11.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' +
+            '</svg>';
         cards.appendChild(el("span", null, String(p.cards)));
         box.appendChild(cards);
 
