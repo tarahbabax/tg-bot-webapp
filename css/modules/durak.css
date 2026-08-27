@@ -526,3 +526,19 @@
     pointer-events: none;
     text-decoration: line-through;
 }
+
+/* Іконка стопки карт у суперника */
+.durak-opp__cards svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}
+
+/* Хто зараз ходить — помітніше */
+.durak-opp--attacker,
+.durak-opp--defender {
+    box-shadow: 0 0 14px rgba(0,0,0,0.2);
+}
+
+.durak-opp--attacker { box-shadow: 0 0 16px rgba(255,112,112,0.3); }
+.durak-opp--defender { box-shadow: 0 0 16px rgba(61,217,200,0.3); }
