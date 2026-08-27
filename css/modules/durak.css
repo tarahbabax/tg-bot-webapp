@@ -275,46 +275,86 @@
 .durak-deck {
     position: relative;
     flex-shrink: 0;
-    width: 46px;
-    height: 66px;
+    /* Ширший за карту — щоб козир, повернутий боком,
+       виглядав з-під колоди і не обрізався */
+    width: 76px;
+    height: 72px;
 }
+
+/*
+ * Козир лежить ПІД колодою, повернутий на 90°.
+ * Раніше тут стояв z-index:-1 — через це карта йшла за фон
+ * контейнера і не була видна взагалі. Тепер шари задані явно:
+ * козир нижче (z-index 1), стопка колоди зверху (z-index 2).
+ */
+.durak-deck__trump {
+    position: absolute;
+    left: 26px;
+    top: 3px;
+    width: 44px;
+    height: 64px;
+    border-radius: 7px;
+    background: #FDFDFD;
+    border: 1px solid rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    font-weight: 800;
+    line-height: 1;
+    color: #1A1A22;
+    transform: rotate(90deg);
+    transform-origin: center;
+    z-index: 1;
+}
+
+.durak-deck__trump-rank { font-size: 15px; }
+.durak-deck__trump-suit { font-size: 14px; }
 
 .durak-deck__pile {
     position: absolute;
-    inset: 0;
-    border-radius: 8px;
+    left: 0;
+    top: 3px;
+    width: 44px;
+    height: 64px;
+    border-radius: 7px;
     background: linear-gradient(140deg, #2E4A8C, #1B2E5C);
     border: 1.5px solid rgba(255,255,255,0.22);
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.25), 6px 6px 0 rgba(0,0,0,0.15);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.28), 4px 4px 0 rgba(0,0,0,0.16);
+    z-index: 2;
 }
 
-/* Козирна карта під колодою */
-.durak-deck__trump {
+/* Візерунок на сорочці — щоб колода не була просто плямою */
+.durak-deck__pile::after {
+    content: "";
     position: absolute;
-    left: 12px;
-    top: 8px;
-    width: 46px;
-    height: 66px;
-    border-radius: 8px;
-    background: #fff;
-    color: #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    font-weight: 800;
-    transform: rotate(90deg);
-    z-index: -1;
+    inset: 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.07) 0 3px,
+        transparent 3px 6px
+    );
 }
 
 .durak-deck__count {
     position: absolute;
-    bottom: -18px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: -17px;
+    left: 22px;
     font-size: 11px;
     font-weight: 800;
     color: var(--muted);
+    z-index: 3;
+}
+
+/* Козир, коли колода скінчилась — лишається як нагадування масті */
+.durak-deck--empty .durak-deck__trump {
+    opacity: 0.55;
+    left: 0;
+    transform: rotate(0deg);
 }
 
 .durak-table {
@@ -478,4 +518,11 @@
     .card__suit { font-size: 13px; }
     .durak-pair { width: 38px; height: 56px; }
     .durak-opp { min-width: 64px; padding: 6px 9px; }
+}
+
+/* Недоступна кількість гравців для обраної колоди */
+.durak-opt--locked {
+    opacity: 0.3;
+    pointer-events: none;
+    text-decoration: line-through;
 }
