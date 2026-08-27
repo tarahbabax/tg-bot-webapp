@@ -184,8 +184,16 @@ function renderGame(s) {
         trumpEl.style.display = "none";
     }
 
-    // Колода скінчилась — козир випрямляється і тьмяніє
     deckBox.classList.toggle("durak-deck--empty", !g.deck_left);
+
+    // Смуга козиря — масть видно завжди, навіть коли колода порожня
+    const tb = document.getElementById("durakTrumpSuit");
+    if (tb) {
+        tb.textContent = SUIT_SYMBOL[g.trump] || g.trump;
+        const red = g.trump === "H" || g.trump === "D";
+        tb.className = "durak-trumpbar__suit "
+            + (red ? "durak-trumpbar__suit--red" : "durak-trumpbar__suit--black");
+    }
 
     // Стіл
     const table = document.getElementById("durakTable");
@@ -269,7 +277,7 @@ async function playCard(code, action) {
     try {
         await API.durakMove(action, code);
         action === "defend" ? DSOUND.beat() : DSOUND.play();
-        await refreshDurak(true);
+        await refreshNow();
     } catch (e) {
         toast(String(e.message || "").indexOf("400") !== -1
             ? t("durakBadMove") : t("errGeneric"), "error");
@@ -284,7 +292,7 @@ async function durakAction(action) {
     try {
         await API.durakMove(action, null);
         action === "take" ? DSOUND.take() : DSOUND.pass();
-        await refreshDurak(true);
+        await refreshNow();
     } catch (e) {
         toast(t("durakBadMove"), "error");
     } finally {
@@ -296,7 +304,7 @@ async function joinRoom(roomId) {
     try {
         await API.durakJoin(roomId);
         DSOUND.joined();
-        await refreshDurak(true);
+        await refreshNow();
     } catch (e) {
         const msg = String(e.message || "");
         toast(msg.indexOf("400") !== -1 ? t("durakJoinFail") : t("errGeneric"), "error");
@@ -315,21 +323,29 @@ async function refreshDurak(force) {
     try {
         const s = await API.durakState();
 
-        // Перемальовуємо лише коли щось змінилось — інакше
-        // анімації карт смикались би щопівтори секунди.
-        const hash = JSON.stringify(s);
+        if (!s.in_room) {
+            // У лобі стан завжди однаковий ({in_room:false}), тому
+            // хешувати треба СПИСОК КІМНАТ — інакше нові кімнати
+            // інших гравців ніколи не з'являлись би на екрані.
+            showDurakView("lobby");
+            const r = await API.durakRooms();
+            const rooms = r.rooms || [];
+            const hash = "lobby:" + JSON.stringify(rooms);
+            if (force || hash !== durakLastHash) {
+                durakLastHash = hash;
+                renderRooms(rooms);
+            }
+            durakState = s;
+            return;
+        }
+
+        // У кімнаті хешуємо сам стан — щоб карти не смикались
+        const hash = "room:" + JSON.stringify(s);
         if (!force && hash === durakLastHash) return;
         durakLastHash = hash;
 
         const prev = durakState;
         durakState = s;
-
-        if (!s.in_room) {
-            showDurakView("lobby");
-            const r = await API.durakRooms();
-            renderRooms(r.rooms || []);
-            return;
-        }
 
         if (s.status === "waiting") {
             showDurakView("wait");
@@ -340,7 +356,6 @@ async function refreshDurak(force) {
         showDurakView("game");
         renderGame(s);
 
-        // Гра щойно завершилась
         if (s.game && s.game.finished && (!prev || !prev.game || !prev.game.finished)) {
             showDurakResult(s);
         }
@@ -383,12 +398,24 @@ function showDurakResult(s) {
 
 function startDurakPolling() {
     if (durakTimer) clearInterval(durakTimer);
+
+    // 1 секунда: у грі на кількох людей затримка помітна одразу,
+    // а запит легкий — сервер віддає лише свій стан.
     durakTimer = setInterval(function () {
         if (document.hidden) return;
         const screen = document.getElementById("durakScreen");
         if (!screen || !screen.classList.contains("fullscreen--open")) return;
         refreshDurak(false);
-    }, 1500);
+    }, 1000);
+}
+
+/**
+ * Після власної дії оновлюємо одразу, не чекаючи наступного тику,
+ * і ще раз за пів секунди — щоб підхопити реакцію суперника.
+ */
+async function refreshNow() {
+    await refreshDurak(true);
+    setTimeout(function () { refreshDurak(false); }, 500);
 }
 
 function stopDurakPolling() {
@@ -503,7 +530,7 @@ function initDurak() {
         try {
             await API.durakCreate(dkDeck, bet, dkCurrency, dkPlayers);
             closeCreate();
-            await refreshDurak(true);
+            await refreshNow();
         } catch (e) {
             const msg = String(e.message || "");
             errEl.textContent = msg.indexOf("400") !== -1 ? t("errFunds") : t("errGeneric");
@@ -516,14 +543,14 @@ function initDurak() {
         const ok = await dialog({ title: t("durakLeave"), text: t("durakLeaveText") });
         if (!ok) return;
         await API.durakLeave();
-        await refreshDurak(true);
+        await refreshNow();
     });
 
     const start = document.getElementById("durakStartBtn");
     if (start) start.addEventListener("click", async function () {
         try {
             await API.durakStart();
-            await refreshDurak(true);
+            await refreshNow();
         } catch (e) {
             toast(t("durakNeedPlayers"), "error");
         }
