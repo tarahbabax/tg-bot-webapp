@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initMines();
     initSlots();
     initDurak();
+    initSocial();
 
     // 8. Дані з сервера — останнім, вже на готовий UI
     loadFromServer();
