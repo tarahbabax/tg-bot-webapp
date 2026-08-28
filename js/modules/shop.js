@@ -703,12 +703,29 @@ function initTopVisibility() {
 
     const save = document.getElementById("visSave");
     if (save) save.addEventListener("click", async function () {
-        savePrefs({ topVisibility: topVisSelected });
+        save.disabled = true;
         try {
+            // Спершу сервер: саме він вирішує, як тебе показувати в топах.
+            // Локальне збереження без серверного нічого не змінює,
+            // тому раніше «збережено локально» вводило в оману.
             await API.saveSettings({ top_visibility: topVisSelected });
+            savePrefs({ topVisibility: topVisSelected });
+
+            const res = document.getElementById("visResult");
+            if (res) {
+                res.textContent = "✓ " + t("saved");
+                res.style.color = "var(--teal)";
+            }
             toast(t("saved"), "success");
         } catch (e) {
-            toast(t("savedLocal"), "info");
+            const res = document.getElementById("visResult");
+            if (res) {
+                res.textContent = t("errGeneric");
+                res.style.color = "var(--red)";
+            }
+            toast(t("errGeneric"), "error");
+        } finally {
+            save.disabled = false;
         }
     });
 }
