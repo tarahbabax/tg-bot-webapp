@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/modules/mines.css" />
     <link rel="stylesheet" href="css/modules/slots.css" />
     <link rel="stylesheet" href="css/modules/durak.css" />
+    <link rel="stylesheet" href="css/modules/social.css" />
 </head>
 <body data-theme="dark">
     <div class="page">
@@ -37,6 +38,10 @@
                             <p class="greeting__name" id="homeGreetingName">Користувач!</p>
                         </div>
                         <div class="home-header__actions">
+                            <button class="icon-btn icon-btn--bell" id="notifOpen" type="button" aria-label="Сповіщення">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.2a5.6 5.6 0 00-5.6 5.6c0 4.2-1.4 5.6-1.4 5.6h14s-1.4-1.4-1.4-5.6A5.6 5.6 0 0012 3.2zM13.7 19a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span class="notif-dot" id="notifDot"></span>
+                            </button>
                             <button class="theme-btn" id="themeToggle" type="button" aria-label="Змінити тему">
                                 <svg class="theme-btn__svg" viewBox="0 0 24 24" fill="none">
                                     <mask id="moonMask">
@@ -913,6 +918,23 @@
 
 
 
+
+
+        <!-- СПОВІЩЕННЯ -->
+        <div class="fullscreen" id="notifScreen">
+            <header class="fullscreen__header">
+                <button class="fullscreen__back" id="notifBack" type="button" aria-label="Назад">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="fullscreen__title" data-i18n="notifications">Сповіщення</p>
+                <button class="fullscreen__back" id="notifClear" type="button" aria-label="Прочитати всі">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l4 4L20 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </header>
+            <div class="fullscreen__body">
+                <div class="notif-list" id="notifList"></div>
+            </div>
+        </div>
 
         <!-- ДУРАК -->
         <div class="fullscreen" id="durakScreen">
@@ -1825,6 +1847,7 @@
     <script src="js/modules/mines.js"></script>
     <script src="js/modules/slots.js"></script>
     <script src="js/modules/durak.js"></script>
+    <script src="js/modules/social.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
