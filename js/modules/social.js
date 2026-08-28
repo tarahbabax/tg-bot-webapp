@@ -310,11 +310,33 @@ function initSocial() {
 
         const clear = document.getElementById("notifClear");
         if (clear) clear.addEventListener("click", async function () {
+            const box = document.getElementById("notifList");
+            const cards = box ? box.querySelectorAll(".notif-card") : [];
+            if (!cards.length) return;
+
+            const ok = await dialog({
+                title: t("notifClearTitle"),
+                text:  t("notifClearText"),
+            });
+            if (!ok) return;
+
+            // Картки змітаються вправо по черзі — видно, що саме сталось
+            cards.forEach(function (c, i) {
+                c.style.animationDelay = (i * 45) + "ms";
+                c.classList.add("notif-card--sweep");
+            });
+
             try {
-                await API.socialRead();
+                await API.notifClear();
                 setNotifDot(0);
-                await loadNotifications();
-            } catch (e) { /* тихо */ }
+                // Чекаємо кінця анімації, потім показуємо порожній стан
+                setTimeout(function () { loadNotifications(); },
+                           300 + cards.length * 45);
+                toast(t("notifCleared"), "success");
+            } catch (e) {
+                cards.forEach(function (c) { c.classList.remove("notif-card--sweep"); });
+                toast(t("errGeneric"), "error");
+            }
         });
     }
 
