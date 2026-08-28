@@ -1,0 +1,226 @@
+/* ══════════════════════════════════════════════════════════════
+   tops.css — рейтинги гравців
+   ══════════════════════════════════════════════════════════════ */
+
+.tops-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Перемикач категорій ──────────────────────────────────── */
+
+.tops-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 5px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+}
+
+.tops-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px;
+    border-radius: 12px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    transition: background-color 0.22s ease, color 0.22s ease;
+}
+
+.tops-tab svg { width: 19px; height: 19px; }
+
+.tops-tab--active { background: var(--accent-dim); color: var(--accent); }
+
+/* Кожна категорія має свій колір, коли активна */
+.tops-tab[data-kind="coins"].tops-tab--active {
+    background: var(--teal-dim);
+    color: var(--teal);
+}
+.tops-tab[data-kind="donate"].tops-tab--active {
+    background: var(--violet-dim);
+    color: var(--violet);
+}
+
+/* ── Своє місце ───────────────────────────────────────────── */
+
+.tops-me {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 15px;
+    border-radius: 16px;
+    background: var(--accent-dim);
+    border: 1.5px solid var(--accent);
+}
+
+.tops-me:empty { display: none; }
+
+.tops-me__rank {
+    flex-shrink: 0;
+    min-width: 42px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.tops-me__label {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.tops-me__value {
+    flex-shrink: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Список ───────────────────────────────────────────────── */
+
+.tops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 13px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    transition: transform 0.14s ease, border-color 0.2s ease;
+}
+
+.top-row:active { transform: scale(0.99); }
+
+.top-row--me {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+/* ── Місце ────────────────────────────────────────────────── */
+
+.top-row__rank {
+    flex-shrink: 0;
+    width: 30px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Перші три — медалі замість цифр */
+.top-row__medal {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 900;
+    color: #1A1A1F;
+}
+
+.top-row__medal--1 {
+    background: linear-gradient(135deg, #FFD86B, #E8A317);
+    box-shadow: 0 0 14px rgba(255, 200, 60, 0.4);
+}
+.top-row__medal--2 {
+    background: linear-gradient(135deg, #E3E7EE, #A8B0BE);
+}
+.top-row__medal--3 {
+    background: linear-gradient(135deg, #E0A672, #B5713C);
+}
+
+/* ── Гравець ──────────────────────────────────────────────── */
+
+.top-row__avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--surface-2);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--stroke-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+}
+
+.top-row__avatar svg { width: 20px; height: 20px; }
+
+/* Анонімний — приглушений вигляд */
+.top-row--anon .top-row__avatar {
+    background: var(--surface-3);
+    border-style: dashed;
+}
+
+.top-row__body { flex: 1; min-width: 0; }
+
+.top-row__name {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-row--anon .top-row__name {
+    color: var(--muted);
+    font-style: italic;
+}
+
+.top-row__tag {
+    margin: 1px 0 0;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-row__value {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.top-row__value svg { width: 14px; height: 14px; }
+
+.top-row__value--level  { color: var(--accent); }
+.top-row__value--coins  { color: var(--teal); }
+.top-row__value--donate { color: var(--violet); }
+
+@media (max-width: 360px) {
+    .top-row { gap: 8px; padding: 9px 11px; }
+    .top-row__avatar { width: 32px; height: 32px; }
+    .tops-tab { font-size: 10.5px; }
+}
