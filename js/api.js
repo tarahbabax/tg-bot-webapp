@@ -106,6 +106,7 @@ const API = {
     socialUnread:        () => request("/api/social/unread"),
     socialNotifications: () => request("/api/social/notifications"),
     socialRead:          () => request("/api/social/read", { method: "POST" }),
+    notifClear:          () => request("/api/social/notifications/clear", { method: "POST" }),
     notifDelete: (notif_id) => request("/api/social/notifications/delete", {
         method: "POST", body: JSON.stringify({ notif_id }),
     }),
