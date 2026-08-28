@@ -103,6 +103,8 @@ const API = {
         method: "POST", body: JSON.stringify({ user_id }),
     }),
 
+    getTops: (kind) => request("/api/tops?kind=" + encodeURIComponent(kind || "level")),
+
     socialUnread:        () => request("/api/social/unread"),
     socialNotifications: () => request("/api/social/notifications"),
     socialRead:          () => request("/api/social/read", { method: "POST" }),
