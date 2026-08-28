@@ -125,6 +125,20 @@ const API = {
         method: "POST", body: JSON.stringify({ user_id }),
     }),
 
+    mafiaRooms:  () => request("/api/game/mafia/rooms"),
+    mafiaState:  () => request("/api/game/mafia/state"),
+    mafiaCreate: (bet, currency, max_players) => request("/api/game/mafia/create", {
+        method: "POST", body: JSON.stringify({ bet, currency, max_players }),
+    }),
+    mafiaJoin:   (room_id) => request("/api/game/mafia/join", {
+        method: "POST", body: JSON.stringify({ room_id }),
+    }),
+    mafiaLeave:  () => request("/api/game/mafia/leave", { method: "POST" }),
+    mafiaStart:  () => request("/api/game/mafia/start", { method: "POST" }),
+    mafiaAction: (action, target) => request("/api/game/mafia/action", {
+        method: "POST", body: JSON.stringify({ action, target }),
+    }),
+
     durakRooms:  () => request("/api/game/durak/rooms"),
     durakState:  () => request("/api/game/durak/state"),
     durakCreate: (deck_size, bet, currency, max_players) =>
