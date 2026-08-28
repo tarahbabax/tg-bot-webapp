@@ -569,3 +569,81 @@
 
 .durak-trumpbar__suit--red { color: #E23B3B; }
 .durak-trumpbar__suit--black { color: var(--ink); }
+
+/* ══════════════════════════════════════════════════════════════
+   Статус «Бито» — хто підтвердив, а хто ще думає
+   ══════════════════════════════════════════════════════════════ */
+
+.durak-opp__pass {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    padding: 2px 7px;
+    border-radius: 7px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.durak-opp__pass svg { width: 9px; height: 9px; }
+
+.durak-opp__pass--done {
+    background: var(--teal-dim);
+    color: var(--teal);
+}
+
+.durak-opp__pass--wait {
+    background: var(--amber-dim);
+    color: var(--amber);
+}
+
+/* Картка того, хто вже сказав «бито» — приглушена */
+.durak-opp--passed {
+    opacity: 0.72;
+    border-color: rgba(61, 217, 200, 0.4);
+}
+
+/* На кого чекаємо — легко пульсує */
+.durak-opp--waiting {
+    border-color: rgba(255, 179, 64, 0.5);
+    animation: opp-waiting 1.8s ease-in-out infinite;
+}
+
+@keyframes opp-waiting {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 179, 64, 0.32); }
+    50%      { box-shadow: 0 0 0 5px rgba(255, 179, 64, 0); }
+}
+
+/* Три крапки «думає» */
+.durak-think {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.durak-think i {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: think-bounce 1.2s ease-in-out infinite;
+}
+
+.durak-think i:nth-child(2) { animation-delay: 0.15s; }
+.durak-think i:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes think-bounce {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30%           { opacity: 1;    transform: translateY(-2px); }
+}
+
+/* Кнопка «Бито» після натискання */
+.durak-act--done {
+    border-color: var(--teal) !important;
+    background: var(--teal-dim);
+    color: var(--teal) !important;
+    opacity: 1 !important;
+}
