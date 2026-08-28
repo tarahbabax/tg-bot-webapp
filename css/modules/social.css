@@ -163,26 +163,30 @@
 /* ── Бейдж статусу дружби у списку ────────────────────────── */
 
 /*
- * Той самий вигляд, що й бейдж «ТИ»: суцільна заливка,
- * білий текст, однакові розміри — щоб у списку все читалось
- * як єдина система міток, а не набір різних стилів.
+ * Точно той самий вигляд, що й бейдж «ТИ»: щільна заливка,
+ * білий напівжирний текст, м'яко заокруглені кути.
  */
-.friend-badge {
+.friend-badge,
+.user-item__me-badge {
     flex-shrink: 0;
-    padding: 5px 10px;
-    border-radius: 9px;
+    padding: 6px 12px;
+    border-radius: 11px;
     color: #fff;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     white-space: nowrap;
-    line-height: 1.2;
+    line-height: 1.15;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
+.user-item__me-badge    { background: var(--accent); }
 .friend-badge--friends  { background: var(--teal); }
-.friend-badge--pending  { background: var(--amber); color: #1A1A1F; }
 .friend-badge--incoming { background: var(--violet); }
+
+/* Бурштиновий світлий — текст робимо темним для контрасту */
+.friend-badge--pending  { background: var(--amber); color: #17171C; }
 
 /* ── Кнопка дружби в картці ───────────────────────────────── */
 
@@ -279,3 +283,35 @@
  */
 #userCardBackdrop { z-index: 40; }
 #userCardModal    { z-index: 41; }
+
+
+/* ── Кнопка «Очистити все» ────────────────────────────────── */
+
+.notif-broom {
+    color: var(--muted);
+    transition: color 0.2s ease, background-color 0.2s ease,
+                border-color 0.2s ease, transform 0.3s cubic-bezier(0.34,1.5,0.5,1);
+}
+
+.notif-broom svg { width: 19px; height: 19px; }
+
+.notif-broom:active {
+    color: var(--amber);
+    border-color: rgba(255,179,64,0.5);
+    background: var(--amber-dim);
+    /* Легкий замах, ніби змітаємо */
+    transform: rotate(-18deg) scale(0.92);
+}
+
+.notif-broom:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* Картка зникає при очищенні */
+@keyframes notif-sweep {
+    to { transform: translateX(120%); opacity: 0; }
+}
+.notif-card--sweep {
+    animation: notif-sweep 0.34s cubic-bezier(0.4, 0, 0.9, 0.4) forwards;
+}
