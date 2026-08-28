@@ -546,17 +546,8 @@
     border-color: var(--accent);
 }
 
-.user-item__me-badge {
-    flex-shrink: 0;
-    padding: 5px 10px;
-    border-radius: 9px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 10.5px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
+/* Бейдж «ТИ» стилізується разом із бейджами дружби —
+   єдине правило живе в social.css, щоб вони не розходились. */
 
 .user-item__bio {
     margin: 3px 0 0;
