@@ -316,6 +316,16 @@ async function loadUsers() {
             item.appendChild(body);
 
             if (isMe) item.appendChild(el("span", "user-item__me-badge", t("youBadge")));
+
+            // Статус дружби поруч із рівнем
+            const fs = u.friend_status;
+            if (!isMe && fs && fs !== "none") {
+                const label = fs === "friends" ? t("tagFriends")
+                    : fs === "pending_out" ? t("tagPending")
+                    : t("tagIncoming");
+                item.appendChild(el("span", "friend-tag friend-tag--" + fs, label));
+            }
+
             item.appendChild(el("span", "user-item__level", "Lv " + (u.level || 1)));
 
             item.addEventListener("click", function () { openUserCard(u); });
@@ -342,6 +352,26 @@ function openUserCard(u) {
 
     // Опис показуємо лише якщо він є — інакше блок згортається
     document.getElementById("userCardBio").textContent = u.bio || "";
+
+    // Кнопка дружби залежить від поточного статусу
+    if (typeof renderFriendButton === "function") {
+        renderFriendButton({
+            user_id: u.user_id,
+            name: name || "—",
+            friend_status: u.user_id === currentUserId ? "self" : (u.friend_status || "none"),
+        });
+    }
+
+    // Запам'ятовуємо для кнопки дружби
+    if (typeof openedUser !== "undefined") {
+        openedUser = {
+            user_id: u.user_id,
+            name: [u.first_name, u.last_name].filter(Boolean).join(" "),
+        };
+    }
+    if (typeof setFriendButton === "function") {
+        setFriendButton(u.friend_status || "none");
+    }
 
     document.getElementById("userCardBackdrop").classList.add("modal-backdrop--open");
     document.getElementById("userCardModal").classList.add("center-modal--open");
