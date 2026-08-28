@@ -62,30 +62,48 @@ function timeAgo(ts) {
 
 function buildNotifCard(n) {
     const p = n.payload || {};
+    const sender = n.sender;
     const card = el("div", "notif-card" + (n.is_read ? "" : " notif-card--unread"));
 
     const head = el("div", "notif-card__head");
 
-    const icon = el("span", "notif-card__icon");
-    let title = "", text = "";
+    // Аватар відправника; якщо його немає — іконка типу події
+    const avatarWrap = el("div", "notif-card__avatar");
+    const src = sender ? safeImageUrl(sender.photo_url) : "";
 
-    if (n.kind === "friend_request") {
-        icon.classList.add("notif-card__icon--friend");
-        icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><circle cx="9.5" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M3 19.4c1.2-3 3.5-4.6 6.5-4.6 1 0 2 .2 2.8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17.5 13.5v6M14.5 16.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-        title = p.from_name || t("someone");
-        text  = t("wantsToBeFriend");
-    } else if (n.kind === "friend_accepted") {
-        icon.classList.add("notif-card__icon--accept");
-        icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        title = p.from_name || t("someone");
-        text  = t("nowFriends");
+    if (src) {
+        avatarWrap.style.backgroundImage = 'url("' + src + '")';
     } else {
-        icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.7"/></svg>';
-        title = t("notification");
-        text  = "";
+        avatarWrap.classList.add("notif-card__avatar--icon");
+        avatarWrap.innerHTML = n.kind === "friend_accepted"
+            ? '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none"><circle cx="9.5" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M3 19.4c1.2-3 3.5-4.6 6.5-4.6 1 0 2 .2 2.8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17.5 13.5v6M14.5 16.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
     }
 
-    head.appendChild(icon);
+    // Маленька позначка типу події поверх аватара
+    const kindDot = el("span", "notif-card__kind");
+    if (n.kind === "friend_request") {
+        kindDot.classList.add("notif-card__kind--request");
+        kindDot.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+        avatarWrap.appendChild(kindDot);
+    } else if (n.kind === "friend_accepted") {
+        kindDot.classList.add("notif-card__kind--accept");
+        kindDot.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        avatarWrap.appendChild(kindDot);
+    }
+
+    head.appendChild(avatarWrap);
+
+    let title = "", text = "";
+    if (n.kind === "friend_request") {
+        title = p.from_name || (sender ? senderName(sender) : t("someone"));
+        text  = t("wantsToBeFriend");
+    } else if (n.kind === "friend_accepted") {
+        title = p.from_name || (sender ? senderName(sender) : t("someone"));
+        text  = t("nowFriends");
+    } else {
+        title = t("notification");
+    }
 
     const body = el("div", "notif-card__body");
     body.appendChild(el("p", "notif-card__title", title));
@@ -95,19 +113,39 @@ function buildNotifCard(n) {
     head.appendChild(el("span", "notif-card__time", timeAgo(n.created_at)));
     card.appendChild(head);
 
-    // Заявка в друзі — кнопки просто під нею
+    // Тап по картці відкриває профіль відправника
+    if (sender) {
+        head.classList.add("notif-card__head--clickable");
+        head.addEventListener("click", function () {
+            openUserCard({
+                user_id:    sender.user_id,
+                first_name: sender.first_name,
+                last_name:  sender.last_name,
+                username:   sender.username,
+                photo_url:  sender.photo_url,
+                level:      sender.level,
+                bio:        sender.bio,
+                friend_status: n.kind === "friend_request" ? "pending_in"
+                             : n.kind === "friend_accepted" ? "friends" : "none",
+            });
+        });
+    }
+
+    // Заявка — кнопки одразу під нею
     if (n.kind === "friend_request" && p.from_id) {
         const actions = el("div", "notif-card__actions");
 
         const accept = el("button", "notif-btn notif-btn--accept", t("accept"));
         accept.type = "button";
-        accept.addEventListener("click", async function () {
+        accept.addEventListener("click", async function (e) {
+            e.stopPropagation();
             await respondFriend(p.from_id, "accept", n.notif_id);
         });
 
         const decline = el("button", "notif-btn notif-btn--decline", t("decline"));
         decline.type = "button";
-        decline.addEventListener("click", async function () {
+        decline.addEventListener("click", async function (e) {
+            e.stopPropagation();
             await respondFriend(p.from_id, "decline", n.notif_id);
         });
 
@@ -116,6 +154,10 @@ function buildNotifCard(n) {
     }
 
     return card;
+}
+
+function senderName(s) {
+    return [s.first_name, s.last_name].filter(Boolean).join(" ") || t("someone");
 }
 
 async function loadNotifications() {
