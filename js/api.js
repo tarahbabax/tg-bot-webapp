@@ -86,6 +86,42 @@ const API = {
     farmUpgrade: (currency) => request("/api/game/farm/upgrade", {
         method: "POST", body: JSON.stringify({ currency }),
     }),
+    notifications: () => request("/api/notifications"),
+    notifCount:    () => request("/api/notifications/count"),
+    notifRead:     () => request("/api/notifications/read", { method: "POST" }),
+
+    friendRequest: (user_id) => request("/api/friends/request", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+    friendAccept:  (user_id) => request("/api/friends/accept", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+    friendDecline: (user_id) => request("/api/friends/decline", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+    friendRemove:  (user_id) => request("/api/friends/remove", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+
+    socialUnread:        () => request("/api/social/unread"),
+    socialNotifications: () => request("/api/social/notifications"),
+    socialRead:          () => request("/api/social/read", { method: "POST" }),
+    notifDelete: (notif_id) => request("/api/social/notifications/delete", {
+        method: "POST", body: JSON.stringify({ notif_id }),
+    }),
+    friendRequest: (user_id) => request("/api/social/friend/request", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+    friendAccept:  (user_id) => request("/api/social/friend/accept", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+    friendDecline: (user_id) => request("/api/social/friend/decline", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+    friendRemove:  (user_id) => request("/api/social/friend/remove", {
+        method: "POST", body: JSON.stringify({ user_id }),
+    }),
+
     durakRooms:  () => request("/api/game/durak/rooms"),
     durakState:  () => request("/api/game/durak/state"),
     durakCreate: (deck_size, bet, currency, max_players) =>
