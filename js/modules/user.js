@@ -317,13 +317,11 @@ async function loadUsers() {
 
             if (isMe) item.appendChild(el("span", "user-item__me-badge", t("youBadge")));
 
-            // Статус дружби поруч із рівнем
-            const fs = u.friend_status;
-            if (!isMe && fs && fs !== "none") {
-                const label = fs === "friends" ? t("tagFriends")
-                    : fs === "pending_out" ? t("tagPending")
-                    : t("tagIncoming");
-                item.appendChild(el("span", "friend-tag friend-tag--" + fs, label));
+            // Статус дружби поруч із рівнем — через спільну
+            // функцію з social.js, щоб класи й ключі не розходились
+            if (!isMe && typeof friendBadge === "function") {
+                const badge = friendBadge(u.friend_status);
+                if (badge) item.appendChild(badge);
             }
 
             item.appendChild(el("span", "user-item__level", "Lv " + (u.level || 1)));
