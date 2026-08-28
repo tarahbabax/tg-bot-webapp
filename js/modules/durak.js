@@ -152,6 +152,26 @@ function renderGame(s) {
         if (p.seat === g.attacker) box.appendChild(el("span", "durak-opp__role", t("durakAtt")));
         else if (p.seat === g.defender) box.appendChild(el("span", "durak-opp__role", t("durakDef")));
 
+        // Хто вже сказав «бито», а хто ще думає — видно всім
+        const passed  = (g.passed || []).indexOf(p.seat) !== -1;
+        const waiting = (g.waiting || []).indexOf(p.seat) !== -1;
+
+        if (g.table.length && p.seat !== g.defender) {
+            if (passed) {
+                const mark = el("span", "durak-opp__pass durak-opp__pass--done");
+                mark.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                mark.appendChild(el("span", null, t("durakPassed")));
+                box.appendChild(mark);
+                box.classList.add("durak-opp--passed");
+            } else if (waiting) {
+                const mark = el("span", "durak-opp__pass durak-opp__pass--wait");
+                mark.innerHTML = '<span class="durak-think"><i></i><i></i><i></i></span>';
+                mark.appendChild(el("span", null, t("durakThinking")));
+                box.appendChild(mark);
+                box.classList.add("durak-opp--waiting");
+            }
+        }
+
         opps.appendChild(box);
     });
 
@@ -234,21 +254,38 @@ function renderGame(s) {
 
     // Статус
     const status = document.getElementById("durakStatus");
+    const iPassed = (g.passed || []).indexOf(g.my_seat) !== -1;
+    const waitingCount = (g.waiting || []).length;
+
     let text = "";
     if (isDefender) {
-        text = undefended.length ? t("durakYouDefend") : t("durakWaitAttack");
+        text = undefended.length
+            ? t("durakYouDefend")
+            : (waitingCount
+                ? t("durakWaitingFor").replace("{n}", waitingCount)
+                : t("durakWaitAttack"));
+    } else if (iPassed) {
+        // Ти вже сказав «бито» — чекаємо на решту
+        text = waitingCount
+            ? t("durakWaitingFor").replace("{n}", waitingCount)
+            : t("durakPassedWait");
     } else if (isAttacker) {
         text = g.table.length ? t("durakYouAttackMore") : t("durakYouAttack");
     } else {
-        text = t("durakCanAdd");
+        text = g.table.length ? t("durakCanAdd") : t("durakWaitAttack");
     }
+
     status.textContent = text;
-    status.classList.toggle("durak-status--my-turn", isDefender || isAttacker);
+    status.classList.toggle("durak-status--my-turn",
+        (isDefender && undefended.length) || (isAttacker && !iPassed));
 
     // Кнопки
     document.getElementById("durakTakeBtn").disabled = !(isDefender && g.table.length);
-    document.getElementById("durakPassBtn").disabled =
-        !(!isDefender && g.table.length && undefended.length === 0);
+    const passBtn = document.getElementById("durakPassBtn");
+    passBtn.disabled =
+        !(!isDefender && g.table.length && undefended.length === 0) || iPassed;
+    passBtn.classList.toggle("durak-act--done", iPassed);
+    passBtn.textContent = iPassed ? t("durakPassed") : t("durakPass");
 }
 
 /** Локальна перевірка — щоб підсвітити карти без запиту на сервер. */
