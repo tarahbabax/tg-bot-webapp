@@ -124,7 +124,22 @@ function renderMafiaGame(s) {
     const g = s.game;
     if (!g) return;
 
-    // Фаза
+    // Сцена: небо, світило, місто
+    const scene = document.getElementById("mafiaScene");
+    const newPhase = scene.dataset.phase !== g.phase;
+    scene.className = "mafia-scene mafia-scene--" + g.phase;
+    scene.dataset.phase = g.phase;
+
+    // Підпис приходить з сервера ключем — текст локалізуємо тут
+    const caption = document.getElementById("mafiaCaption");
+    caption.textContent = t("mafiaSay_" + (g.hint || "day"));
+    if (newPhase) {
+        caption.classList.remove("mafia-scene__caption--new");
+        void caption.offsetWidth;
+        caption.classList.add("mafia-scene__caption--new");
+    }
+
+    // Панель фази
     const phaseBox = document.getElementById("mafiaPhase");
     phaseBox.className = "mafia-phase mafia-phase--" + g.phase;
     document.getElementById("mafiaPhaseIcon").textContent = PHASE_EMOJI[g.phase] || "";
@@ -145,6 +160,16 @@ function renderMafiaGame(s) {
         hint = t("mafiaHintVote") + " (" + (g.voted_count || 0) + "/" + g.alive_count + ")";
     }
     document.getElementById("mafiaPhaseHint").textContent = hint;
+
+    // Кнопка пропуску — лише живим під час голосування
+    const skipBtn = document.getElementById("mafiaSkipBtn");
+    if (skipBtn) {
+        const canSkip = g.phase === "vote" && g.my_alive;
+        skipBtn.style.display = canSkip ? "flex" : "none";
+        skipBtn.classList.toggle("mafia-skip-btn--active", !!g.my_skipped);
+        const label = skipBtn.querySelector("span");
+        if (label) label.textContent = g.my_skipped ? t("mafiaSkipped") : t("mafiaSkip");
+    }
 
     // Своя роль
     const roleCard = document.getElementById("mafiaRoleCard");
@@ -180,8 +205,29 @@ function renderMafiaPlayers(g) {
             cell.classList.add(g.my_role === "doctor"
                 ? "mafia-player--healed" : "mafia-player--target");
         }
-        if (g.phase === "vote" && g.my_vote === p.seat) {
-            cell.classList.add("mafia-player--voted");
+        if (g.phase === "vote") {
+            if (g.my_vote === p.seat) cell.classList.add("mafia-player--voted");
+
+            const skipped = (g.skipped || []).indexOf(p.seat) !== -1;
+            const voted   = g.voters && g.voters[String(p.seat)] !== undefined;
+
+            if (p.alive) {
+                if (skipped) {
+                    // Утримався — видно всім
+                    cell.classList.add("mafia-player--skipped");
+                    cell.appendChild(el("span", "mafia-player__skip", t("mafiaSkipTag")));
+                } else if (voted) {
+                    const mark = el("span", "mafia-player__ready");
+                    mark.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    cell.appendChild(mark);
+                } else {
+                    cell.classList.add("mafia-player--undecided");
+                }
+            }
+
+            // Скільки голосів проти нього
+            const cnt = g.vote_counts && g.vote_counts[String(p.seat)];
+            if (cnt) cell.appendChild(el("span", "mafia-player__votes", String(cnt)));
         }
 
         const av = el("div", "mafia-player__avatar");
@@ -265,6 +311,10 @@ function renderMafiaFeed(g) {
                 row.appendChild(txt);
             } else {
                 row.appendChild(el("span", null, t("mafiaVoteNobody")));
+            }
+            if (ev.skipped) {
+                row.appendChild(el("span", "mafia-event__skip",
+                    "· " + t("mafiaSkippedN").replace("{n}", ev.skipped)));
             }
         }
         box.appendChild(row);
@@ -555,6 +605,22 @@ function initMafia() {
             await refreshMafia(true);
         } catch (e) {
             toast(t("mafiaNeedPlayers"), "error");
+        }
+    });
+
+    // Пропуск голосування
+    const skip = document.getElementById("mafiaSkipBtn");
+    if (skip) skip.addEventListener("click", async function () {
+        if (mafiaBusy) return;
+        mafiaBusy = true;
+        try {
+            await API.mafiaAction("skip", null);
+            MFSOUND.pick();
+            await refreshMafia(true);
+        } catch (e) {
+            toast(t("mafiaBadAction"), "error");
+        } finally {
+            mafiaBusy = false;
         }
     });
 
