@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="css/modules/durak.css?v=3" />
     <link rel="stylesheet" href="css/modules/social.css?v=2" />
     <link rel="stylesheet" href="css/modules/tops.css" />
-    <link rel="stylesheet" href="css/modules/mafia.css" />
+    <link rel="stylesheet" href="css/modules/mafia.css?v=4" />
 </head>
 <body data-theme="dark">
     <div class="page">
@@ -1036,6 +1036,15 @@
 
             <!-- ГРА -->
             <div class="fullscreen__body mafia-game" id="mafiaGame" style="display:none">
+                <!-- Сцена фази -->
+                <div class="mafia-scene" id="mafiaScene">
+                    <div class="mafia-scene__sky" id="mafiaSky"></div>
+                    <div class="mafia-scene__stars" id="mafiaStars"></div>
+                    <div class="mafia-scene__body" id="mafiaSceneBody"></div>
+                    <div class="mafia-scene__city"></div>
+                    <p class="mafia-scene__caption" id="mafiaCaption"></p>
+                </div>
+
                 <div class="mafia-phase" id="mafiaPhase">
                     <div class="mafia-phase__icon" id="mafiaPhaseIcon"></div>
                     <div class="mafia-phase__body">
@@ -1054,6 +1063,11 @@
                 </div>
 
                 <div class="mafia-players" id="mafiaPlayers"></div>
+
+                <button class="mafia-skip-btn" id="mafiaSkipBtn" type="button" style="display:none">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M5 6.5l7 5.5-7 5.5V6.5zM14 6.5l7 5.5-7 5.5V6.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                    <span data-i18n="mafiaSkip">Пропустити голосування</span>
+                </button>
 
                 <div class="mafia-feed" id="mafiaFeed"></div>
             </div>
@@ -2018,7 +2032,7 @@
     <script src="js/api.js"></script>
     <script src="js/modules/ui.js"></script>
     <script src="js/modules/prefs.js"></script>
-    <script src="js/modules/i18n.js?v=3"></script>
+    <script src="js/modules/i18n.js?v=4"></script>
     <script src="js/modules/nav.js"></script>
     <script src="js/modules/user.js?v=2"></script>
     <script src="js/modules/shop.js"></script>
@@ -2030,7 +2044,7 @@
     <script src="js/modules/durak.js?v=3"></script>
     <script src="js/modules/social.js?v=2"></script>
     <script src="js/modules/tops.js"></script>
-    <script src="js/modules/mafia.js"></script>
+    <script src="js/modules/mafia.js?v=4"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
